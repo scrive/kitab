@@ -1,0 +1,54 @@
+name: Test
+
+on:
+  pull_request:
+    paths:
+      - "**.hs"
+      - "**.cabal"
+      - .github/workflows/test.yaml
+      - "cabal.project"
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  generate-matrix:
+    name: "Generate matrix from cabal"
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract the tested GHC versions
+        id: set-matrix
+        uses: kleidukos/get-tested@v0.1.9.1
+        with:
+          cabal-file: kitab.cabal
+          version: 0.1.9.1
+  tests:
+    runs-on:
+      - aws-standard-ubuntu24
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cleanup stale ghcup
+        run: rm -rf "$HOME/.ghcup"
+      - uses: haskell/ghcup-setup@v1
+        id: setup-haskell
+        with:
+          ghc-version: ${{ matrix.ghc }}
+          cabal-version: 3.16.0.0
+      - name: Create freeze file
+        run: |
+          cabal freeze --enable-tests --enable-benchmarks
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.setup-haskell.outputs.cabal-store }}
+          key: ${{ runner.os }}-ghc-${{ matrix.ghc }}-cabal-${{ hashFiles('./dist-newstyle/cache/plan.json') }}
+          restore-keys: ${{ runner.os }}-ghc-${{ matrix.ghc }}-
+      - name: Build - ${{ matrix.ghc }}
+        run: cabal build
+      - name: Test - ${{ matrix.ghc }}
