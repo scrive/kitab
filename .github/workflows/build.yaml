@@ -13,24 +13,16 @@ on:
   workflow_dispatch:
 
 jobs:
-  generate-matrix:
-    name: "Generate matrix from cabal"
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Extract the tested GHC versions
-        id: set-matrix
-        uses: kleidukos/get-tested@v0.1.9.1
-        with:
-          cabal-file: kitab.cabal
-          version: 0.1.9.1
   tests:
     runs-on:
       - aws-standard-ubuntu24
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
+      matrix:
+         ghc:
+          - 9.6.7
+          - 9.10.3
+          - 9.12.2
     steps:
       - uses: actions/checkout@v6
       - name: Cleanup stale ghcup
@@ -52,3 +44,4 @@ jobs:
       - name: Build - ${{ matrix.ghc }}
         run: cabal build
       - name: Test - ${{ matrix.ghc }}
+        run: cabal test
