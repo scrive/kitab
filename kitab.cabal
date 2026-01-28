@@ -1,0 +1,106 @@
+cabal-version: 3.4
+name: kitab
+version: 0.1.0.0
+synopsis: Documentation for service-oriented architectures
+license: BSD-3-Clause
+license-file: LICENSE
+author: Théophile Choutri de Tarlé
+maintainer: theophile.choutri@scrive.com
+build-type: Simple
+extra-doc-files:
+  CHANGELOG.md
+  README.md
+
+tested-with: ghc ==9.12.2
+
+source-repository head
+  type: git
+  location: https://github.com/scrive/kitab
+
+common extensions
+  default-language: GHC2021
+
+common ghc-options
+  ghc-options:
+    -Wall
+    -Wcompat
+    -Widentities
+    -Wpartial-fields
+    -Wredundant-constraints
+    -fhide-source-paths
+    -Wno-unused-do-bind
+    -funbox-strict-fields
+    -Wunused-packages
+    -Wno-unticked-promoted-constructors
+    -funbox-small-strict-fields
+    -Winvalid-haddock
+
+common rts-options
+  ghc-options:
+    -rtsopts
+    -threaded
+    -with-rtsopts=-N
+
+library
+  import: extensions
+  import: ghc-options
+  -- cabal-gild: discover src/driver
+  exposed-modules:
+  build-depends:
+    base ^>=4.21,
+    kitab:kitab-c4,
+    kitab:kitab-core
+
+  hs-source-dirs: src/core
+  default-language: GHC2024
+
+library kitab-core
+  import: extensions
+  import: ghc-options
+  -- cabal-gild: discover src/core
+  exposed-modules: Core.Model
+  build-depends:
+    base ^>=4.21,
+    text,
+    vector,
+
+  hs-source-dirs: src/core
+  default-language: GHC2024
+
+library kitab-c4
+  import: extensions
+  import: ghc-options
+  -- cabal-gild: discover src/c4
+  exposed-modules:
+  build-depends: base ^>=4.21
+  hs-source-dirs: src/c4
+  default-language: GHC2024
+
+executable kitab
+  import: extensions
+  import: ghc-options
+  import: rts-options
+  main-is: Main.hs
+  build-depends:
+    base ^>=4.21,
+    kitab,
+
+  hs-source-dirs: app
+  default-language: GHC2024
+
+test-suite kitab-test
+  import: extensions
+  import: ghc-options
+  import: rts-options
+  default-language: GHC2024
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  hs-source-dirs: test
+  -- cabal-gild: discover test --exclude "test/Main.hs"
+  other-modules:
+  build-depends:
+    base ^>=4.21,
+    kitab,
+    tasty,
+    tasty-golden,
+    tasty-hunit,

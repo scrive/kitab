@@ -1,0 +1,19 @@
+packages: ./
+
+with-compiler: ghc-9.12.2
+
+test-show-details: direct
+
+documentation: True
+
+package *
+  profiling-detail: late
+
+tests: True
+
+semaphore: True
+
+multi-repl: True
+
+package *
+  ghc-options: -haddock
