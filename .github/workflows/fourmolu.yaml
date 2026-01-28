@@ -18,7 +18,7 @@ jobs:
       # Use GitHub hosted runner minutes for small jobs.
       - ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: haskell-actions/run-fourmolu@v11
         with:
           version: "0.19.0.1"
