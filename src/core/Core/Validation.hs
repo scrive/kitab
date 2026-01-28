@@ -29,7 +29,7 @@ checkGraph graph =
   sequenceA_
     [ checkParallelEdges graph
     , checkSelfReferential graph
-    , checkAsymmetric graph
+    , checkMismatched graph
     ]
 
 -- >>> checkParallelEdges (build [Service "A" [(Connection "B" HTTPS), (Connection "B" FunctionCall)]])
@@ -56,12 +56,12 @@ checkSelfReferential graph =
           & filter (\(_, source, destination) -> source == destination)
   in for_ selfReferentialEdges (\(_, source, _) -> failure (SelfReferential source))
 
--- >>> checkAsymmetric (build [Service "A" [(Connection "B" HTTPS)], Service "B" [Connection "A" FunctionCall]])
+-- >>> checkMismatched (build [Service "A" [(Connection "B" HTTPS)], Service "B" [Connection "A" FunctionCall]])
 -- Failure (Mismatched (("A","B",HTTPS),("B","A",FunctionCall)) :| [])
-checkAsymmetric
+checkMismatched
   :: Graph (List ConnectionType) ServiceName
   -> Validation (NonEmpty ValidationError) ()
-checkAsymmetric graph =
+checkMismatched graph =
   let am =
         graph
           & Graph.edgeList

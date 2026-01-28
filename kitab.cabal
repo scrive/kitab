@@ -73,7 +73,6 @@ library kitab-core
     containers,
     text,
     validation-selective,
-    vector,
 
   hs-source-dirs: src/core
   default-language: GHC2024
@@ -108,10 +107,14 @@ test-suite kitab-test
   main-is: Main.hs
   hs-source-dirs: test
   -- cabal-gild: discover test --exclude "test/Main.hs"
-  other-modules: Test.ModelTests
+  other-modules:
+    Test.ModelTests
+    Test.Utils
+
   build-depends:
     base ^>=4.21,
-    kitab,
+    effectful-core,
+    kitab:kitab-core,
     tasty,
-    tasty-golden,
     tasty-hunit,
+    validation-selective,
