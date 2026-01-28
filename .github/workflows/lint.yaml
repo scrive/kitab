@@ -1,0 +1,21 @@
+name: Lint
+
+on:
+  pull_request:
+    paths:
+      - "**.cabal"
+      - "cabal.project"
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  gild:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: tfausak/cabal-gild-setup-action@v2
+        with:
+          version: 1.6.0.2
+      - run: cabal-gild --input kitab.cabal --mode check
