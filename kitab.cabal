@@ -18,6 +18,10 @@ source-repository head
   location: https://github.com/scrive/kitab
 
 common extensions
+  default-extensions:
+    OverloadedRecordDot
+    OverloadedStrings
+
   default-language: GHC2021
 
 common ghc-options
@@ -49,7 +53,7 @@ library
   build-depends:
     base ^>=4.21,
     kitab:kitab-c4,
-    kitab:kitab-core
+    kitab:kitab-core,
 
   hs-source-dirs: src/core
   default-language: GHC2024
@@ -58,10 +62,16 @@ library kitab-core
   import: extensions
   import: ghc-options
   -- cabal-gild: discover src/core
-  exposed-modules: Core.Model
+  exposed-modules:
+    Core.Model
+    Core.Validation
+
   build-depends:
+    algebraic-graphs,
     base ^>=4.21,
+    containers,
     text,
+    validation-selective,
     vector,
 
   hs-source-dirs: src/core
@@ -97,7 +107,7 @@ test-suite kitab-test
   main-is: Main.hs
   hs-source-dirs: test
   -- cabal-gild: discover test --exclude "test/Main.hs"
-  other-modules:
+  other-modules: Test.ModelTests
   build-depends:
     base ^>=4.21,
     kitab,

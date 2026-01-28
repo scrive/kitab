@@ -9,14 +9,14 @@ The *Infrastructure* layer provides foundations like:
   * Parsing
 
 ### Components
-  * `lib:kitab-core`
+  * `lib:kitab`
 
 ## Domain
 
 It defines types and relationships described in the KDL files.
 
 ### Components
-  * `lib:kitab`
+  * `lib:kitab-core`
 
 ## Presentation
 
@@ -31,4 +31,4 @@ This is where CLI and output formats like C4 are defined.
 This layer provides high-level coordination of the other layers.
 
 ### Components
-  * `exe:kitab`
+  * `lib:kitab`
