@@ -49,9 +49,5 @@ respectful: true
 # Fixity information for operators
 fixities: []
 
-# Module reexports Fourmolu should know about
-reexports:
-- module Prelude exports Data.Function
-- module Prelude exports Control.Applicative
-- module Prelude exports Control.Monad
-
+# Imports are kept together based on their origin (in-package, out-of-package)
+import-grouping: by-scope
