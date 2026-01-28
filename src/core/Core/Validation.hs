@@ -16,8 +16,8 @@ data ValidationError
   = Asymmetric ServiceName ServiceName
   | -- | Two services declare different ways of reaching each-other.
     Mismatched ((ServiceName, ServiceName, ConnectionType), (ServiceName, ServiceName, ConnectionType))
-  -- | A service declares two different ways to reach another service.
-  | Parallel ServiceName ServiceName (List ConnectionType)
+  | -- | A service declares two different ways to reach another service.
+    Parallel ServiceName ServiceName (List ConnectionType)
   | -- | A service declares a connection to itself.
     SelfReferential ServiceName
   deriving stock (Eq, Ord, Show)
