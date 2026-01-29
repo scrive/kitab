@@ -35,6 +35,10 @@ jobs:
           ghc-version: "${{ matrix.ghc }}"
           cabal-version: "latest"
 
+      - name: Install system dependencies
+        run: |
+           sudo apt install -y libgmp-dev
+
       - name: Create freeze file
         run: cabal freeze --enable-tests --enable-benchmarks
 

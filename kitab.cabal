@@ -113,8 +113,8 @@ test-suite kitab-test
 
   build-depends:
     base ^>=4.21,
-    effectful-core,
     effectful,
+    effectful-core,
     kitab:kitab-core,
     tasty,
     tasty-hunit,
