@@ -49,14 +49,18 @@ common rts-options
 library
   import: extensions
   import: ghc-options
-  -- cabal-gild: discover src/driver
-  exposed-modules:
+  -- cabal-gild: discover src/driver src/parser
+  exposed-modules: Parser
   build-depends:
     base ^>=4.21,
+    kdl-hs,
     kitab:kitab-c4,
     kitab:kitab-core,
 
-  hs-source-dirs: src/core
+  hs-source-dirs:
+    src/driver
+    src/parser
+
   default-language: GHC2024
 
 library kitab-core
@@ -109,13 +113,17 @@ test-suite kitab-test
   -- cabal-gild: discover test --exclude "test/Main.hs"
   other-modules:
     Test.ModelTests
+    Test.ParserTests
     Test.Utils
 
   build-depends:
     base ^>=4.21,
     effectful,
     effectful-core,
+    kdl-hs,
+    kitab,
     kitab:kitab-core,
     tasty,
     tasty-hunit,
+    text,
     validation-selective,

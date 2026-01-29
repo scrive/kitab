@@ -10,16 +10,26 @@ module Test.Utils
   , assertLeft
   ) where
 
+import Data.Function ((&))
 import Effectful
+import Effectful.FileSystem
 import GHC.Stack
 import Test.Tasty (TestTree)
 import Test.Tasty.HUnit qualified as Test
 
 type TestEff a =
-  Eff '[IOE] a
+  Eff
+    '[ FileSystem
+     , IOE
+     ]
+    a
 
 testThat :: String -> TestEff () -> TestTree
-testThat name assertion = Test.testCase name (runEff assertion)
+testThat name assertion =
+  Test.testCase name $
+    assertion
+      & runFileSystem
+      & runEff
 
 assertEqual :: (Eq a, HasCallStack, Show a) => String -> a -> a -> TestEff ()
 assertEqual message expected actual = liftIO $ Test.assertEqual message expected actual
@@ -38,9 +48,9 @@ assertNothing :: HasCallStack => String -> Maybe a -> TestEff ()
 assertNothing message (Just _) = liftIO $ Test.assertFailure message
 assertNothing _ Nothing = pure ()
 
-assertRight :: HasCallStack => String -> Either a b -> TestEff b
+assertRight :: (HasCallStack, Show a) => String -> Either a b -> TestEff b
 assertRight _ (Right b) = pure b
-assertRight message (Left _a) = liftIO $ Test.assertFailure message
+assertRight message (Left a) = liftIO . Test.assertFailure $ (message <> ". Found " <> show a)
 
 assertLeft :: HasCallStack => String -> Either a b -> TestEff a
 assertLeft description (Right _b) = liftIO $ Test.assertFailure description
