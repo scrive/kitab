@@ -1,5 +1,6 @@
 module Test.Utils
   ( TestEff
+  , runTestEff
   , testThat
   , assertEqual
   , assertBool
@@ -10,7 +11,6 @@ module Test.Utils
   , assertLeft
   ) where
 
-import Data.Function ((&))
 import Effectful
 import Effectful.FileSystem
 import GHC.Stack
@@ -24,12 +24,15 @@ type TestEff a =
      ]
     a
 
+runTestEff :: TestEff a -> IO a
+runTestEff action =
+  action
+    & runFileSystem
+    & runEff
+
 testThat :: String -> TestEff () -> TestTree
 testThat name assertion =
-  Test.testCase name $
-    assertion
-      & runFileSystem
-      & runEff
+  Test.testCase name $ runTestEff assertion
 
 assertEqual :: (Eq a, HasCallStack, Show a) => String -> a -> a -> TestEff ()
 assertEqual message expected actual = liftIO $ Test.assertEqual message expected actual

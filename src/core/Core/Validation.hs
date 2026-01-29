@@ -3,9 +3,6 @@ module Core.Validation where
 import Algebra.Graph.Labelled (Graph)
 import Algebra.Graph.Labelled qualified as Graph
 import Algebra.Graph.Labelled.AdjacencyMap qualified as AM
-import Data.Foldable
-import Data.Function
-import Data.List (List)
 import Data.List.NonEmpty (NonEmpty)
 import Data.Map.Strict qualified as Map
 import Validation

@@ -1,18 +1,23 @@
 module Core.Model where
 
-import Algebra.Graph.Labelled
-import Data.List (List)
+import Algebra.Graph.Labelled (Graph)
+import Algebra.Graph.Labelled qualified as Graph
 import Data.List qualified as List
 import Data.String (IsString)
-import Data.Text (Text)
+import Prettyprinter
 
 newtype ServiceName = ServiceName Text
-  deriving newtype (Eq, Ord, Show, IsString)
+  deriving newtype (Eq, Ord, Show, IsString, Pretty)
 
 data ConnectionType
   = HTTPS
   | FunctionCall
   deriving stock (Eq, Show, Ord)
+
+instance Pretty ConnectionType where
+  pretty = \case
+    HTTPS -> "HTTPS"
+    FunctionCall -> "Function call"
 
 data Service = Service
   { serviceName :: ServiceName
@@ -37,7 +42,7 @@ build :: List Service -> Graph (List ConnectionType) ServiceName
 build =
   foldr
     ( \service ->
-        let builtGraph = edges [(List.singleton connection.connectionType, service.serviceName, connection.connectionWith) | connection <- service.connections]
-        in overlay builtGraph
+        let builtGraph = Graph.edges [(List.singleton connection.connectionType, service.serviceName, connection.connectionWith) | connection <- service.connections]
+        in Graph.overlay builtGraph
     )
-    empty
+    Graph.empty
