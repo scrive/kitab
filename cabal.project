@@ -1,4 +1,6 @@
-packages: ./
+packages:
+  ./
+  kitab-prelude
 
 with-compiler: ghc-9.12.2
 
