@@ -1,0 +1,3 @@
+service "media-proxy" {
+	depends-on "main-app" "https"
+}

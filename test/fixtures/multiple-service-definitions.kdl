@@ -1,0 +1,9 @@
+service "media-proxy" {
+	depends-on "main-app" "https"
+}
+
+service "main-app" {
+	depends-on "s3" "https"
+	depends-on "media-proxy" "https"
+	depends-on "user-registry" "function-call"
+}

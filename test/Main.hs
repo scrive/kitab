@@ -3,6 +3,7 @@ module Main (main) where
 import Test.Tasty
 
 import Test.ModelTests qualified as ModelTests
+import Test.ParserTests qualified as ParserTests
 
 main :: IO ()
 main =
@@ -11,4 +12,5 @@ main =
 tests :: [TestTree]
 tests =
   [ ModelTests.test
+  , ParserTests.test
   ]
