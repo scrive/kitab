@@ -1,13 +1,14 @@
 module Render.Cilium where
 
+import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 
 import Core.Model
 import Render.Cilium.Types
 
 -- | Convert a Kitab Service to a Cilium Policy
-toCiliumPolicy :: Service -> CiliumNetworkPolicy
-toCiliumPolicy service =
+toCiliumPolicy :: Map ServiceName ServiceInfo -> Service -> CiliumNetworkPolicy
+toCiliumPolicy services service =
   CiliumNetworkPolicy
     { apiVersion = "cilium.io/v2"
     , kind = "CiliumNetworkPolicy"
@@ -18,22 +19,27 @@ toCiliumPolicy service =
               EndpointSelector $
                 Map.singleton "app" (display service.serviceName)
           , egress =
-              [ dnsEgressRule -- The implicit DNS requirement
-              ]
+             dnsEgressRule -- The implicit DNS requirement
+             : map (serviceEgressRule services) service.connections
           }
     }
 
 dnsEgressRule :: EgressRule
 dnsEgressRule =
   EgressRule
-    { toFQDNs = Nothing
-    , toEndpoints =
-        Just
-          [ EndpointSelector $
-              Map.fromList
-                [ ("k8s:io.kubernetes.pod.namespace", "kube-system")
-                , ("k8s:k8s-app", "kube-dns")
-                ]
+    [ ToEndpoint EndpointSelector {
+        matchLabels = Map.fromList
+          [ ("k8s:io.kubernetes.pod.namespace", "kube-system")
+          , ("k8s:k8s-app", "kube-dns")
           ]
-    , toPorts = [PortRule [PortProtocol "53" "UDP", PortProtocol "53" "TCP"]]
-    }
+        }
+    , ToPort PortRule
+        { ports = [PortProtocol "53" "UDP", PortProtocol "53" "TCP"]
+        }
+    ]
+
+serviceEgressRule :: Map ServiceName ServiceInfo -> Connection -> EgressRule
+serviceEgressRule services Connection { connectionWith }
+  | Just ServiceInfo { serviceFqdn } <- Map.lookup connectionWith services
+  = EgressRule $ maybe [] (pure . ToFQDN . FQDNMatch) serviceFqdn
+  | otherwise = error $ "missing service " ++ show connectionWith

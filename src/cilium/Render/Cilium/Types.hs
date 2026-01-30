@@ -60,28 +60,28 @@ instance Pretty EndpointSelector where
       renderLabel (k, v) = keyValue k (dquotes $ pretty v)
 
 -- | A single Egress Rule (mix and match toFQDNs, toEndpoints, and toPorts)
-data EgressRule = EgressRule
-  { toFQDNs :: Maybe [FQDNMatch]
-  -- ^ For external/fqdn-based rules
-  , toEndpoints :: Maybe [EndpointSelector]
-  -- ^ For internal/k8s-based rules (e.g. DNS)
-  , toPorts :: [PortRule]
-  -- ^ List of allowed ports/protocols
+newtype EgressRule = EgressRule
+  { egressRuleItems :: List EgressRuleItem
   }
   deriving (Show, Eq, Ord)
 
 instance Pretty EgressRule where
-  pretty EgressRule {..} =
-    vsep $
-      concat
-        [ case toFQDNs of
-            Just fqdns -> [keyBlock "toFQDNs" (vsep $ map (("-" <+>) . align . pretty) fqdns)]
-            Nothing -> []
-        , case toEndpoints of
-            Just eps -> [keyBlock "toEndpoints" (vsep $ map (("-" <+>) . align . pretty) eps)]
-            Nothing -> []
-        , [keyBlock "toPorts" (vsep $ map (("-" <+>) . align . pretty) toPorts)]
-        ]
+  pretty EgressRule {..} = vsep $ map pretty egressRuleItems
+
+-- | An item in a single Egress Rule
+data EgressRuleItem 
+  = ToFQDN FQDNMatch 
+  -- ^ For external/fqdn-based rules
+  | ToEndpoint EndpointSelector 
+  -- ^ For internal/k8s-based rules (e.g. DNS)
+  | ToPort PortRule
+  -- ^ For allowed ports/protocols
+  deriving (Show, Eq, Ord)
+
+instance Pretty EgressRuleItem where
+  pretty (ToFQDN fqdn) = keyBlock "toFQDNs" $ "-" <+> align (pretty fqdn)
+  pretty (ToEndpoint ep) = keyBlock "toEndpoints" $ "-" <+> align (pretty ep)
+  pretty (ToPort pr) = keyBlock "toPorts" $ "-" <+> align (pretty pr)
 
 -- | Represents { matchName: "example.com" }
 newtype FQDNMatch = FQDNMatch

@@ -31,6 +31,7 @@ data Service = Service
 
 data ServiceInfo = ServiceInfo
   { serviceFqdn :: Maybe Text
+  -- ^ Fqdn is a Cilium thing.
   }
   deriving stock (Eq, Show, Ord)
 
