@@ -109,6 +109,28 @@ library kitab-c4
     base hiding (Prelude),
     kitab-prelude (Prelude),
 
+library kitab-cilium
+  import: extensions
+  import: ghc-options
+  -- cabal-gild: discover src/cilium
+  exposed-modules:
+    Render.Cilium
+    Render.Cilium.Types
+
+  build-depends:
+    algebraic-graphs,
+    base ^>=4.21,
+    kitab:kitab-core,
+    kitab-prelude,
+    containers,
+    prettyprinter,
+    text,
+
+  hs-source-dirs: src/cilium
+  mixins:
+    base hiding (Prelude),
+    kitab-prelude (Prelude),
+
 executable kitab
   import: extensions
   import: ghc-options
@@ -148,6 +170,7 @@ test-suite kitab-test
     kdl-hs,
     kitab,
     kitab:kitab-c4,
+    kitab:kitab-cilium,
     kitab:kitab-core,
     kitab-prelude,
     tasty,

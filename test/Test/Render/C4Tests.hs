@@ -25,7 +25,7 @@ diffCmd ref new = ["diff", "-u", ref, new]
 test :: TestTree
 test =
   testGroup
-    "C4 Rendering"
+    "C4 rendering golden test"
     [ goldenVsStringDiff
         "Services"
         diffCmd

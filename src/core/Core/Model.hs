@@ -21,6 +21,7 @@ instance Pretty ConnectionType where
 
 data Service = Service
   { serviceName :: ServiceName
+  , serviceFqdn :: Maybe Text
   , connections :: List Connection
   }
   deriving stock (Eq, Show, Ord)

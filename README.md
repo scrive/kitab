@@ -46,14 +46,16 @@ title System Architecture (C4 Container View)
 ' --- Systems ---
 System(main_app, "main-app")
 System(media_proxy, "media-proxy")
+System(otel_tracing, "otel-tracing")
 System(s3, "s3")
 System(user_registry, "user-registry")
 
 ' --- Relationships ---
 Rel(main_app, media_proxy, "Connects via", "HTTPS")
+Rel(main_app, otel_tracing, "Connects via", "HTTPS")
 Rel(main_app, s3, "Connects via", "HTTPS")
 Rel(main_app, user_registry, "using", "Function call")
-Rel(media_proxy, main_app, "Connects via", "HTTPS")
+Rel(media_proxy, otel_tracing, "Connects via", "HTTPS")
 @enduml
 ```
 
