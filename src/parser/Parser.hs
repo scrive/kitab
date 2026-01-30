@@ -23,9 +23,10 @@ serviceDecoder = do
         <|> (Right <$> KDL.nodeWith "depends-on" connectionDecoder)
 
   let serviceFqdn = listToMaybe (lefts mixedChildren)
+  let serviceInfo = ServiceInfo {serviceFqdn}
   let connections = rights mixedChildren
 
-  pure Service {serviceName, serviceFqdn, connections}
+  pure Service {serviceName, serviceInfo, connections}
 
 connectionDecoder :: DecodeArrow Node () Connection
 connectionDecoder = do

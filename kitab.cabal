@@ -81,6 +81,7 @@ library kitab-core
     kitab-prelude,
     prettyprinter,
     text,
+    text-display,
     validation-selective,
 
   hs-source-dirs: src/core
@@ -120,11 +121,12 @@ library kitab-cilium
   build-depends:
     algebraic-graphs,
     base ^>=4.21,
+    containers,
     kitab:kitab-core,
     kitab-prelude,
-    containers,
     prettyprinter,
     text,
+    text-display,
 
   hs-source-dirs: src/cilium
   mixins:

@@ -3,11 +3,14 @@ module Core.Model where
 import Algebra.Graph.Labelled (Graph)
 import Algebra.Graph.Labelled qualified as Graph
 import Data.List qualified as List
+import Data.Map.Strict (Map)
+import Data.Map.Strict qualified as Map
 import Data.String (IsString)
+import Data.Text.Display
 import Prettyprinter
 
 newtype ServiceName = ServiceName Text
-  deriving newtype (Eq, Ord, Show, IsString, Pretty)
+  deriving newtype (Eq, Ord, Show, IsString, Pretty, Display)
 
 data ConnectionType
   = HTTPS
@@ -21,10 +24,21 @@ instance Pretty ConnectionType where
 
 data Service = Service
   { serviceName :: ServiceName
-  , serviceFqdn :: Maybe Text
+  , serviceInfo :: ServiceInfo
   , connections :: List Connection
   }
   deriving stock (Eq, Show, Ord)
+
+data ServiceInfo = ServiceInfo
+  { serviceFqdn :: Maybe Text
+  }
+  deriving stock (Eq, Show, Ord)
+
+defaultServiceInfo :: ServiceInfo
+defaultServiceInfo =
+  ServiceInfo
+    { serviceFqdn = Nothing
+    }
 
 data Connection = Connection
   { connectionWith :: ServiceName
@@ -32,13 +46,14 @@ data Connection = Connection
   }
   deriving stock (Eq, Show, Ord)
 
--- >>> let services = build [Service "A" ([Connection "B" HTTPS]), Service "B" ([Connection "A" HTTPS])]
--- >>> edgeList services
--- [(fromList [HTTPS],"A","B"),(fromList [HTTPS],"B","A")]
--- >>> vertexList services
--- ["A","B"]
--- >>> edgeList (build [Service "A" ([Connection "B" HTTPS, Connection "B" FunctionCall]), Service "B" ([Connection "A" HTTPS])])
--- [(fromList [HTTPS,FunctionCall],"A","B"),(fromList [HTTPS],"B","A")]
+buildIndex :: List Service -> Map ServiceName ServiceInfo
+buildIndex =
+  foldr
+    ( \service ->
+        Map.insert service.serviceName service.serviceInfo
+    )
+    Map.empty
+
 build :: List Service -> Graph (List ConnectionType) ServiceName
 build =
   foldr
