@@ -42,4 +42,4 @@ renderService = runTestEff $ do
   let serviceIndex = buildIndex serviceDefinitions
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)
   mediaProxyService <- assertJust "" $ List.find (\s -> s.serviceName == "media-proxy") serviceDefinitions
-  (pure . TL.encodeUtf8) . T.fromStrict $ Cilium.renderCilium $ Cilium.toCiliumPolicy serviceIndex mediaProxyService
+  ((pure . TL.encodeUtf8) . T.fromStrict) . Cilium.renderCilium $ Cilium.toCiliumPolicy serviceIndex mediaProxyService

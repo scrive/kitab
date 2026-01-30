@@ -30,7 +30,7 @@ newtype Metadata = Metadata
   deriving newtype (Show, Eq, Ord, Display)
 
 instance Pretty Metadata where
-  pretty Metadata {..} = keyValue "name" (pretty name)
+  pretty Metadata {..} = keyValue "name" (dquotes $ pretty name)
 
 -- | The Policy Specification
 data PolicySpec = PolicySpec
@@ -121,4 +121,4 @@ keyValue k v = pretty k <> ":" <+> v
 
 -- | Helper for "key:" followed by a nested block
 keyBlock :: Text -> Doc ann -> Doc ann
-keyBlock k v = pretty k <> ":" <> hardline <> nest 2 v
+keyBlock k v = pretty k <> ":" <> hardline <> indent 2 v
