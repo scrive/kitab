@@ -161,6 +161,7 @@ test-suite kitab-test
     Test.ModelTests
     Test.ParserTests
     Test.Render.C4Tests
+    Test.Render.CiliumTests
     Test.Utils
 
   build-depends:

@@ -6,7 +6,6 @@ import Data.List qualified as List
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Data.String (IsString)
-import Data.Text.Display
 import Prettyprinter
 
 newtype ServiceName = ServiceName Text

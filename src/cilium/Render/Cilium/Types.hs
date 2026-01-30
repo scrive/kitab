@@ -4,7 +4,6 @@ module Render.Cilium.Types where
 
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
-import Data.Text.Display
 import Prettyprinter
 
 -- | Top-level Cilium Policy
@@ -69,13 +68,13 @@ instance Pretty EgressRule where
   pretty EgressRule {..} = vsep $ map pretty egressRuleItems
 
 -- | An item in a single Egress Rule
-data EgressRuleItem 
-  = ToFQDN FQDNMatch 
-  -- ^ For external/fqdn-based rules
-  | ToEndpoint EndpointSelector 
-  -- ^ For internal/k8s-based rules (e.g. DNS)
-  | ToPort PortRule
-  -- ^ For allowed ports/protocols
+data EgressRuleItem
+  = -- | For external/fqdn-based rules
+    ToFQDN FQDNMatch
+  | -- | For internal/k8s-based rules (e.g. DNS)
+    ToEndpoint EndpointSelector
+  | -- | For allowed ports/protocols
+    ToPort PortRule
   deriving (Show, Eq, Ord)
 
 instance Pretty EgressRuleItem where
