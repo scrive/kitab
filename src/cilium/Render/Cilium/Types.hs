@@ -65,7 +65,7 @@ newtype EgressRule = EgressRule
   deriving (Show, Eq, Ord)
 
 instance Pretty EgressRule where
-  pretty EgressRule {..} = vsep $ map pretty egressRuleItems
+  pretty EgressRule {..} = align $ vsep $ map pretty egressRuleItems
 
 -- | An item in a single Egress Rule
 data EgressRuleItem
