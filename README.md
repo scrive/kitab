@@ -62,3 +62,39 @@ Rel(media_proxy, otel_tracing, "Connects via", "HTTPS")
 Which gives us this schema:
 
 ![system diagram](./doc/system-diagram.png)
+
+And the following Cilium Network Policy for the `media-proxy` service (amongst others)
+
+```yaml
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: "media-proxy-networkpolicy"
+spec:
+  endpointSelector:
+    matchLabels:
+      app: "media-proxy"
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: "kube-system"
+            k8s-app: "kube-dns"
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+          rules:
+            dns:
+              - matchPattern: "*"
+    - toFQDNs:
+        - matchName: "opensearch.internal.network"
+        - ports:
+          - port: "443"
+            protocol: TCP
+    - toFQDNs:
+        - matchName: "tracing.internal.network"
+        - ports:
+          - port: "443"
+            protocol: TCP
+```
+
