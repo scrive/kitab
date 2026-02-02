@@ -1,9 +1,18 @@
+service "otel-tracing" {
+	fqdn "tracing.internal.network"
+}
+
+service "opensearch" {
+	fqdn "opensearch.internal.network"
+}
+
 service "media-proxy" {
-	depends-on "main-app" "https"
+	depends-on "otel-tracing" "https"
 }
 
 service "main-app" {
 	depends-on "s3" "https"
 	depends-on "media-proxy" "https"
 	depends-on "user-registry" "function-call"
+	depends-on "otel-tracing" "https"
 }

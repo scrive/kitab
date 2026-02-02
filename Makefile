@@ -10,6 +10,9 @@ repl: ## Start a REPL
 test: ## Run the test suite
 	@cabal test
 
+test-accept: ## Run the golden tests and accept new output
+	@cabal run -- kitab-test -p '/golden/' --accept
+
 lint: ## Run the code linter
 	@find app test src -name "*.hs" | xargs -P $(PROCS) -I {} hlint --refactor-options="-i" --refactor {}
 

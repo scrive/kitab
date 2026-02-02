@@ -5,6 +5,7 @@ import Test.Tasty
 import Test.ModelTests qualified as ModelTests
 import Test.ParserTests qualified as ParserTests
 import Test.Render.C4Tests qualified as C4Tests
+import Test.Render.CiliumTests qualified as CiliumTests
 
 main :: IO ()
 main =
@@ -15,4 +16,5 @@ tests =
   [ ModelTests.test
   , ParserTests.test
   , C4Tests.test
+  , CiliumTests.test
   ]

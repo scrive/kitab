@@ -7,6 +7,7 @@
   - -XOverloadedRecordDot
 
 # Warnings we don't care about
+- ignore: {name: "Use newtype instead of data"}
 - ignore: {name: "Reduce duplication"}
 - ignore: {name: "Redundant do"}
 - ignore: {name: "Use list comprehension"}

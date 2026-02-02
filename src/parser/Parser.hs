@@ -15,8 +15,18 @@ decodeService = KDL.document $ do
 serviceDecoder :: DecodeArrow Node () Service
 serviceDecoder = do
   serviceName <- KDL.argWith serviceNameDecoder
-  connections <- KDL.children . many $ KDL.nodeWith "depends-on" connectionDecoder
-  pure Service {serviceName, connections}
+  -- Parse all children as either an FQDN (Left) or a Connection (Right).
+  -- This allows out-of-order fields.
+  mixedChildren <-
+    KDL.children . KDL.many $
+      (Left <$> KDL.nodeWith "fqdn" (KDL.argWith KDL.text))
+        <|> (Right <$> KDL.nodeWith "depends-on" connectionDecoder)
+
+  let serviceFqdn = listToMaybe (lefts mixedChildren)
+  let serviceInfo = ServiceInfo {serviceFqdn}
+  let connections = rights mixedChildren
+
+  pure Service {serviceName, serviceInfo, connections}
 
 connectionDecoder :: DecodeArrow Node () Connection
 connectionDecoder = do

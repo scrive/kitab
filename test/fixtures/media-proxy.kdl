@@ -1,0 +1,13 @@
+service "opensearch" {
+   fqdn "opensearch.internal.network"
+
+}
+
+service "otel-tracing" {
+   fqdn "tracing.internal.network"
+}
+
+service "media-proxy" {
+	depends-on "opensearch" "https"
+	depends-on "otel-tracing" "https"
+}

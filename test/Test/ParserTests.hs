@@ -20,7 +20,7 @@ test =
 testServiceDecoding :: TestEff ()
 testServiceDecoding = do
   serviceDefinition <- decodeUtf8 <$> FileSystem.readFile "test/fixtures/service-definition.kdl"
-  let expectedResult = Service {serviceName = "media-proxy", connections = [Connection {connectionWith = "main-app", connectionType = HTTPS}]}
+  let expectedResult = Service {serviceName = "media-proxy", serviceInfo = defaultServiceInfo, connections = [Connection {connectionWith = "main-app", connectionType = HTTPS}]}
   result <- assertRight "KDL file could not be parsed" $ KDL.decodeWith decodeService serviceDefinition
   assertEqual
     "Expected service definition"
@@ -31,20 +31,12 @@ testServiceDefinitionsParsing :: TestEff ()
 testServiceDefinitionsParsing = do
   serviceDefinition <- decodeUtf8 <$> FileSystem.readFile "test/fixtures/multiple-service-definitions.kdl"
   let expectedResult =
-        [ Service
-            { serviceName = "media-proxy"
-            , connections =
-                [Connection {connectionWith = "main-app", connectionType = HTTPS}]
-            }
-        , Service
-            { serviceName = "main-app"
-            , connections =
-                [ Connection {connectionWith = "s3", connectionType = HTTPS}
-                , Connection {connectionWith = "media-proxy", connectionType = HTTPS}
-                , Connection {connectionWith = "user-registry", connectionType = FunctionCall}
-                ]
-            }
+        [ Service {serviceName = "otel-tracing", serviceInfo = ServiceInfo {serviceFqdn = Just "tracing.internal.network"}, connections = []}
+        , Service {serviceName = "opensearch", serviceInfo = ServiceInfo {serviceFqdn = Just "opensearch.internal.network"}, connections = []}
+        , Service {serviceName = "media-proxy", serviceInfo = ServiceInfo {serviceFqdn = Nothing}, connections = [Connection {connectionWith = "otel-tracing", connectionType = HTTPS}]}
+        , Service {serviceName = "main-app", serviceInfo = ServiceInfo {serviceFqdn = Nothing}, connections = [Connection {connectionWith = "s3", connectionType = HTTPS}, Connection {connectionWith = "media-proxy", connectionType = HTTPS}, Connection {connectionWith = "user-registry", connectionType = FunctionCall}, Connection {connectionWith = "otel-tracing", connectionType = HTTPS}]}
         ]
+
   result <- assertRight "KDL file could not be parsed" $ KDL.decodeWith decodeServiceDocument serviceDefinition
   assertEqual
     "Expected service definition"

@@ -71,6 +71,7 @@ library kitab-core
   import: ghc-options
   -- cabal-gild: discover src/core
   exposed-modules:
+    Core.Graph
     Core.Model
     Core.Validation
 
@@ -81,6 +82,7 @@ library kitab-core
     kitab-prelude,
     prettyprinter,
     text,
+    text-display,
     validation-selective,
 
   hs-source-dirs: src/core
@@ -105,6 +107,29 @@ library kitab-c4
     text,
 
   hs-source-dirs: src/c4
+  mixins:
+    base hiding (Prelude),
+    kitab-prelude (Prelude),
+
+library kitab-cilium
+  import: extensions
+  import: ghc-options
+  -- cabal-gild: discover src/cilium
+  exposed-modules:
+    Render.Cilium
+    Render.Cilium.Types
+
+  build-depends:
+    algebraic-graphs,
+    base ^>=4.21,
+    containers,
+    kitab:kitab-core,
+    kitab-prelude,
+    prettyprinter,
+    text,
+    text-display,
+
+  hs-source-dirs: src/cilium
   mixins:
     base hiding (Prelude),
     kitab-prelude (Prelude),
@@ -137,17 +162,20 @@ test-suite kitab-test
     Test.ModelTests
     Test.ParserTests
     Test.Render.C4Tests
+    Test.Render.CiliumTests
     Test.Utils
 
   build-depends:
     algebraic-graphs,
     base ^>=4.21,
     bytestring,
+    containers,
     effectful,
     effectful-core,
     kdl-hs,
     kitab,
     kitab:kitab-c4,
+    kitab:kitab-cilium,
     kitab:kitab-core,
     kitab-prelude,
     tasty,
