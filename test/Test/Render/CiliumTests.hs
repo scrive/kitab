@@ -1,7 +1,5 @@
 module Test.Render.CiliumTests where
 
-import Algebra.Graph.Labelled qualified as Graph
-import Algebra.Graph.Labelled.AdjacencyMap qualified as AM
 import Data.ByteString.Lazy (LazyByteString)
 import Data.List qualified as List
 import Data.Text.Encoding qualified as T
@@ -13,11 +11,11 @@ import Test.Tasty
 import Test.Tasty.Golden
 import Validation
 
+import Core.Graph
 import Core.Model
 import Core.Validation
 import Parser
 import Render.Cilium qualified as Cilium
-import Render.Cilium.Types
 import Test.Utils
 
 diffCmd :: String -> String -> [String]
@@ -38,7 +36,7 @@ renderService :: IO LazyByteString
 renderService = runTestEff $ do
   fileContent <- T.decodeUtf8 <$> FileSystem.readFile "test/fixtures/media-proxy.kdl"
   serviceDefinitions <- assertRight "KDL file could not be parsed" $ KDL.decodeWith decodeServiceDocument fileContent
-  let graph = build serviceDefinitions
+  let graph = buildGraph serviceDefinitions
   let serviceIndex = buildIndex serviceDefinitions
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)
   mediaProxyService <- assertJust "" $ List.find (\s -> s.serviceName == "media-proxy") serviceDefinitions

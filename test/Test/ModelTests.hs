@@ -4,6 +4,7 @@ import Data.List.NonEmpty qualified as NE
 import Test.Tasty
 import Validation (validationToEither)
 
+import Core.Graph
 import Core.Model
 import Core.Validation
 import Test.Utils
@@ -22,7 +23,7 @@ test =
 
 testParallelConnectionsDetection :: TestEff ()
 testParallelConnectionsDetection = do
-  let graph = build [Service "A" defaultServiceInfo [Connection "B" HTTPS, Connection "B" FunctionCall]]
+  let graph = buildGraph [Service "A" defaultServiceInfo [Connection "B" HTTPS, Connection "B" FunctionCall]]
   validationError <- assertLeft "Graph is not validated" $ validationToEither (checkGraph graph)
   assertEqual
     "Parallel edges"
@@ -31,7 +32,7 @@ testParallelConnectionsDetection = do
 
 testSelfReferentialConnections :: TestEff ()
 testSelfReferentialConnections = do
-  let graph = build [Service "A" defaultServiceInfo [Connection "A" HTTPS]]
+  let graph = buildGraph [Service "A" defaultServiceInfo [Connection "A" HTTPS]]
   validationError <- assertLeft "Graph is not validated" $ validationToEither (checkGraph graph)
   assertEqual
     "Self-Referential edges"
@@ -40,7 +41,7 @@ testSelfReferentialConnections = do
 
 testMismatchedConnections :: TestEff ()
 testMismatchedConnections = do
-  let graph = build [Service "A" defaultServiceInfo [Connection "B" HTTPS], Service "B" defaultServiceInfo [Connection "A" FunctionCall]]
+  let graph = buildGraph [Service "A" defaultServiceInfo [Connection "B" HTTPS], Service "B" defaultServiceInfo [Connection "A" FunctionCall]]
   validationError <- assertLeft "Graph is not validated" $ validationToEither (checkGraph graph)
   assertEqual
     "Mismatched connections"

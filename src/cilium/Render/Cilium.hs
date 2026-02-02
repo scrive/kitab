@@ -36,18 +36,19 @@ dnsEgressRule =
         EndpointSelector
           { matchLabels =
               Map.fromList
-                [ ("k8s:io.kubernetes.pod.namespace", "kube-system")
-                , ("k8s:k8s-app", "kube-dns")
+                [ ("io.kubernetes.pod.namespace", "kube-system")
+                , ("k8s-app", "kube-dns")
                 ]
           }
     , ToPort
         PortRule
-          { ports = [PortProtocol "53" "UDP", PortProtocol "53" "TCP"]
+          { ports = [PortProtocol "53" "UDP"]
           }
+        (Just DNSMatch {dnsMatchNAme = "*"})
     ]
 
 serviceEgressRule :: Map ServiceName ServiceInfo -> Connection -> EgressRule
 serviceEgressRule services Connection {connectionWith}
   | Just ServiceInfo {serviceFqdn} <- Map.lookup connectionWith services =
-      EgressRule $ maybe [] (pure . ToFQDN . FQDNMatch) serviceFqdn
+      EgressRule $ maybe [] (\hostname -> pure $ ToFQDN (FQDNMatch hostname) (PortRule [PortProtocol "443" "TCP"])) serviceFqdn
   | otherwise = error $ "missing service " ++ show connectionWith

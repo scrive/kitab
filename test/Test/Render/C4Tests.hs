@@ -12,7 +12,7 @@ import Test.Tasty
 import Test.Tasty.Golden
 import Validation
 
-import Core.Model
+import Core.Graph
 import Core.Validation
 import Parser
 import Render.C4 qualified as C4
@@ -37,7 +37,7 @@ renderServices :: IO LazyByteString
 renderServices = runTestEff $ do
   fileContent <- T.decodeUtf8 <$> FileSystem.readFile "test/fixtures/multiple-service-definitions.kdl"
   serviceDefinitions <- assertRight "KDL file could not be parsed" $ KDL.decodeWith decodeServiceDocument fileContent
-  let graph = build serviceDefinitions
+  let graph = buildGraph serviceDefinitions
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)
   let graphEdges =
         graph

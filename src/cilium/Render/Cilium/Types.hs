@@ -65,22 +65,32 @@ newtype EgressRule = EgressRule
   deriving (Show, Eq, Ord)
 
 instance Pretty EgressRule where
-  pretty EgressRule {..} = align $ vsep $ map pretty egressRuleItems
+  pretty EgressRule {..} = align . vsep $ map pretty egressRuleItems
 
 -- | An item in a single Egress Rule
 data EgressRuleItem
   = -- | For external/fqdn-based rules
-    ToFQDN FQDNMatch
+    ToFQDN FQDNMatch PortRule
   | -- | For internal/k8s-based rules (e.g. DNS)
     ToEndpoint EndpointSelector
   | -- | For allowed ports/protocols
-    ToPort PortRule
+    ToPort PortRule (Maybe DNSMatch)
   deriving (Show, Eq, Ord)
 
 instance Pretty EgressRuleItem where
-  pretty (ToFQDN fqdn) = keyBlock "toFQDNs" $ "-" <+> align (pretty fqdn)
+  pretty (ToFQDN fqdn ports) =
+    keyBlock "toFQDNs" $
+      vsep
+        [ "-" <+> align (pretty fqdn)
+        , "-" <+> pretty ports
+        ]
   pretty (ToEndpoint ep) = keyBlock "toEndpoints" $ "-" <+> align (pretty ep)
-  pretty (ToPort pr) = keyBlock "toPorts" $ "-" <+> align (pretty pr)
+  pretty (ToPort portRules dnsMatch) =
+    keyBlock "toPorts" . nest 2 $
+      vsep
+        [ "-" <+> pretty portRules
+        , keyBlock "rules" . keyBlock "dns" $ ("-" <+> pretty dnsMatch)
+        ]
 
 -- | Represents { matchName: "example.com" }
 newtype FQDNMatch = FQDNMatch
@@ -91,6 +101,14 @@ newtype FQDNMatch = FQDNMatch
 instance Pretty FQDNMatch where
   pretty (FQDNMatch name) = keyValue "matchName" (dquotes $ pretty name)
 
+newtype DNSMatch = DNSMatch
+  { dnsMatchNAme :: Text
+  }
+  deriving (Show, Eq, Ord)
+
+instance Pretty DNSMatch where
+  pretty (DNSMatch name) = keyValue "matchPattern" (dquotes $ pretty name)
+
 -- | Grouping of ports
 newtype PortRule = PortRule
   { ports :: [PortProtocol]
@@ -99,7 +117,7 @@ newtype PortRule = PortRule
 
 instance Pretty PortRule where
   pretty (PortRule ports) =
-    keyBlock "ports" (vsep $ map (("-" <+>) . align . pretty) ports)
+    keyBlock "ports" (vsep $ map (("-" <+>) . nest 2 . pretty) ports)
 
 -- | Specific Port/Protocol pair
 data PortProtocol = PortProtocol

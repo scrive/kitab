@@ -71,6 +71,7 @@ library kitab-core
   import: ghc-options
   -- cabal-gild: discover src/core
   exposed-modules:
+    Core.Graph
     Core.Model
     Core.Validation
 
@@ -168,6 +169,7 @@ test-suite kitab-test
     algebraic-graphs,
     base ^>=4.21,
     bytestring,
+    containers,
     effectful,
     effectful-core,
     kdl-hs,

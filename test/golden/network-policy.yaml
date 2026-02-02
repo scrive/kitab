@@ -8,23 +8,23 @@ spec:
       app: "media-proxy"
   egress:
     - toEndpoints:
-      - matchLabels:
-          io.kubernetes.pod.namespace: kube-system
-          k8s-app: kube-dns # DNS requests
+        - matchLabels:
+            io.kubernetes.pod.namespace: "kube-system"
+            k8s-app: "kube-dns"
       toPorts:
-      - ports:
-        - port: "53"
-          protocol: UDP
-        rules:
-          dns:
-          - matchPattern: "*"
-    - toFQDNs:
-        - matchName: "opensearch.internal.network" # Resolved from service "opensearch"
         - ports:
-            - port: "443"
-              protocol: "TCP"
+            - port: "53"
+              protocol: UDP
+          rules:
+            dns:
+              - matchPattern: "*"
     - toFQDNs:
-        - matchName: "tracing.internal.network" # Resolved from service "otel-tracing"
+        - matchName: "opensearch.internal.network"
         - ports:
-            - port: "443"
-              protocol: "TCP"
+          - port: "443"
+            protocol: TCP
+    - toFQDNs:
+        - matchName: "tracing.internal.network"
+        - ports:
+          - port: "443"
+            protocol: TCP
