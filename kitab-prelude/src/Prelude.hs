@@ -7,6 +7,7 @@ module Prelude
   , module Data.Either
   , module Data.Foldable
   , module Data.Text.Display
+  , module Control.Monad.Extra
   , module Data.Functor
   , module Data.Maybe
   , module P
@@ -24,6 +25,7 @@ module Prelude
 import Control.Applicative
 import Control.Monad
 import Control.Monad.IO.Class
+import Control.Monad.Extra
 import Data.Either
 import Data.Eq
 import Data.Foldable

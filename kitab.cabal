@@ -49,18 +49,38 @@ common rts-options
 library
   import: extensions
   import: ghc-options
-  -- cabal-gild: discover src/driver src/parser
-  exposed-modules: Parser
+  autogen-modules:
+    Paths_kitab
+
+  other-modules:
+    Paths_kitab
+
+  -- cabal-gild: discover src/driver src/parser src/cli
+  exposed-modules:
+    CLI
+    CLI.Error
+    CLI.Types
+    Driver
+    Parser
+
   build-depends:
+    algebraic-graphs,
     base ^>=4.21,
+    effectful,
+    filepath,
+    gitrev,
     kdl-hs,
     kitab:kitab-c4,
     kitab:kitab-core,
     kitab-prelude,
+    optparse-applicative,
+    text,
+    validation-selective,
 
   hs-source-dirs:
     src/driver
     src/parser
+    src/cli
 
   mixins:
     base hiding (Prelude),
@@ -141,8 +161,12 @@ executable kitab
   main-is: Main.hs
   build-depends:
     base ^>=4.21,
+    effectful,
+    effectful-core,
     kitab,
     kitab-prelude,
+    optparse-applicative,
+    text,
 
   hs-source-dirs: app
   mixins:

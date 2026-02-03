@@ -46,6 +46,7 @@ library
   hs-source-dirs: src
   build-depends:
     base,
+    extra,
     text,
     text-display,
     vector,
