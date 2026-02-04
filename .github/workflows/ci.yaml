@@ -1,0 +1,216 @@
+name: CI
+
+on:
+  pull_request:
+    paths:
+      - "**.hs"
+      - "**.cabal"
+      - .github/workflows/test.yaml
+      - "cabal.project"
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  tests:
+    runs-on:
+      - aws-standard-ubuntu24
+    strategy:
+      fail-fast: false
+      matrix:
+        ghc:
+          - 9.12.2
+    steps:
+
+      - uses: actions/checkout@v6
+
+      - name: Cleanup stale ghcup
+        run: rm -rf "$HOME/.ghcup"
+
+      - name: Set up Haskell
+        id: setup-haskell
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: "${{ matrix.ghc }}"
+          cabal-version: "latest"
+
+      - name: Install system dependencies
+        run: |
+           sudo apt install -y libgmp-dev
+
+      - name: Create freeze file
+        run: cabal freeze --enable-tests --enable-benchmarks
+
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.setup-haskell.outputs.cabal-store }}
+          key: ${{ runner.os }}-ghc-${{ matrix.ghc }}-cabal-${{ hashFiles('./dist-newstyle/cache/plan.json') }}
+          restore-keys: ${{ runner.os }}-ghc-${{ matrix.ghc }}-
+
+      - name: Build - ${{ matrix.ghc }}
+        run: cabal build
+
+      - name: Test - ${{ matrix.ghc }}
+        run: cabal test
+
+  package-macos:
+    name: Build on macos-latest
+    runs-on: macos-latest
+    steps:
+      - name: Checkout base repo
+        uses: actions/checkout@v6
+
+      - name: Set up Haskell
+        id: setup-haskell
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: "9.12.2"
+          cabal-version: 'latest'
+      - name: Configure
+        run: |
+          ARCHITECTURE=$(uname -m)
+          echo "ARCH=$ARCHITECTURE" >> $GITHUB_ENV
+          echo ${{ env.ARCH }}
+          cabal configure --enable-tests
+      - name: Freeze
+        run: cabal freeze --project-file=cabal.release.project
+      - name: Cache
+        uses: actions/cache@v5
+        with:
+          path: ${{ steps.setup-haskell.outputs.cabal-store }}
+          key: ${{ runner.os }}-ghc-${{ matrix.ghc }}-cabal-${{ hashFiles('./dist-newstyle/cache/plan.json') }}
+
+          restore-keys: ${{ runner.os }}-ghc-${{ matrix.ghc }}-
+
+      - name: Build
+        run: cabal build --project-file=cabal.release.project
+
+      - name: Test
+        run: cabal test --project-file=cabal.release.project all
+
+      - name: Install
+        run: cabal install --project-file=cabal.release.project --installdir=distribution --install-method=copy
+
+      - name: File type
+        run: file distribution/kitab
+
+      - name: Package the kitab-head executable
+        run: |
+          KITAB_EXEC=distribution/kitab
+          .github/workflows/process-binaries.sh
+          DIR=$(dirname $KITAB_EXEC)
+          FILE=$(basename $KITAB_EXEC)
+          KITAB_EXEC_TAR=kitab-head-${{ runner.os }}-${{ env.ARCH }}.tar.gz
+          tar -czvf $KITAB_EXEC_TAR -C $DIR $FILE
+          echo KITAB_EXEC_TAR=$KITAB_EXEC_TAR >> $GITHUB_ENV
+
+      - name: Upload the kitab-head executable
+        uses: actions/upload-artifact@v6
+        with:
+          name: kitab-${{ runner.os }}-${{ env.ARCH }}
+          path: ${{ env.KITAB_EXEC_TAR }}
+
+  package-linux-static:
+      name: Build on alpine-9.19
+      runs-on: ubuntu-latest
+      container: "alpine:3.19"
+      steps: 
+      - name: Install extra dependencies
+        shell: sh
+        run: | 
+            apk add bash binutils-gold curl \
+                curl file g++ gcc git gmp-dev \
+                jq libc-dev libffi-dev make \
+                musl-dev ncurses-dev perl pkgconfig \
+                sudo tar upx xz zlib-dev zlib-static
+
+      - uses: actions/checkout@v6
+
+      - uses: haskell-actions/setup@v2
+        id: setup-haskell
+        with:
+          ghc-version: '9.12.2'
+          cabal-version: 'latest'
+
+      - name: Configure
+        run: | 
+          ARCHITECTURE=$(uname -m)
+          echo "ARCH=$ARCHITECTURE" >> $GITHUB_ENV
+          echo ${{ env.ARCH }}
+          cabal configure --enable-tests
+
+      - name: Freeze
+        run: cabal freeze --project-file=cabal.static.project
+
+      - uses: actions/cache@v5
+        with:
+          path: ${{ steps.setup-haskell.outputs.cabal-store }}
+          key: ${{ runner.os }}-ghc-${{ matrix.ghc }}-cabal-${{ hashFiles('./dist-newstyle/cache/plan.json') }}
+
+          restore-keys: ${{ runner.os }}-${{ steps.setup.outputs.ghc-version }}-
+
+      - name: Build
+        run: cabal build --project-file=cabal.static.project
+
+      - name: Test
+        run: cabal test --project-file=cabal.static.project all
+
+      - name: Install
+        run: |
+          bin=$(cabal -v0 --project-file=cabal.static.project list-bin kitab)
+          mkdir distribution
+          install ${bin} distribution/kitab
+
+      - name: File type
+        run: file distribution/kitab
+
+      - name: Tar cabal head executable
+        run: |
+          KITAB_EXEC=distribution/kitab
+          strip $KITAB_PATH
+          upx -9 $KITAB_PATH
+          DIR=$(dirname $KITAB_EXEC)
+          FILE=$(basename $KITAB_EXEC)
+          KITAB_EXEC_TAR=kitab-head-${{ runner.os }}-static-${{ env.ARCH }}.tar.gz
+          tar -czvf $KITAB_EXEC_TAR -C $DIR $FILE
+          echo KITAB_EXEC_TAR=$KITAB_EXEC_TAR >> $GITHUB_ENV
+
+      - name: Upload kitab executable to workflow artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: kitab-${{ runner.os }}-static-x86_64
+          path: ${{ env.KITAB_EXEC_TAR }}
+
+       
+  prerelease-head:
+    name: Create a GitHub prerelease with the binary artifacts
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    needs: ['tests', 'package-linux-static', 'package-macos']
+
+    steps:
+    - uses: actions/download-artifact@v7
+      with:
+        pattern: kitab-*
+        merge-multiple: true
+
+    - name: Create GitHub prerelease
+      uses: marvinpinto/action-automatic-releases@v1.2.1
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        automatic_release_tag: kitab-head
+        prerelease: true
+        title: kitab-head
+        files: |
+          kitab-head-Linux-static-x86_64.tar.gz
+          kitab-head-macOS-arm64.tar.gz
+
+    - name: Pre-release
+      uses: softprops/action-gh-release@v2
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        prerelease: true
+        files: ./out/*
+        tag_name: print-api-head
