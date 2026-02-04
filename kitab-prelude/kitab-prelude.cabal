@@ -8,7 +8,6 @@ author: Théophile Choutri de Tarlé
 maintainer: theophile.choutri@scrive.com
 build-type: Simple
 extra-doc-files: ../CHANGELOG.md
-
 tested-with:
   ghc ==9.6.7 || ==9.10.3 || ==9.12.2
 
@@ -46,6 +45,7 @@ library
   hs-source-dirs: src
   build-depends:
     base,
+    extra,
     text,
     text-display,
     vector,

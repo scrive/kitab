@@ -1,0 +1,11 @@
+import: cabal.project
+
+installdir: distribution
+
+optimization: 2
+
+documentation: False
+
+executable-stripping: True
+
+library-stripping: True
