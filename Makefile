@@ -14,11 +14,12 @@ test-accept: ## Run the golden tests and accept new output
 	@cabal run -- kitab-test -p '/golden/' --accept
 
 lint: ## Run the code linter
-	@find app test src -name "*.hs" | xargs -P $(PROCS) -I {} hlint --refactor-options="-i" --refactor {}
+	@find kitab-prelude app test src -name "*.hs" | xargs -P $(PROCS) -I {} hlint --refactor-options="-i" --refactor {}
 
 style: ## Run the code stylers
 	@cabal-gild --mode=format --io=kitab.cabal
-	@fourmolu -q --mode inplace test src app
+	@cabal-gild --mode=format --io=kitab-prelude/kitab-prelude.cabal
+	@fourmolu -q --mode inplace kitab-prelude test src app
 
 tags: ## Generate ctags for the project with `ghc-tags`
 	@ghc-tags -c

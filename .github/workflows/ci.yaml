@@ -99,7 +99,6 @@ jobs:
       - name: Package the kitab-head executable
         run: |
           KITAB_EXEC=distribution/kitab
-          .github/workflows/process-binaries.sh
           DIR=$(dirname $KITAB_EXEC)
           FILE=$(basename $KITAB_EXEC)
           KITAB_EXEC_TAR=kitab-head-${{ runner.os }}-${{ env.ARCH }}.tar.gz
