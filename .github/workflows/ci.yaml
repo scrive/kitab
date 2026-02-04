@@ -169,8 +169,8 @@ jobs:
       - name: Tar cabal head executable
         run: |
           KITAB_EXEC=distribution/kitab
-          strip $KITAB_PATH
-          upx -9 $KITAB_PATH
+          strip $KITAB_EXEC
+          upx -9 $KITAB_EXEC
           DIR=$(dirname $KITAB_EXEC)
           FILE=$(basename $KITAB_EXEC)
           KITAB_EXEC_TAR=kitab-head-${{ runner.os }}-static-${{ env.ARCH }}.tar.gz
