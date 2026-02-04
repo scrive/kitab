@@ -6,7 +6,7 @@ data Options = Options
   { quiet :: Bool
   , format :: OutputFormat
   , inputs :: List OsPath
-  , output :: OsPath
+  , outputDir :: OsPath
   }
   deriving stock (Eq, Ord, Show)
 

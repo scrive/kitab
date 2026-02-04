@@ -16,12 +16,11 @@ import Paths_kitab (version)
 
 parseOptions :: Parser Options
 parseOptions =
-  let supportedFormats = T.unpack . display <$> ([minBound .. maxBound] :: [OutputFormat])
-  in Options
-       <$> switch (long "quiet" <> short 'q' <> help "Make the program less verbose")
-       <*> option outputFormat (long "format" <> short 'f' <> metavar "FORMAT" <> help "Output format" <> completeWith supportedFormats)
-       <*> some (option pathParser (long "input" <> short 'i' <> metavar "FILE" <> help "input file, can be specified multiple times" <> action "file"))
-       <*> option pathParser (long "output" <> short 'o' <> metavar "FILE" <> help "Output file" <> action "file")
+  Options
+    <$> switch (long "quiet" <> short 'q' <> help "Make the program less verbose")
+    <*> option outputFormat (long "format" <> short 'f' <> metavar "FORMAT" <> help "Output format" <> completeWith supportedFormats)
+    <*> some (option pathParser (long "input" <> short 'i' <> metavar "FILE" <> help "input file, can be specified multiple times" <> action "file"))
+    <*> option pathParser (long "output-dir" <> short 'o' <> metavar "DIRECTORY" <> help "Output directory" <> action "directory")
 
 pathParser :: ReadM OsPath
 pathParser = maybeReader OsPath.encodeUtf
@@ -58,6 +57,7 @@ outputFormat = eitherReader $
   \case
     "puml" -> Right PumlFormat
     "cilium" -> Right CiliumFormat
-    _ ->
-      let supportedFormats = T.unpack . display <$> ([minBound .. maxBound] :: [OutputFormat])
-      in Left $ "Kitab only supports the following formats: " <> mconcat (List.intersperse ", " supportedFormats)
+    _ -> Left $ "Kitab only supports the following formats: " <> mconcat (List.intersperse ", " supportedFormats)
+
+supportedFormats :: [String]
+supportedFormats = T.unpack . display <$> ([minBound .. maxBound] :: [OutputFormat])
