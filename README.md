@@ -15,9 +15,22 @@ The project's architecture is documented in [doc/ARCHITECTURE.md](./doc/ARCHITEC
 
 Run `$ cabal haddock --open` to generate a reference for the API of the project.
 
+## 📦 Install
+
+### Nightly pre-releases
+
+Pre-release binaries are available for the following platforms:
+
+* Linux-x86_64-musl (statically linked)
+* macOS-arm64
+
+They are available at https://github.com/scrive/kitab/releases/tag/kitab-head
+
 ## 🔧 Build
 
-Run `$ cabal build` to build the project
+*kitab* is made in Haskell. To build it from source, use [ghcup](https://www.haskell.org/ghcup/) to install the following toolchains:
+* `cabal` 3.16.1.0
+* `ghc` 9.12.2
 
 ## ⚙️ In Action
 
