@@ -4,7 +4,17 @@ import System.OsPath
 
 data Options = Options
   { quiet :: Bool
-  , format :: Text
+  , format :: OutputFormat
   , inputs :: List OsPath
+  , output :: OsPath
   }
   deriving stock (Eq, Ord, Show)
+
+data OutputFormat
+  = PumlFormat
+  | CiliumFormat
+  deriving stock (Eq, Ord, Show, Enum, Bounded)
+
+instance Display OutputFormat where
+  displayBuilder PumlFormat = "puml"
+  displayBuilder CiliumFormat = "cilium"

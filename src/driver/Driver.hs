@@ -21,6 +21,7 @@ import Core.Validation
 import Parser
 import Render.C4 qualified as C4
 import Render.C4.Types qualified as C4
+import Render.Cilium qualified as Cilium
 
 runOptions :: (FileSystem :> es, Error (NonEmpty CLIError) :> es) => Options -> Eff es ()
 runOptions options = do
@@ -34,12 +35,19 @@ runOptions options = do
   case checkGraph graph of
     Failure errors -> Error.throwError $ fmap graphValidationError errors
     Success _ -> do
+      outputPath <- OsPath.decodeUtf options.output
       case options.format of
-        "puml" -> do
+        PumlFormat -> do
           let graphEdges =
                 graph
                   & Graph.edgeList
                   & fmap (\(es, a, b) -> (es, C4.toC4Service a, C4.toC4Service b))
           let adjacencyMap = AM.edges graphEdges
           let rendered = C4.renderC4 adjacencyMap
-          FileSystem.writeFile "architecture.puml" (T.encodeUtf8 rendered)
+
+          FileSystem.writeFile outputPath (T.encodeUtf8 rendered)
+        CiliumFormat -> do
+          let serviceIndex = buildIndex serviceDefinitions
+          forM_ serviceDefinitions $ \service -> do
+            let rendered = Cilium.renderCilium (Cilium.toCiliumPolicy serviceIndex service)
+            FileSystem.writeFile outputPath (T.encodeUtf8 rendered)

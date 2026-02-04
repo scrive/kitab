@@ -71,6 +71,7 @@ library
     gitrev,
     kdl-hs,
     kitab:kitab-c4,
+    kitab:kitab-cilium,
     kitab:kitab-core,
     kitab-prelude,
     optparse-applicative,

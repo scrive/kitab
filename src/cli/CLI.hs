@@ -2,6 +2,8 @@
 
 module CLI where
 
+import Data.List qualified as List
+import Data.Text qualified as T
 import Data.Version
 import Development.GitRev
 import Options.Applicative
@@ -14,10 +16,12 @@ import Paths_kitab (version)
 
 parseOptions :: Parser Options
 parseOptions =
-  Options
-    <$> switch (long "quiet" <> help "Make the program less verbose")
-    <*> option str (long "format" <> metavar "FORMAT" <> help "Output format")
-    <*> many (option pathParser (long "input" <> metavar "FILE" <> help "input file"))
+  let supportedFormats = T.unpack . display <$> ([minBound .. maxBound] :: [OutputFormat])
+  in Options
+       <$> switch (long "quiet" <> short 'q' <> help "Make the program less verbose")
+       <*> option outputFormat (long "format" <> short 'f' <> metavar "FORMAT" <> help "Output format" <> completeWith supportedFormats)
+       <*> some (option pathParser (long "input" <> short 'i' <> metavar "FILE" <> help "input file, can be specified multiple times" <> action "file"))
+       <*> option pathParser (long "output" <> short 'o' <> metavar "FILE" <> help "Output file" <> action "file")
 
 pathParser :: ReadM OsPath
 pathParser = maybeReader OsPath.encodeUtf
@@ -35,7 +39,7 @@ programVersion =
 
 programDescription :: Doc
 programDescription =
-  "Kitab aggregates service definition files and produces infrastructure configuration or documentation out of them"
+  "Kitab aggregates service definition files and produces infrastructure configuration or documentation."
 
 programFooter :: Doc
 programFooter = "Git repository: https://github.com/scrive/kitab"
@@ -48,3 +52,12 @@ withInfo opts desc =
         <*> opts
     )
     $ progDesc desc
+
+outputFormat :: ReadM OutputFormat
+outputFormat = eitherReader $
+  \case
+    "puml" -> Right PumlFormat
+    "cilium" -> Right CiliumFormat
+    _ ->
+      let supportedFormats = T.unpack . display <$> ([minBound .. maxBound] :: [OutputFormat])
+      in Left $ "Kitab only supports the following formats: " <> mconcat (List.intersperse ", " supportedFormats)
