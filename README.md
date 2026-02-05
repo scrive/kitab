@@ -88,7 +88,7 @@ spec:
     matchLabels:
       app: "media-proxy"
   egress:
-    - toEndpoints:
+    - toEndpoints: # Mandatory DNS connectivity
         - matchLabels:
             io.kubernetes.pod.namespace: "kube-system"
             k8s-app: "kube-dns"
@@ -99,15 +99,12 @@ spec:
           rules:
             dns:
               - matchPattern: "*"
-    - toFQDNs:
-        - matchName: "opensearch.internal.network"
-        - ports:
-          - port: "443"
-            protocol: TCP
-    - toFQDNs:
+    - toFQDNs: # Out of cluster
         - matchName: "tracing.internal.network"
         - ports:
           - port: "443"
             protocol: TCP
+    - toEndpoints: # Internal to the k8s cluster
+        - matchLabels:
+            app: "redis"
 ```
-

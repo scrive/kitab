@@ -62,6 +62,9 @@ library
     CLI.Types
     Driver
     Parser
+    Parser.Service
+    Parser.ServiceContext
+    Parser.Types
 
   build-depends:
     algebraic-graphs,
@@ -95,7 +98,8 @@ library kitab-core
   -- cabal-gild: discover src/core
   exposed-modules:
     Core.Graph
-    Core.Model
+    Core.Model.Service
+    Core.Model.ServiceContext
     Core.Validation
 
   build-depends:
@@ -124,8 +128,10 @@ library kitab-c4
   build-depends:
     algebraic-graphs,
     base ^>=4.21,
+    containers,
     kitab:kitab-core,
     kitab-prelude,
+    optics-core,
     prettyprinter,
     text,
 

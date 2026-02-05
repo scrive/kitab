@@ -15,6 +15,7 @@ import Validation
 import Core.Graph
 import Core.Validation
 import Parser
+import Parser.Types
 import Render.C4 qualified as C4
 import Render.C4.Types
 import Test.Utils
@@ -36,12 +37,27 @@ test =
 renderServices :: IO LazyByteString
 renderServices = runTestEff $ do
   fileContent <- T.decodeUtf8 <$> FileSystem.readFile "test/fixtures/multiple-service-definitions.kdl"
-  serviceDefinitions <- assertRight "KDL file could not be parsed" $ KDL.decodeWith decodeServiceDocument fileContent
+  declarations <- assertRight "KDL file could not be parsed" $ KDL.decodeWith decodeServiceDocument fileContent
+  let serviceDefinitions =
+        mapMaybe
+          ( \case
+              ServiceDeclaration s -> Just s
+              _ -> Nothing
+          )
+          declarations
+  let contexts =
+        mapMaybe
+          ( \case
+              ContextDeclaration c -> Just c
+              _ -> Nothing
+          )
+          declarations
   let graph = buildGraph serviceDefinitions
+  let serviceIndex = buildIndex serviceDefinitions
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)
   let graphEdges =
         graph
           & Graph.edgeList
-          & fmap (\(es, a, b) -> (es, toC4Service a, toC4Service b))
+          & fmap (\(es, a, b) -> (es, toC4Service serviceIndex a, toC4Service serviceIndex b))
   let adjacencyMap = AM.edges graphEdges
-  (pure . TL.encodeUtf8) . T.fromStrict $ C4.renderC4 adjacencyMap
+  (pure . TL.encodeUtf8) . T.fromStrict $ C4.renderC4 contexts adjacencyMap

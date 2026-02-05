@@ -1,9 +1,15 @@
+{-# LANGUAGE OverloadedLabels #-}
+
 module Render.C4.Types where
 
+import Data.Map.Strict (Map)
+import Data.Map.Strict qualified as Map
 import Data.Text qualified as T
+import Optics.Core
 import Prettyprinter
 
-import Core.Model
+import Core.Model.Service
+import Core.Model.ServiceContext
 
 newtype C4ServiceAlias = C4ServiceAlias Text
   deriving newtype (Eq, Show, Ord, Pretty)
@@ -18,11 +24,14 @@ mkC4ServiceAlias (ServiceName input) =
 data C4Service = C4Service
   { alias :: C4ServiceAlias
   , name :: ServiceName
+  , systemBoundary :: Maybe ContextName
   }
   deriving stock (Eq, Show, Ord)
 
-toC4Service :: ServiceName -> C4Service
-toC4Service serviceName =
+toC4Service :: Map ServiceName ServiceInfo -> ServiceName -> C4Service
+toC4Service serviceIndex serviceName =
   let alias = mkC4ServiceAlias serviceName
       name = serviceName
-  in C4Service {alias, name}
+      mServiceInfo = Map.lookup serviceName serviceIndex
+      systemBoundary = mServiceInfo ^? _Just % #serviceContext % _Just % #contextName
+  in C4Service {alias, name, systemBoundary}

@@ -5,7 +5,7 @@ import Test.Tasty
 import Validation (validationToEither)
 
 import Core.Graph
-import Core.Model
+import Core.Model.Service
 import Core.Validation
 import Test.Utils
 

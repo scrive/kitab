@@ -7,7 +7,7 @@ import Data.List.NonEmpty (NonEmpty)
 import Data.Map.Strict qualified as Map
 import Validation
 
-import Core.Model
+import Core.Model.Service
 
 data ValidationError
   = Asymmetric ServiceName ServiceName
