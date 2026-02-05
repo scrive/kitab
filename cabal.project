@@ -8,14 +8,14 @@ test-show-details: direct
 
 documentation: True
 
+profiling: True
+
 package *
-  profiling-detail: late
+  profiling-detail: none
+  ghc-options: -fprof-auto -fprof-auto-calls -haddock -finfo-table-map
 
 tests: True
 
 semaphore: True
 
 multi-repl: True
-
-package *
-  ghc-options: -haddock

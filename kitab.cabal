@@ -66,6 +66,8 @@ library
   build-depends:
     algebraic-graphs,
     base ^>=4.21,
+    bytestring,
+    deepseq,
     effectful,
     filepath,
     gitrev,

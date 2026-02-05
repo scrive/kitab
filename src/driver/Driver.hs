@@ -4,11 +4,15 @@ module Driver where
 
 import Algebra.Graph.Labelled qualified as Graph
 import Algebra.Graph.Labelled.AdjacencyMap qualified as AM
+import Control.DeepSeq
+import Data.ByteString.Char8 qualified as BS8
 import Data.List.NonEmpty (NonEmpty)
 import Data.List.NonEmpty qualified as NE
 import Data.Text qualified as T
 import Data.Text.Encoding qualified as T
 import Effectful
+import Effectful.Console.ByteString (Console)
+import Effectful.Console.ByteString qualified as Console
 import Effectful.Error.Static (Error)
 import Effectful.Error.Static qualified as Error
 import Effectful.FileSystem (FileSystem)
@@ -29,7 +33,7 @@ import Render.C4 qualified as C4
 import Render.C4.Types qualified as C4
 import Render.Cilium qualified as Cilium
 
-runOptions :: (FileSystem :> es, Error (NonEmpty CLIError) :> es) => Options -> Eff es ()
+runOptions :: (Console :> es, FileSystem :> es, Error (NonEmpty CLIError) :> es) => Options -> Eff es ()
 runOptions options = do
   outputDirectory <- OsPath.decodeUtf options.outputDir
   FileSystem.createDirectoryIfMissing True outputDirectory
@@ -53,11 +57,15 @@ runOptions options = do
           let rendered = C4.renderC4 adjacencyMap
 
           outputPath <- OsPath.decodeUtf (options.outputDir </> [osp| architecture.c4 |])
+          unless options.quiet (Console.putStrLn $ "Writing file " <> BS8.pack outputPath)
           FileSystem.writeFile outputPath (T.encodeUtf8 rendered)
         CiliumFormat -> do
           let serviceIndex = buildIndex serviceDefinitions
-          forM_ serviceDefinitions $ \service -> do
+          outputs <- forM serviceDefinitions $ \service -> do
             let rendered = Cilium.renderCilium (Cilium.toCiliumPolicy serviceIndex service)
             outputFile <- OsPath.encodeUtf . T.unpack $ display service.serviceName
             outputPath <- OsPath.decodeUtf (options.outputDir </> outputFile <> [osp|-network-policy.yaml|])
+            pure (outputPath, rendered)
+          forM_ (force outputs) $ \(outputPath, rendered) -> do
+            unless options.quiet (Console.putStrLn $ "Writing file " <> BS8.pack outputPath)
             FileSystem.writeFile outputPath (T.encodeUtf8 rendered)
