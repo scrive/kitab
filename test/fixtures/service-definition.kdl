@@ -1,3 +1,6 @@
 service "media-proxy" {
-	depends-on "main-app" "https"
+	depends-on "main-app" {
+		port 3833
+		via "https"
+	}
 }

@@ -45,12 +45,15 @@ serviceDecoder = do
 connectionDecoder :: DecodeArrow Node () Connection
 connectionDecoder = do
   connectionWith <- KDL.argWith serviceNameDecoder
-  connectionType <- KDL.argWith connectionTypeDecoder
-  pure Connection {connectionWith, connectionType}
+  (connectionPort, connectionType) <- children $ do
+    connectionPort <- optional $ KDL.nodeWith "port" arg
+    connectionType <- KDL.nodeWith "via" connectionTypeDecoder
+    pure (connectionPort, connectionType)
+  pure Connection {connectionWith, connectionType, connectionPort}
 
-connectionTypeDecoder :: ValueDecodeArrow () ConnectionType
+connectionTypeDecoder :: DecodeArrow Node () ConnectionType
 connectionTypeDecoder = do
-  connTypeText <- KDL.text
+  connTypeText <- arg
   case connTypeText of
     "https" -> pure HTTPS
     "function-call" -> pure FunctionCall

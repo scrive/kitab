@@ -14,7 +14,13 @@ service "redis" {
 
 service "media-proxy" {
 	context "k8s"
-	depends-on "opensearch" "https"
-	depends-on "otel-tracing" "https"
-	depends-on "redis" "https"
+	depends-on "opensearch" {
+		via "https"
+	}
+	depends-on "otel-tracing" {
+		via "https"
+	}
+	depends-on "redis" {
+		via "https"
+	}
 }
