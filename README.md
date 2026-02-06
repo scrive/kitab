@@ -26,15 +26,33 @@ The files are written in [KDL](https://kdl.dev), a pleasant document language th
 Let's take the following KDL document:
 
 ```kdl
+context "k8s"
+
+service "otel-tracing" {
+	fqdn "tracing.internal.network"
+}
+
+service "opensearch" {
+	fqdn "opensearch.internal.network"
+}
+
 service "media-proxy" {
-	depends-on "main-app" "https"
+	context "k8s"
+	depends-on "otel-tracing" "https"
+}
+
+service "user-registry" {
+	context "k8s"
 }
 
 service "main-app" {
+	context "k8s"
 	depends-on "s3" "https"
 	depends-on "media-proxy" "https"
 	depends-on "user-registry" "function-call"
+	depends-on "otel-tracing" "https"
 }
+
 ```
 
 We will get the following PlantUML syntax:
