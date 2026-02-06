@@ -19,8 +19,10 @@ service "media-proxy" {
 	}
 	depends-on "otel-tracing" {
 		via "https"
+		port 4317
 	}
 	depends-on "redis" {
+		port 6379
 		via "https"
 	}
 }

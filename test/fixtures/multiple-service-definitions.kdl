@@ -37,5 +37,6 @@ service "main-app" {
 
 	depends-on "otel-tracing" {
 		via "https"
+		port 4317
 	}
 }

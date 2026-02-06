@@ -72,7 +72,7 @@ data EgressRuleItem
   = -- | For external/fqdn-based rules
     ToFQDN FQDNMatch PortRule
   | -- | For internal/k8s-based rules (e.g. DNS)
-    ToEndpoint EndpointSelector
+    ToEndpoint EndpointSelector PortRule
   | -- | For allowed ports/protocols
     ToPort PortRule (Maybe DNSMatch)
   deriving (Show, Eq, Ord)
