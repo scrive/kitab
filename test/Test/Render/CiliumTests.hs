@@ -35,7 +35,7 @@ test =
 
 renderService :: IO LazyByteString
 renderService = runTestEff $ do
-  fileContent <- T.decodeUtf8 <$> FileSystem.readFile "test/fixtures/media-proxy.kdl"
+  fileContent <- T.decodeUtf8 <$> FileSystem.readFile "test/fixtures/multiple-service-definitions.kdl"
   declarations <- assertRight "KDL file could not be parsed" $ KDL.decodeWith decodeServiceDocument fileContent
   let serviceDefinitions =
         mapMaybe

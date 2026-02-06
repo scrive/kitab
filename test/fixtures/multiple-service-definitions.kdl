@@ -11,8 +11,13 @@ service "opensearch" {
 service "media-proxy" {
 	context "k8s"
 
+	depends-on "opensearch" {
+		via "https"
+	}
+
 	depends-on "otel-tracing" {
 		via "https"
+		port 4317
 	} 
 }
 

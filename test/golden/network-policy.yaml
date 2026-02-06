@@ -28,6 +28,3 @@ spec:
         - ports:
           - port: "4317"
             protocol: TCP
-    - toEndpoints:
-        - matchLabels:
-            app: "redis"

@@ -38,7 +38,15 @@ service "opensearch" {
 
 service "media-proxy" {
 	context "k8s"
-	depends-on "otel-tracing" "https"
+
+	depends-on "opensearch" {
+		via "https"
+	}
+
+	depends-on "otel-tracing" {
+		via "https"
+		port 4317
+	}
 }
 
 service "user-registry" {
@@ -47,17 +55,32 @@ service "user-registry" {
 
 service "main-app" {
 	context "k8s"
-	depends-on "s3" "https"
-	depends-on "media-proxy" "https"
-	depends-on "user-registry" "function-call"
-	depends-on "otel-tracing" "https"
+
+	depends-on "s3"  {
+		via "https"
+	}
+
+	depends-on "media-proxy" {
+		via "https"
+	}
+
+	depends-on "user-registry" {
+		via "function-call"
+	}
+
+	depends-on "otel-tracing" {
+		via "https"
+		port 4317
+	}
 }
+
 
 ```
 
 We will get the following PlantUML syntax:
 
 ```puml
+@startuml
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 
 title System Architecture (C4 Container View)
@@ -69,6 +92,7 @@ System_Boundary(c1,k8s) {
 }
 
 ' --- Systems ---
+System(opensearch, "opensearch")
 System(otel_tracing, "otel-tracing")
 System(s3, "s3")
 
@@ -77,6 +101,7 @@ Rel(main_app, media_proxy, "Connects via", "HTTPS")
 Rel(main_app, otel_tracing, "Connects via", "HTTPS")
 Rel(main_app, s3, "Connects via", "HTTPS")
 Rel(main_app, user_registry, "using", "Function call")
+Rel(media_proxy, opensearch, "Connects via", "HTTPS")
 Rel(media_proxy, otel_tracing, "Connects via", "HTTPS")
 @enduml
 ```
@@ -118,7 +143,4 @@ spec:
         - ports:
           - port: "4317"
             protocol: TCP
-    - toEndpoints:
-        - matchLabels:
-            app: "redis"
 ```
