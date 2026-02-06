@@ -12,9 +12,10 @@ import Test.Tasty.Golden
 import Validation
 
 import Core.Graph
-import Core.Model
+import Core.Model.Service
 import Core.Validation
 import Parser
+import Parser.Types
 import Render.Cilium qualified as Cilium
 import Test.Utils
 
@@ -35,7 +36,14 @@ test =
 renderService :: IO LazyByteString
 renderService = runTestEff $ do
   fileContent <- T.decodeUtf8 <$> FileSystem.readFile "test/fixtures/media-proxy.kdl"
-  serviceDefinitions <- assertRight "KDL file could not be parsed" $ KDL.decodeWith decodeServiceDocument fileContent
+  declarations <- assertRight "KDL file could not be parsed" $ KDL.decodeWith decodeServiceDocument fileContent
+  let serviceDefinitions =
+        mapMaybe
+          ( \case
+              ServiceDeclaration s -> Just s
+              ContextDeclaration _ -> Nothing
+          )
+          declarations
   let graph = buildGraph serviceDefinitions
   let serviceIndex = buildIndex serviceDefinitions
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)

@@ -1,13 +1,20 @@
+context "k8s"
+
 service "opensearch" {
    fqdn "opensearch.internal.network"
-
 }
 
 service "otel-tracing" {
    fqdn "tracing.internal.network"
 }
 
+service "redis" {
+	context "k8s"
+}
+
 service "media-proxy" {
+	context "k8s"
 	depends-on "opensearch" "https"
 	depends-on "otel-tracing" "https"
+	depends-on "redis" "https"
 }

@@ -5,7 +5,8 @@ import Data.Map.Strict qualified as Map
 import Prettyprinter
 import Prettyprinter.Render.Text (renderStrict)
 
-import Core.Model
+import Core.Model.Service
+import Core.Model.ServiceContext
 import Render.Cilium.Types
 
 renderCilium :: CiliumNetworkPolicy -> Text
@@ -25,7 +26,7 @@ toCiliumPolicy services service =
                 Map.singleton "app" (display service.serviceName)
           , egress =
               dnsEgressRule -- The implicit DNS requirement
-                : map (serviceEgressRule services) service.connections
+                : map (serviceEgressRule service.serviceInfo.serviceContext services) service.connections
           }
     }
 
@@ -47,8 +48,12 @@ dnsEgressRule =
         (Just DNSMatch {dnsMatchNAme = "*"})
     ]
 
-serviceEgressRule :: Map ServiceName ServiceInfo -> Connection -> EgressRule
-serviceEgressRule services Connection {connectionWith}
+serviceEgressRule :: Maybe ServiceContext -> Map ServiceName ServiceInfo -> Connection -> EgressRule
+serviceEgressRule mContext services Connection {connectionWith}
+  | Just ServiceInfo {serviceContext} <- Map.lookup connectionWith services
+  , isJust serviceContext
+  , serviceContext == mContext =
+      EgressRule . pure $ ToEndpoint (EndpointSelector $ Map.singleton "app" (display connectionWith))
   | Just ServiceInfo {serviceFqdn} <- Map.lookup connectionWith services =
       EgressRule $ maybe [] (\hostname -> pure $ ToFQDN (FQDNMatch hostname) (PortRule [PortProtocol "443" "TCP"])) serviceFqdn
   | otherwise = error $ "missing service " ++ show connectionWith

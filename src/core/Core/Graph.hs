@@ -7,7 +7,7 @@ import Data.List qualified as List
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 
-import Core.Model
+import Core.Model.Service
 
 buildIndex :: List Service -> Map ServiceName ServiceInfo
 buildIndex =
@@ -26,7 +26,9 @@ buildGraph =
     )
     Graph.empty
 
-toServiceMap :: Graph (List ConnectionType) ServiceName -> Map ServiceName (List Connection)
+toServiceMap
+  :: Graph (List ConnectionType) ServiceName
+  -> Map ServiceName (List Connection)
 toServiceMap graph =
   graph
     & Graph.edgeList

@@ -26,9 +26,10 @@ import Validation
 import CLI.Error
 import CLI.Types
 import Core.Graph
-import Core.Model
+import Core.Model.Service
 import Core.Validation
 import Parser
+import Parser.Types
 import Render.C4 qualified as C4
 import Render.C4.Types qualified as C4
 import Render.Cilium qualified as Cilium
@@ -37,13 +38,29 @@ runOptions :: (Console :> es, FileSystem :> es, Error (NonEmpty CLIError) :> es)
 runOptions options = do
   outputDirectory <- OsPath.decodeUtf options.outputDir
   FileSystem.createDirectoryIfMissing True outputDirectory
-  serviceDefinitions <- concatForM options.inputs $ \inputPath -> do
+  declarations <- concatForM options.inputs $ \inputPath -> do
     fileContent <- FileSystem.readFile =<< OsPath.decodeUtf inputPath
     let result = KDL.decodeWith decodeServiceDocument $ T.decodeUtf8 fileContent
     case result of
       Right a -> pure a
       Left err -> Error.throwError . NE.singleton $ kdlParseError inputPath err
+  let serviceDefinitions =
+        mapMaybe
+          ( \case
+              ServiceDeclaration s -> Just s
+              ContextDeclaration _ -> Nothing
+          )
+          declarations
+  let contexts =
+        mapMaybe
+          ( \case
+              ContextDeclaration c -> Just c
+              _ -> Nothing
+          )
+          declarations
+
   let graph = buildGraph serviceDefinitions
+  let serviceIndex = buildIndex serviceDefinitions
   case checkGraph graph of
     Failure errors -> Error.throwError $ fmap graphValidationError errors
     Success _ -> do
@@ -52,15 +69,14 @@ runOptions options = do
           let graphEdges =
                 graph
                   & Graph.edgeList
-                  & fmap (\(es, a, b) -> (es, C4.toC4Service a, C4.toC4Service b))
+                  & fmap (\(es, a, b) -> (es, C4.toC4Service serviceIndex a, C4.toC4Service serviceIndex b))
           let adjacencyMap = AM.edges graphEdges
-          let rendered = C4.renderC4 adjacencyMap
+          let rendered = C4.renderC4 contexts adjacencyMap
 
           outputPath <- OsPath.decodeUtf (options.outputDir </> [osp| architecture.c4 |])
           unless options.quiet (Console.putStrLn $ "Writing file " <> BS8.pack outputPath)
           FileSystem.writeFile outputPath (T.encodeUtf8 rendered)
         CiliumFormat -> do
-          let serviceIndex = buildIndex serviceDefinitions
           outputs <- forM serviceDefinitions $ \service -> do
             let rendered = Cilium.renderCilium (Cilium.toCiliumPolicy serviceIndex service)
             outputFile <- OsPath.encodeUtf . T.unpack $ display service.serviceName
