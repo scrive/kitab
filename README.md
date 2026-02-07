@@ -26,20 +26,61 @@ The files are written in [KDL](https://kdl.dev), a pleasant document language th
 Let's take the following KDL document:
 
 ```kdl
+context "k8s"
+
+service "otel-tracing" {
+	fqdn "tracing.internal.network"
+}
+
+service "opensearch" {
+	fqdn "opensearch.internal.network"
+}
+
 service "media-proxy" {
-	depends-on "main-app" "https"
+	context "k8s"
+
+	depends-on "opensearch" {
+		via "https"
+	}
+
+	depends-on "otel-tracing" {
+		via "https"
+		port 4317
+	}
+}
+
+service "user-registry" {
+	context "k8s"
 }
 
 service "main-app" {
-	depends-on "s3" "https"
-	depends-on "media-proxy" "https"
-	depends-on "user-registry" "function-call"
+	context "k8s"
+
+	depends-on "s3"  {
+		via "https"
+	}
+
+	depends-on "media-proxy" {
+		via "https"
+	}
+
+	depends-on "user-registry" {
+		via "function-call"
+	}
+
+	depends-on "otel-tracing" {
+		via "https"
+		port 4317
+	}
 }
+
+
 ```
 
 We will get the following PlantUML syntax:
 
 ```puml
+@startuml
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 
 title System Architecture (C4 Container View)
@@ -51,6 +92,7 @@ System_Boundary(c1,k8s) {
 }
 
 ' --- Systems ---
+System(opensearch, "opensearch")
 System(otel_tracing, "otel-tracing")
 System(s3, "s3")
 
@@ -59,6 +101,7 @@ Rel(main_app, media_proxy, "Connects via", "HTTPS")
 Rel(main_app, otel_tracing, "Connects via", "HTTPS")
 Rel(main_app, s3, "Connects via", "HTTPS")
 Rel(main_app, user_registry, "using", "Function call")
+Rel(media_proxy, opensearch, "Connects via", "HTTPS")
 Rel(media_proxy, otel_tracing, "Connects via", "HTTPS")
 @enduml
 ```
@@ -79,7 +122,7 @@ spec:
     matchLabels:
       app: "media-proxy"
   egress:
-    - toEndpoints: # Mandatory DNS connectivity
+    - toEndpoints:
         - matchLabels:
             io.kubernetes.pod.namespace: "kube-system"
             k8s-app: "kube-dns"
@@ -90,12 +133,14 @@ spec:
           rules:
             dns:
               - matchPattern: "*"
-    - toFQDNs: # Out of cluster
-        - matchName: "tracing.internal.network"
+    - toFQDNs:
+        - matchName: "opensearch.internal.network"
         - ports:
           - port: "443"
             protocol: TCP
-    - toEndpoints: # Internal to the k8s cluster
-        - matchLabels:
-            app: "redis"
+    - toFQDNs:
+        - matchName: "tracing.internal.network"
+        - ports:
+          - port: "4317"
+            protocol: TCP
 ```

@@ -49,11 +49,12 @@ dnsEgressRule =
     ]
 
 serviceEgressRule :: Maybe ServiceContext -> Map ServiceName ServiceInfo -> Connection -> EgressRule
-serviceEgressRule mContext services Connection {connectionWith}
+serviceEgressRule mContext services Connection {connectionWith, connectionPort}
   | Just ServiceInfo {serviceContext} <- Map.lookup connectionWith services
   , isJust serviceContext
   , serviceContext == mContext =
       EgressRule . pure $ ToEndpoint (EndpointSelector $ Map.singleton "app" (display connectionWith))
-  | Just ServiceInfo {serviceFqdn} <- Map.lookup connectionWith services =
-      EgressRule $ maybe [] (\hostname -> pure $ ToFQDN (FQDNMatch hostname) (PortRule [PortProtocol "443" "TCP"])) serviceFqdn
+  | Just ServiceInfo {serviceFqdn} <- Map.lookup connectionWith services
+  , let port = maybe "443" display connectionPort =
+      EgressRule $ maybe [] (\hostname -> pure $ ToFQDN (FQDNMatch hostname) (PortRule [PortProtocol port "TCP"])) serviceFqdn
   | otherwise = error $ "missing service " ++ show connectionWith

@@ -23,7 +23,7 @@ test =
 testServiceDecoding :: TestEff ()
 testServiceDecoding = do
   serviceDefinition <- decodeUtf8 <$> FileSystem.readFile "test/fixtures/service-definition.kdl"
-  let expectedResult = Service {serviceName = "media-proxy", serviceInfo = defaultServiceInfo, connections = [Connection {connectionWith = "main-app", connectionType = HTTPS}]}
+  let expectedResult = Service {serviceName = "media-proxy", serviceInfo = defaultServiceInfo, connections = [Connection {connectionWith = "main-app", connectionType = HTTPS, connectionPort = Just 3833}]}
   result <- assertRight "KDL file could not be parsed" $ KDL.decodeWith (KDL.document $ KDL.nodeWith "service" serviceDecoder) serviceDefinition
   assertEqual
     "Expected service definition"
@@ -36,11 +36,10 @@ testServiceDefinitionsParsing = do
   let expectedResult =
         [ Service {serviceName = "otel-tracing", serviceInfo = ServiceInfo {serviceFqdn = Just "tracing.internal.network", serviceContext = Nothing}, connections = []}
         , Service {serviceName = "opensearch", serviceInfo = ServiceInfo {serviceFqdn = Just "opensearch.internal.network", serviceContext = Nothing}, connections = []}
-        , Service {serviceName = "media-proxy", serviceInfo = ServiceInfo {serviceFqdn = Nothing, serviceContext = Just (ServiceContext "k8s")}, connections = [Connection {connectionWith = "otel-tracing", connectionType = HTTPS}]}
+        , Service {serviceName = "media-proxy", serviceInfo = ServiceInfo {serviceFqdn = Nothing, serviceContext = Just (ServiceContext {contextName = "k8s"})}, connections = [Connection {connectionWith = "opensearch", connectionType = HTTPS, connectionPort = Nothing}, Connection {connectionWith = "otel-tracing", connectionType = HTTPS, connectionPort = Just 4317}]}
         , Service {serviceName = "user-registry", serviceInfo = ServiceInfo {serviceFqdn = Nothing, serviceContext = Just (ServiceContext {contextName = "k8s"})}, connections = []}
-        , Service {serviceName = "main-app", serviceInfo = ServiceInfo {serviceFqdn = Nothing, serviceContext = Just (ServiceContext "k8s")}, connections = [Connection {connectionWith = "s3", connectionType = HTTPS}, Connection {connectionWith = "media-proxy", connectionType = HTTPS}, Connection {connectionWith = "user-registry", connectionType = FunctionCall}, Connection {connectionWith = "otel-tracing", connectionType = HTTPS}]}
+        , Service {serviceName = "main-app", serviceInfo = ServiceInfo {serviceFqdn = Nothing, serviceContext = Just (ServiceContext {contextName = "k8s"})}, connections = [Connection {connectionWith = "s3", connectionType = HTTPS, connectionPort = Nothing}, Connection {connectionWith = "media-proxy", connectionType = HTTPS, connectionPort = Nothing}, Connection {connectionWith = "user-registry", connectionType = FunctionCall, connectionPort = Nothing}, Connection {connectionWith = "otel-tracing", connectionType = HTTPS, connectionPort = Just 4317}]}
         ]
-
   declarations <- assertRight "KDL file could not be parsed" $ KDL.decodeWith decodeServiceDocument serviceDefinition
   let result =
         mapMaybe

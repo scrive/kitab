@@ -1,4 +1,7 @@
-module Core.Graph where
+module Core.Graph
+  ( buildGraph
+  , buildIndex
+  ) where
 
 import Algebra.Graph.Labelled (Graph)
 import Algebra.Graph.Labelled qualified as Graph
@@ -25,13 +28,3 @@ buildGraph =
         in Graph.overlay builtGraph
     )
     Graph.empty
-
-toServiceMap
-  :: Graph (List ConnectionType) ServiceName
-  -> Map ServiceName (List Connection)
-toServiceMap graph =
-  graph
-    & Graph.edgeList
-    & AM.edges
-    & AM.adjacencyMap
-    & Map.map (Map.foldMapWithKey (List.map . Connection))

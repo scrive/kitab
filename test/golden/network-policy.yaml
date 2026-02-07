@@ -26,8 +26,5 @@ spec:
     - toFQDNs:
         - matchName: "tracing.internal.network"
         - ports:
-          - port: "443"
+          - port: "4317"
             protocol: TCP
-    - toEndpoints:
-        - matchLabels:
-            app: "redis"
