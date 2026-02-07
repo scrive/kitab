@@ -26,8 +26,11 @@ The files are written in [KDL](https://kdl.dev), a pleasant document language th
 Let's take the following KDL document:
 
 ```kdl
+// A context represents a system boundary, like a Kubernetes cluster
 context "k8s"
 
+// Services that we run outside of the cluster are not labelled
+// with a context, and get a Fully Qualified Domain Name (FQDN) instead.
 service "otel-tracing" {
 	fqdn "tracing.internal.network"
 }
@@ -36,6 +39,8 @@ service "opensearch" {
 	fqdn "opensearch.internal.network"
 }
 
+// Services that live inside the cluster are labelled with "k8s"
+// and declare their dependencies to other services.
 service "media-proxy" {
 	context "k8s"
 
@@ -43,6 +48,7 @@ service "media-proxy" {
 		via "https"
 	}
 
+// Port is optional
 	depends-on "otel-tracing" {
 		via "https"
 		port 4317
@@ -64,6 +70,8 @@ service "main-app" {
 		via "https"
 	}
 
+  // This is a sub-system of the `main-app` service,
+  // which is accessed by function calls.
 	depends-on "user-registry" {
 		via "function-call"
 	}
