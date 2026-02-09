@@ -5,6 +5,7 @@ import Data.Word
 import GHC.Generics
 import Prettyprinter
 
+import Core.Model.CIDRSet
 import Core.Model.ServiceContext
 
 newtype ServiceName = ServiceName Text
@@ -24,6 +25,7 @@ data Service = Service
   { serviceName :: ServiceName
   , serviceInfo :: ServiceInfo
   , connections :: List Connection
+  , cidrSets :: List CIDRSet
   }
   deriving stock (Eq, Show, Ord, Generic)
 

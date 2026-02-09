@@ -31,6 +31,11 @@ test =
         diffCmd
         "test/golden/network-policy.yaml"
         renderService
+    , goldenVsStringDiff
+        "ToCIDRset"
+        diffCmd
+        "test/golden/cidr-network-policy.yaml"
+        renderCIDRSetPolicy
     ]
 
 renderService :: IO LazyByteString
@@ -49,3 +54,20 @@ renderService = runTestEff $ do
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)
   mediaProxyService <- assertJust "" $ List.find (\s -> s.serviceName == "media-proxy") serviceDefinitions
   ((pure . TL.encodeUtf8) . T.fromStrict) . Cilium.renderCilium $ Cilium.toCiliumPolicy serviceIndex mediaProxyService
+
+renderCIDRSetPolicy :: IO LazyByteString
+renderCIDRSetPolicy = runTestEff $ do
+  fileContent <- T.decodeUtf8 <$> FileSystem.readFile "test/fixtures/cidrset.kdl"
+  declarations <- assertRight "KDL file could not be parsed" $ KDL.decodeWith decodeServiceDocument fileContent
+  let serviceDefinitions =
+        mapMaybe
+          ( \case
+              ServiceDeclaration s -> Just s
+              _ -> Nothing
+          )
+          declarations
+  let graph = buildGraph serviceDefinitions
+  let serviceIndex = buildIndex serviceDefinitions
+  void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)
+  myAppService <- assertJust "" $ List.find (\s -> s.serviceName == "my-app") serviceDefinitions
+  ((pure . TL.encodeUtf8) . T.fromStrict) . Cilium.renderCilium $ Cilium.toCiliumPolicy serviceIndex myAppService

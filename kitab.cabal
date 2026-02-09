@@ -98,6 +98,7 @@ library kitab-core
   -- cabal-gild: discover src/core
   exposed-modules:
     Core.Graph
+    Core.Model.CIDRSet
     Core.Model.Service
     Core.Model.ServiceContext
     Core.Validation

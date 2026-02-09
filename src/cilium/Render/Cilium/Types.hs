@@ -2,9 +2,12 @@
 
 module Render.Cilium.Types where
 
+import Data.List qualified as List
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Prettyprinter
+
+import Core.Model.CIDRSet
 
 -- | Top-level Cilium Policy
 data CiliumNetworkPolicy = CiliumNetworkPolicy
@@ -75,6 +78,8 @@ data EgressRuleItem
     ToEndpoint EndpointSelector
   | -- | For allowed ports/protocols
     ToPort PortRule (Maybe DNSMatch)
+  | -- |  For allowed IP ranges
+    ToCIDRSet CIDRSet
   deriving (Show, Eq, Ord)
 
 instance Pretty EgressRuleItem where
@@ -91,6 +96,16 @@ instance Pretty EgressRuleItem where
         [ "-" <+> pretty portRules
         , keyBlock "rules" . keyBlock "dns" $ ("-" <+> pretty dnsMatch)
         ]
+  pretty (ToCIDRSet (CIDRSet cidrs)) =
+    (keyBlock "toCIDRSets" . indent 2) . vsep $
+      List.map
+        ( \case
+            CIDR cidr name ->
+              keyValue "cidr" (pretty cidr <> " # " <> pretty name)
+            Except cidr reason ->
+              keyValue "except" (pretty cidr <> " # " <> pretty reason)
+        )
+        cidrs
 
 -- | Represents { matchName: "example.com" }
 newtype FQDNMatch = FQDNMatch

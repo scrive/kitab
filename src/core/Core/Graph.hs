@@ -5,7 +5,6 @@ module Core.Graph
 
 import Algebra.Graph.Labelled (Graph)
 import Algebra.Graph.Labelled qualified as Graph
-import Algebra.Graph.Labelled.AdjacencyMap qualified as AM
 import Data.List qualified as List
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
