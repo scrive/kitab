@@ -1,0 +1,26 @@
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: "my-app-networkpolicy"
+spec:
+  endpointSelector:
+    matchLabels:
+      app: "my-app"
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: "kube-system"
+            k8s-app: "kube-dns"
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+          rules:
+            dns:
+              - matchPattern: "*"
+    - toCIDRSets:
+          cidr: 10.23.32.0/24 # Integrations
+          cidr: 10.23.31.0/24 # Internal shenanigans
+    - toCIDRSets:
+          cidr: 0.0.0.0/0 # Internet
+          except: 10.0.0.0/8 # Internal network
