@@ -55,11 +55,11 @@ serviceDecoder = do
 connectionDecoder :: DecodeArrow Node () Connection
 connectionDecoder = do
   connectionWith <- KDL.argWith serviceNameDecoder
-  (connectionPort, connectionType) <- KDL.children $ do
-    connectionPort <- optional $ KDL.nodeWith "port" arg
+  (connectionPorts, connectionType) <- KDL.children $ do
+    connectionPorts <- many $ KDL.nodeWith "port" arg
     connectionType <- KDL.nodeWith "via" connectionTypeDecoder
-    pure (connectionPort, connectionType)
-  pure Connection {connectionWith, connectionType, connectionPort}
+    pure (connectionPorts, connectionType)
+  pure Connection {connectionWith, connectionType, connectionPorts}
 
 connectionTypeDecoder :: DecodeArrow Node () ConnectionType
 connectionTypeDecoder = do

@@ -18,6 +18,7 @@ service "media-proxy" {
 	depends-on "otel-tracing" {
 		via "https"
 		port 4317
+		port 4318
 	} 
 }
 
