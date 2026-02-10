@@ -73,7 +73,7 @@ runOptions options = do
           let adjacencyMap = AM.edges graphEdges
           let rendered = C4.renderC4 contexts adjacencyMap
 
-          outputPath <- OsPath.decodeUtf (options.outputDir </> [osp| architecture.c4 |])
+          outputPath <- OsPath.decodeUtf (options.outputDir </> [osp|architecture.c4|])
           unless options.quiet (Console.putStrLn $ "Writing file " <> BS8.pack outputPath)
           FileSystem.writeFile outputPath (T.encodeUtf8 rendered)
         CiliumFormat -> do
