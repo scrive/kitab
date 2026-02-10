@@ -1,9 +1,13 @@
 module Core.Model.CIDRSet where
 
+import Data.Word
 import GHC.Generics
 
-newtype CIDRSet = CIDRSet (List CIDRSetItem)
-  deriving newtype (Eq, Ord, Show)
+data CIDRSet = CIDRSet
+  { items :: List CIDRSetItem
+  , ports :: List Word16
+  }
+  deriving stock (Eq, Ord, Show)
 
 data CIDRSetItem
   = CIDR Text Text

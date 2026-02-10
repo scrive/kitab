@@ -1,7 +1,7 @@
 apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
 metadata:
-  name: "my-app-networkpolicy"
+  name: "my-app-network-policy"
 spec:
   endpointSelector:
     matchLabels:
@@ -19,8 +19,15 @@ spec:
             dns:
               - matchPattern: "*"
     - toCIDRSets:
-          cidr: 10.23.32.0/24 # Integrations
-          cidr: 10.23.31.0/24 # Internal shenanigans
-    - toCIDRSets:
           cidr: 0.0.0.0/0 # Internet
           except: 10.0.0.0/8 # Internal network
+
+    - toCIDRSets:
+          cidr: 10.147.128.0/24 # MySQL
+      toPorts:
+          ports:
+              - port: 3306
+                protocol: TCP
+    - toCIDRSets:
+          cidr: 10.23.32.0/24 # Integrations
+          cidr: 10.23.31.0/24 # Internal shenanigans

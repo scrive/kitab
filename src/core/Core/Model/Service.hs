@@ -1,3 +1,5 @@
+{-# LANGUAGE DerivingVia #-}
+
 module Core.Model.Service where
 
 import Data.String (IsString)
@@ -28,6 +30,9 @@ data Service = Service
   , cidrSets :: List CIDRSet
   }
   deriving stock (Eq, Show, Ord, Generic)
+  deriving
+    (Display)
+    via (ShowInstance Service)
 
 data ServiceInfo = ServiceInfo
   { serviceFqdn :: Maybe Text

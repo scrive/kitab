@@ -1,7 +1,7 @@
 apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
 metadata:
-  name: "media-proxy-networkpolicy"
+  name: "media-proxy-network-policy"
 spec:
   endpointSelector:
     matchLabels:
