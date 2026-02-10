@@ -19,7 +19,7 @@ newtype ErrorCode = ErrorCode Word8
   deriving newtype (Eq, Show, Ord)
 
 instance Display ErrorCode where
-  displayBuilder (ErrorCode c) = "[KITAB-]" <> displayBuilder c <> "]"
+  displayBuilder (ErrorCode c) = "[KITAB-" <> displayBuilder c <> "]"
 
 data CLIError = CLIError
   { errorType :: CLIErrorType
