@@ -26,6 +26,9 @@ This graph can then be used to create network access policies and architecture d
   <dt>-o,--output-dir=DIRECTORY</dt>
   <dd style="margin-left: 3rem"> Output directory </dd>
 
+  <dt>--context=CONTEXT</dt>
+  <dd style="margin-left: 3rem"> Only output services belonging to a specific context </dd>
+
   <dt>--version</dt>
   <dd style="margin-left: 3rem"> Show version information </dd>
 

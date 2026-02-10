@@ -8,6 +8,10 @@ service "opensearch" {
 	fqdn "opensearch.internal.network"
 }
 
+service "s3" {
+	fqdn "s3.amazonaws.com"
+}
+
 service "media-proxy" {
 	context "k8s"
 
