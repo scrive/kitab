@@ -23,7 +23,7 @@ toCiliumPolicy services service =
   CiliumNetworkPolicy
     { apiVersion = "\"cilium.io/v2\""
     , kind = "CiliumNetworkPolicy"
-    , metadata = Metadata {name = display service.serviceName <> "-networkpolicy"}
+    , metadata = Metadata {name = display service.serviceName <> "-network-policy"}
     , spec =
         PolicySpec
           { endpointSelector =
