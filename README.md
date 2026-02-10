@@ -4,7 +4,7 @@
     <img alt="Kitab" src="./doc/kitab.png" width=30%>
   </picture>
 
-<h1> Kitab — Bye-bye YAML and PlantUML! </h1>
+<h1> Kitab — Document and enforce your service architecture </h1>
 
 **[Manual] &nbsp;&nbsp;&bull;&nbsp;&nbsp;**
 **[Architecture] &nbsp;&nbsp;&bull;&nbsp;&nbsp;**
@@ -26,7 +26,10 @@ The files are written in [KDL](https://kdl.dev), a pleasant document language th
 Let's take the following KDL document:
 
 ```kdl
-// A context represents a system boundary, like a Kubernetes cluster
+// A context represents a system boundary, like a Kubernetes cluster.
+// When generating Cilium policies, services within the cluster
+// will be mentioned by their name ("my-app", "media-proxy")
+// whereas outside services will be referred to by their FQDN.
 context "k8s"
 
 // Services that we run outside of the cluster are not labelled
@@ -44,13 +47,15 @@ service "opensearch" {
 service "media-proxy" {
 	context "k8s"
 
+  // This creates a edge between `media-proxy` and `opensearch`.
 	depends-on "opensearch" {
+    // And we label this edge with the connection method.
 		via "https"
 	}
 
-// Port is optional
 	depends-on "otel-tracing" {
 		via "https"
+    // Ports are optional, and there can be many of them.
 		port 4317
 	}
 }
