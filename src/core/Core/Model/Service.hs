@@ -51,6 +51,6 @@ defaultServiceInfo =
 data Connection = Connection
   { connectionWith :: ServiceName
   , connectionType :: ConnectionType
-  , connectionPort :: Maybe Word16
+  , connectionPorts :: List Word16
   }
   deriving stock (Eq, Show, Ord)
