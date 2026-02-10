@@ -30,9 +30,9 @@ toCiliumPolicy services service =
               EndpointSelector $
                 Map.singleton "app" (display service.serviceName)
           , egress =
-              dnsEgressRule -- The implicit DNS requirement
-                : List.map (serviceEgressRule service.serviceInfo.serviceContext services) service.connections
-                  <> List.map cidrEgressRule service.cidrSets
+              [dnsEgressRule] -- The implicit DNS requirement
+                <> List.map (serviceEgressRule service.serviceInfo.serviceContext services) service.connections
+                <> List.map cidrEgressRule service.cidrSets
           }
     }
 

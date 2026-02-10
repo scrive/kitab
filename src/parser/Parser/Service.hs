@@ -1,6 +1,8 @@
 module Parser.Service where
 
 import Data.List qualified as List
+import Data.Maybe qualified as Maybe
+import Data.Word
 import KDL
 import KDL.Decoder.Internal.Decoder
 
@@ -14,6 +16,7 @@ data ServiceMetadata
   | DependsOnNode Connection
   | ServiceContextNode ServiceContext
   | CIDRSetNode CIDRSet
+  deriving stock (Eq, Ord, Show)
 
 getFQDN :: ServiceMetadata -> Maybe Text
 getFQDN (FQDNNode t) = Just t
@@ -42,7 +45,7 @@ serviceDecoder = do
         <|> (CIDRSetNode <$> KDL.nodeWith "cidr-set" cidrSetDecoder)
 
   let serviceFqdn = List.foldl' (\_ sm -> getFQDN sm) Nothing mixedChildren
-  let serviceContext = List.foldl' (\_ sm -> getServiceContext sm) Nothing mixedChildren
+  let serviceContext = Maybe.listToMaybe $ mapMaybe getServiceContext mixedChildren
   let serviceInfo = ServiceInfo {serviceFqdn, serviceContext}
   let connections = mapMaybe getConnection mixedChildren
   let cidrSets = mapMaybe getCIDRSet mixedChildren
@@ -70,13 +73,15 @@ serviceNameDecoder :: ValueDecodeArrow () ServiceName
 serviceNameDecoder = ServiceName <$> KDL.text
 
 cidrSetDecoder :: DecodeArrow Node () CIDRSet
-cidrSetDecoder = KDL.children $ do
+cidrSetDecoder = do
+  ports <- KDL.children $ KDL.many cidrPortDecoder
   items <-
-    KDL.many
-      ( cidrDecoder
-          <|> exceptionDecoder
-      )
-  pure $ CIDRSet items
+    KDL.children $
+      KDL.many
+        ( cidrDecoder
+            <|> exceptionDecoder
+        )
+  pure $ CIDRSet items ports
 
 cidrDecoder :: DecodeArrow NodeList () CIDRSetItem
 cidrDecoder = KDL.nodeWith "cidr" $ do
@@ -89,3 +94,7 @@ exceptionDecoder = KDL.nodeWith "except" $ do
   cidr <- KDL.arg @Text
   reason <- KDL.arg @Text
   pure $ Except cidr reason
+
+cidrPortDecoder :: DecodeArrow NodeList () Word16
+cidrPortDecoder = KDL.nodeWith "port" $ do
+  KDL.arg @Word16

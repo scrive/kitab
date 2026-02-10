@@ -46,7 +46,7 @@ instance Pretty PolicySpec where
   pretty PolicySpec {..} =
     vsep
       [ keyBlock "endpointSelector" (pretty endpointSelector)
-      , keyBlock "egress" (vsep $ map (("-" <+>) . align . pretty) egress)
+      , keyBlock "egress" (vsep $ List.map (("-" <+>) . align . pretty) egress)
       ]
 
 -- | Selectors (used for finding the source Pods or destination Endpoints)
@@ -57,7 +57,7 @@ newtype EndpointSelector = EndpointSelector
 
 instance Pretty EndpointSelector where
   pretty (EndpointSelector labels) =
-    keyBlock "matchLabels" (vsep $ map renderLabel (Map.toList labels))
+    keyBlock "matchLabels" (vsep $ List.map renderLabel (Map.toList labels))
     where
       renderLabel (k, v) = keyValue k (dquotes $ pretty v)
 
@@ -68,7 +68,7 @@ newtype EgressRule = EgressRule
   deriving (Show, Eq, Ord)
 
 instance Pretty EgressRule where
-  pretty EgressRule {..} = align . vsep $ map pretty egressRuleItems
+  pretty EgressRule {..} = align . vsep $ List.map pretty egressRuleItems
 
 -- | An item in a single Egress Rule
 data EgressRuleItem
@@ -94,18 +94,38 @@ instance Pretty EgressRuleItem where
     keyBlock "toPorts" . nest 2 $
       vsep
         [ "-" <+> pretty portRules
-        , keyBlock "rules" . keyBlock "dns" $ ("-" <+> pretty dnsMatch)
+        , keyBlock "rules" . keyBlock "dns" $ "-" <+> pretty dnsMatch
         ]
-  pretty (ToCIDRSet (CIDRSet cidrs)) =
-    (keyBlock "toCIDRSets" . indent 2) . vsep $
-      List.map
-        ( \case
-            CIDR cidr name ->
-              keyValue "cidr" (pretty cidr <> " # " <> pretty name)
-            Except cidr reason ->
-              keyValue "except" (pretty cidr <> " # " <> pretty reason)
-        )
-        cidrs
+  pretty (ToCIDRSet (CIDRSet cidrs ports)) =
+    vsep
+      [ (keyBlock "toCIDRSets" . indent 2) . vsep $
+          List.map
+            ( \case
+                CIDR cidr name ->
+                  keyValue "cidr" (pretty cidr <> " # " <> pretty name)
+                Except cidr reason ->
+                  keyValue "except" (pretty cidr <> " # " <> pretty reason)
+            )
+            cidrs
+      , if List.null ports
+          then mempty
+          else
+            keyBlock "toPorts" . indent 2 $
+              keyBlock
+                "ports"
+                ( indent 2 $
+                    vsep
+                      ( List.map
+                          ( \p ->
+                              vsep
+                                [ keyValue "- port" (pretty p)
+                                , keyValue "  protocol" "TCP"
+                                ]
+                          )
+                          ports
+                      )
+                )
+      ]
 
 -- | Represents { matchName: "example.com" }
 newtype FQDNMatch = FQDNMatch
@@ -132,7 +152,7 @@ newtype PortRule = PortRule
 
 instance Pretty PortRule where
   pretty (PortRule ports) =
-    keyBlock "ports" (vsep $ map (("-" <+>) . nest 2 . pretty) ports)
+    keyBlock "ports" (vsep $ List.map (("-" <+>) . nest 2 . pretty) ports)
 
 -- | Specific Port/Protocol pair
 data PortProtocol = PortProtocol
