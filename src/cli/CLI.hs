@@ -12,6 +12,7 @@ import System.OsPath
 import System.OsPath qualified as OsPath
 
 import CLI.Types
+import Core.Model.ServiceContext
 import Paths_kitab (version)
 
 parseOptions :: Parser Options
@@ -21,6 +22,10 @@ parseOptions =
     <*> option outputFormat (long "format" <> short 'f' <> metavar "FORMAT" <> help "Output format" <> completeWith supportedFormats)
     <*> some (option pathParser (long "input" <> short 'i' <> metavar "FILE" <> help "input file, can be specified multiple times" <> action "file"))
     <*> option pathParser (long "output-dir" <> short 'o' <> metavar "DIRECTORY" <> help "Output directory" <> action "directory")
+    <*> many (option contextFilterParser (long "context" <> metavar "CONTEXT" <> help "Only output services belonging to a specific context"))
+
+contextFilterParser :: ReadM ContextName
+contextFilterParser = str
 
 pathParser :: ReadM OsPath
 pathParser = maybeReader OsPath.encodeUtf
