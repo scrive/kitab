@@ -31,3 +31,10 @@ spec:
     - toCIDRSets:
           cidr: 10.23.32.0/24 # Integrations
           cidr: 10.23.31.0/24 # Internal shenanigans
+
+    - toCIDRSets:
+          cidr: 10.42.42.0/24 # NTP
+      toPorts:
+          ports:
+              - port: 123
+                protocol: UDP

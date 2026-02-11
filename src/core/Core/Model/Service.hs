@@ -3,7 +3,6 @@
 module Core.Model.Service where
 
 import Data.String (IsString)
-import Data.Word
 import GHC.Generics
 import Prettyprinter
 
@@ -51,6 +50,6 @@ defaultServiceInfo =
 data Connection = Connection
   { connectionWith :: ServiceName
   , connectionType :: ConnectionType
-  , connectionPorts :: List Word16
+  , connectionPorts :: List PortNode
   }
   deriving stock (Eq, Show, Ord)

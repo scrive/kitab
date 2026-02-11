@@ -2,7 +2,6 @@ module Parser.Service where
 
 import Data.List qualified as List
 import Data.Maybe qualified as Maybe
-import Data.Word
 import KDL
 import KDL.Decoder.Internal.Decoder
 
@@ -56,10 +55,16 @@ connectionDecoder :: DecodeArrow Node () Connection
 connectionDecoder = do
   connectionWith <- KDL.argWith serviceNameDecoder
   (connectionPorts, connectionType) <- KDL.children $ do
-    connectionPorts <- many $ KDL.nodeWith "port" arg
+    connectionPorts <- KDL.many portDecoder
     connectionType <- KDL.nodeWith "via" connectionTypeDecoder
     pure (connectionPorts, connectionType)
   pure Connection {connectionWith, connectionType, connectionPorts}
+
+portDecoder :: DecodeArrow NodeList () PortNode
+portDecoder = KDL.nodeWith "port" $ do
+  port <- KDL.arg
+  protocol <- KDL.option "TCP" $ KDL.arg
+  pure PortNode {port, protocol}
 
 connectionTypeDecoder :: DecodeArrow Node () ConnectionType
 connectionTypeDecoder = do
@@ -74,7 +79,7 @@ serviceNameDecoder = ServiceName <$> KDL.text
 
 cidrSetDecoder :: DecodeArrow Node () CIDRSet
 cidrSetDecoder = do
-  ports <- KDL.children $ KDL.many cidrPortDecoder
+  ports <- KDL.children $ KDL.many portDecoder
   items <-
     KDL.children $
       KDL.many
@@ -94,7 +99,3 @@ exceptionDecoder = KDL.nodeWith "except" $ do
   cidr <- KDL.arg @Text
   reason <- KDL.arg @Text
   pure $ Except cidr reason
-
-cidrPortDecoder :: DecodeArrow NodeList () Word16
-cidrPortDecoder = KDL.nodeWith "port" $ do
-  KDL.arg @Word16
