@@ -61,7 +61,7 @@ serviceEgressRule mContext services Connection {connectionWith, connectionPorts}
   , serviceContext == mContext =
       EgressRule . pure $ ToEndpoint (EndpointSelector $ Map.singleton "app" (display connectionWith))
   | Just ServiceInfo {serviceFqdn} <- Map.lookup connectionWith services
-  , let ports = if List.null connectionPorts then ["443"] else List.map display connectionPorts =
+  , let ports = if List.null connectionPorts then [PortNode 443 "TCP"] else connectionPorts =
       EgressRule $
         maybe
           []
@@ -69,7 +69,7 @@ serviceEgressRule mContext services Connection {connectionWith, connectionPorts}
               pure $
                 ToFQDN
                   (FQDNMatch hostname)
-                  (PortRule (List.map (\port -> PortProtocol port "TCP") ports))
+                  (PortRule (List.map (\portNode -> PortProtocol (display portNode.port) portNode.protocol) ports))
           )
           serviceFqdn
   | otherwise = error $ "missing service " ++ show connectionWith

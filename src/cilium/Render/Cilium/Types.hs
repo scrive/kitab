@@ -118,8 +118,8 @@ instance Pretty EgressRuleItem where
                       ( List.map
                           ( \p ->
                               vsep
-                                [ keyValue "- port" (pretty p)
-                                , keyValue "  protocol" "TCP"
+                                [ keyValue "- port" (pretty p.port)
+                                , keyValue "  protocol" (pretty p.protocol)
                                 ]
                           )
                           ports
