@@ -164,6 +164,7 @@ It has no child nodes.
 | Argument | Type |
 |----------|------|
 | port     | 16-bit unsigned integer (between 0 and 65535) |
+| protocol | text (optional) |
 
 #### Example
 
@@ -172,6 +173,11 @@ depends-on "some-service" {
   via "https"
     port 4317
     port 4318
+}
+
+cidr-set {
+	cidr "10.42.42.0/24" "NTP"
+	port 123 "UDP"
 }
 ```
 
