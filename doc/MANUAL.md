@@ -171,8 +171,8 @@ It has no child nodes.
 ```kdl
 depends-on "some-service" {
   via "https"
-    port 4317
-    port 4318
+  port 4317
+  port 4318
 }
 
 cidr-set {
