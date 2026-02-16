@@ -16,10 +16,15 @@
 
 </div>
 
-Kitab gathers service definition files and assembles them to create an infrastructure graph.
-This graph can then be used to create network access policies and architecture diagrams.
+## 📖 Architecture diagrams and Network Policies from the same source of truth.
+
+Kitab gathers service definition files and creates a graph of your infrastructure
 
 The files are written in [KDL](https://kdl.dev), a pleasant document language that avoids the numerous footguns of YAML.
+
+<picture>
+  <img alt="Data flow" src="./doc/kitab-diagram.png" width=70% height=70%>
+</picture>
 
 ## ⚙️ In Action
 
