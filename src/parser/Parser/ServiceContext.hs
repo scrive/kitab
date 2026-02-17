@@ -5,8 +5,8 @@ import KDL.Decoder.Internal.Decoder
 
 import Core.Model.ServiceContext
 
-contextDecoder :: DecodeArrow Node () ServiceContext
-contextDecoder = do
+contextDecoder :: DecodeArrow NodeList () ServiceContext
+contextDecoder = KDL.nodeWith "context" $ do
   contextName <- KDL.argWith contextNameDecoder
   pure ServiceContext {contextName}
 

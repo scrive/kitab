@@ -2,11 +2,14 @@
 
 module Core.Model.Service where
 
+import Data.Set
+import Data.Set qualified as Set
 import Data.String (IsString)
 import GHC.Generics
 import Prettyprinter
 
 import Core.Model.CIDRSet
+import Core.Model.Port
 import Core.Model.ServiceContext
 
 newtype ServiceName = ServiceName Text
@@ -37,6 +40,7 @@ data ServiceInfo = ServiceInfo
   { serviceFqdn :: Maybe Text
   -- ^ Fqdn is a Cilium thing.
   , serviceContext :: Maybe ServiceContext
+  , servicePorts :: Set PortNode
   }
   deriving stock (Eq, Show, Ord, Generic)
 
@@ -45,11 +49,12 @@ defaultServiceInfo =
   ServiceInfo
     { serviceFqdn = Nothing
     , serviceContext = Nothing
+    , servicePorts = Set.empty
     }
 
 data Connection = Connection
   { connectionWith :: ServiceName
   , connectionType :: ConnectionType
-  , connectionPorts :: List PortNode
+  , connectionPorts :: Set PortNode
   }
   deriving stock (Eq, Show, Ord)

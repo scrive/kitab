@@ -61,6 +61,7 @@ A service node in your infrastructure.
 
 This node can contain the following children
 * [`fqdn`](#fqdn);
+* [`port`](#port);
 * [`context`](#context);
 * [`depends-on`](#depends-on);
 * [`cidr-set`](#cidr-set);
@@ -74,6 +75,7 @@ This node can contain the following children
 ```kdl
 service "opensearch" {
   fqdn "opensearch.internal.network"
+  port 4317
 }
 
 service "media-proxy" {
@@ -155,9 +157,9 @@ depends-on "user-registry" {
 
 ### <a name="port"></a> `port`
 
-Declare a port for an outgoing connection.
-It is an optional node, and can be repeated within a [`depends-on`](#depends-on)
-or a [`cidr-set`](#cidr-set) node.
+Declare a port for an incoming or outgoing connection.
+It is an optional node, and can be repeated within a [`depends-on`](#depends-on),
+a [`service`](#service),  or a [`cidr-set`](#cidr-set) node.
 
 It has no child nodes.
 
@@ -169,10 +171,14 @@ It has no child nodes.
 #### Example
 
 ```kdl
+service "some-service" {
+  port 4317
+  port 4318
+  
+}
 depends-on "some-service" {
   via "https"
   port 4317
-  port 4318
 }
 
 cidr-set {

@@ -3,10 +3,13 @@ module Render.Cilium where
 import Data.List qualified as List
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
+import Data.Set (Set)
+import Data.Set qualified as Set
 import Prettyprinter
 import Prettyprinter.Render.Text (renderStrict)
 
 import Core.Model.CIDRSet
+import Core.Model.Port
 import Core.Model.Service
 import Core.Model.ServiceContext
 import Render.Cilium.Types
@@ -61,7 +64,7 @@ serviceEgressRule mContext services Connection {connectionWith, connectionPorts}
   , serviceContext == mContext =
       EgressRule . pure $ ToEndpoint (EndpointSelector $ Map.singleton "app" (display connectionWith))
   | Just ServiceInfo {serviceFqdn} <- Map.lookup connectionWith services
-  , let ports = if List.null connectionPorts then [PortNode 443 "TCP"] else connectionPorts =
+  , let ports = Set.toList $ pickPorts services connectionWith connectionPorts =
       EgressRule $
         maybe
           []
@@ -76,3 +79,18 @@ serviceEgressRule mContext services Connection {connectionWith, connectionPorts}
 
 cidrEgressRule :: CIDRSet -> EgressRule
 cidrEgressRule = EgressRule . List.singleton . ToCIDRSet
+
+-- | Select which ports to use for a connection:
+-- 1. If no ports are specified by the caller, we use the ones opened by the callee
+-- 2. If the caller specifies ports, we check if they are also defined by the callee
+-- 3. If not, we fallback to port 443 on TCP
+pickPorts :: Map ServiceName ServiceInfo -> ServiceName -> Set PortNode -> Set PortProtocol
+pickPorts services with ports
+  | Set.null ports
+  , Just ServiceInfo {servicePorts} <- Map.lookup with services =
+      Set.map (\portNode -> PortProtocol (display portNode.port) portNode.protocol) servicePorts
+  | not . Set.null $ ports
+  , Just ServiceInfo {servicePorts} <- Map.lookup with services
+  , ports `Set.isSubsetOf` servicePorts =
+      Set.map (\portNode -> PortProtocol (display portNode.port) portNode.protocol) ports
+  | otherwise = Set.singleton (PortProtocol "443" "TCP")
