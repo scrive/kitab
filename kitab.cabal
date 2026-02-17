@@ -147,6 +147,31 @@ library kitab-c4
     base hiding (Prelude),
     kitab-prelude (Prelude),
 
+library kitab-json-graph
+  import: extensions
+  import: ghc-options
+  -- cabal-gild: discover src/json-graph
+  exposed-modules:
+    Render.JsonGraph
+    Render.JsonGraph.Types
+
+  build-depends:
+    aeson,
+    algebraic-graphs,
+    base ^>=4.21,
+    containers,
+    deriving-aeson,
+    kitab:kitab-core,
+    kitab-prelude,
+    optics-core,
+    prettyprinter,
+    text,
+
+  hs-source-dirs: src/json-graph
+  mixins:
+    base hiding (Prelude),
+    kitab-prelude (Prelude),
+
 library kitab-cilium
   import: extensions
   import: ghc-options
