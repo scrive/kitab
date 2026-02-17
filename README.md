@@ -45,6 +45,8 @@ service "otel-tracing" {
 
 service "opensearch" {
 	fqdn "opensearch.internal.network"
+	port 4317
+	port 4318
 }
 
 // Services that live inside the cluster are labelled with "k8s"
@@ -61,6 +63,7 @@ service "media-proxy" {
 	depends-on "otel-tracing" {
 		via "https"
     // Ports are optional, and there can be many of them.
+    // If no ports are specified by the caller, the callee's ports are used.
 		port 4317
 	}
 }
@@ -88,7 +91,6 @@ service "main-app" {
 
 	depends-on "otel-tracing" {
 		via "https"
-		port 4317
 	}
 }
 

@@ -10,10 +10,6 @@ decodeServiceDocument :: KDL.DocumentDecoder [Declaration]
 decodeServiceDocument =
   KDL.document . KDL.many $
     oneOf
-      [ KDL.nodeWith
-          "context"
-          (ContextDeclaration <$> contextDecoder)
-      , KDL.nodeWith
-          "service"
-          (ServiceDeclaration <$> serviceDecoder)
+      [ ContextDeclaration <$> contextDecoder
+      , ServiceDeclaration <$> serviceDecoder
       ]

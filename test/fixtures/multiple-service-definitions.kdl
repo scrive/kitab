@@ -2,14 +2,18 @@ context "k8s"
 
 service "otel-tracing" {
 	fqdn "tracing.internal.network"
+	port 4317
+	port 4318
 }
 
 service "opensearch" {
 	fqdn "opensearch.internal.network"
+	port 443
 }
 
 service "s3" {
 	fqdn "s3.amazonaws.com"
+	port 443
 }
 
 service "media-proxy" {
@@ -21,8 +25,6 @@ service "media-proxy" {
 
 	depends-on "otel-tracing" {
 		via "https"
-		port 4317
-		port 4318
 	} 
 }
 

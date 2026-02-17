@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedLists #-}
+
 module Test.ModelTests where
 
 import Data.List.NonEmpty qualified as NE
