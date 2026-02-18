@@ -1,4 +1,9 @@
-context "k8s"
+context "k8s" {
+	entity "host" {
+		port 123 "UDP"
+		port 23424 "TCP"
+	}
+}
 
 service "otel-tracing" {
 	fqdn "tracing.internal.network"
@@ -26,6 +31,9 @@ service "media-proxy" {
 	depends-on "otel-tracing" {
 		via "https"
 	} 
+
+	depends-on "host" context="k8s" {
+	}
 }
 
 service "user-registry" {

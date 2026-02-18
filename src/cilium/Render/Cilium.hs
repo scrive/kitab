@@ -9,9 +9,9 @@ import Prettyprinter
 import Prettyprinter.Render.Text (renderStrict)
 
 import Core.Model.CIDRSet
+import Core.Model.ContextName
 import Core.Model.Port
 import Core.Model.Service
-import Core.Model.ServiceContext
 import Render.Cilium.Types
 
 renderCilium :: CiliumNetworkPolicy -> Text
@@ -57,7 +57,7 @@ dnsEgressRule =
         (Just DNSMatch {dnsMatchNAme = "*"})
     ]
 
-serviceEgressRule :: Maybe ServiceContext -> Map ServiceName ServiceInfo -> Connection -> EgressRule
+serviceEgressRule :: Maybe ContextName -> Map ServiceName ServiceInfo -> Connection -> EgressRule
 serviceEgressRule mContext services Connection {connectionWith, connectionPorts}
   | Just ServiceInfo {serviceContext} <- Map.lookup connectionWith services
   , isJust serviceContext

@@ -28,6 +28,7 @@ import Validation
 import CLI.Error
 import CLI.Types
 import Core.Graph
+import Core.Model.ContextName
 import Core.Model.Service
 import Core.Model.ServiceContext
 import Core.Validation
@@ -110,4 +111,4 @@ filterServicesByContext contextFilters contexts services = do
     filterServices contextFilter = do
       unless (List.any (\c -> c.contextName == contextFilter) contexts) $ Error.throwError (NE.singleton (unknownContextFilter contextFilter))
       pure $
-        List.filter (\s -> (s ^. #serviceInfo ^? #serviceContext %? #contextName :: Maybe ContextName) == Just contextFilter) services
+        List.filter (\s -> (s ^. #serviceInfo % #serviceContext :: Maybe ContextName) == Just contextFilter) services

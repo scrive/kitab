@@ -7,7 +7,7 @@ import Data.Word
 import KDL (DecodeError)
 import System.OsPath
 
-import Core.Model.ServiceContext
+import Core.Model.ContextName
 import Core.Validation
 
 data CLIErrorType

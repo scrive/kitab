@@ -65,6 +65,7 @@ library
     CLI.Types
     Driver
     Parser
+    Parser.ContextEntity
     Parser.Service
     Parser.ServiceContext
     Parser.Types
@@ -104,6 +105,8 @@ library kitab-core
   exposed-modules:
     Core.Graph
     Core.Model.CIDRSet
+    Core.Model.ContextEntity
+    Core.Model.ContextName
     Core.Model.Port
     Core.Model.Service
     Core.Model.ServiceContext

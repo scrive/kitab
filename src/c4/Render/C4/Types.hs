@@ -8,8 +8,8 @@ import Data.Text qualified as T
 import Optics.Core
 import Prettyprinter
 
+import Core.Model.ContextName
 import Core.Model.Service
-import Core.Model.ServiceContext
 
 newtype C4ServiceAlias = C4ServiceAlias Text
   deriving newtype (Eq, Show, Ord, Pretty)
@@ -33,5 +33,5 @@ toC4Service serviceIndex serviceName =
   let alias = mkC4ServiceAlias serviceName
       name = serviceName
       mServiceInfo = Map.lookup serviceName serviceIndex
-      systemBoundary = mServiceInfo ^? _Just % #serviceContext % _Just % #contextName
+      systemBoundary = mServiceInfo ^? _Just % #serviceContext % _Just
   in C4Service {alias, name, systemBoundary}

@@ -2,7 +2,7 @@ module CLI.Types where
 
 import System.OsPath
 
-import Core.Model.ServiceContext
+import Core.Model.ContextName
 
 data Options = Options
   { quiet :: Bool

@@ -9,8 +9,8 @@ import GHC.Generics
 import Prettyprinter
 
 import Core.Model.CIDRSet
+import Core.Model.ContextName
 import Core.Model.Port
-import Core.Model.ServiceContext
 
 newtype ServiceName = ServiceName Text
   deriving newtype (Eq, Ord, Show, IsString, Pretty, Display)
@@ -39,7 +39,7 @@ data Service = Service
 data ServiceInfo = ServiceInfo
   { serviceFqdn :: Maybe Text
   -- ^ Fqdn is a Cilium thing.
-  , serviceContext :: Maybe ServiceContext
+  , serviceContext :: Maybe ContextName
   , servicePorts :: Set PortNode
   }
   deriving stock (Eq, Show, Ord, Generic)

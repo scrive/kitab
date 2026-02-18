@@ -6,15 +6,15 @@ import KDL
 import KDL.Decoder.Internal.Decoder
 
 import Core.Model.CIDRSet
+import Core.Model.ContextName
 import Core.Model.Port
 import Core.Model.Service
-import Core.Model.ServiceContext
 import Parser.ServiceContext
 
 data ServiceMetadata
   = FQDNNode Text
   | DependsOnNode Connection
-  | ServiceContextNode ServiceContext
+  | ServiceContextNode ContextName
   | CIDRSetNode CIDRSet
   | ServicePortNode PortNode
   deriving stock (Eq, Ord, Show)
@@ -23,7 +23,7 @@ getFQDN :: ServiceMetadata -> Maybe Text
 getFQDN (FQDNNode t) = Just t
 getFQDN _ = Nothing
 
-getServiceContext :: ServiceMetadata -> Maybe ServiceContext
+getServiceContext :: ServiceMetadata -> Maybe ContextName
 getServiceContext (ServiceContextNode c) = Just c
 getServiceContext _ = Nothing
 
@@ -47,7 +47,7 @@ serviceDecoder = KDL.nodeWith "service" $ do
       (FQDNNode <$> KDL.nodeWith "fqdn" (KDL.argWith KDL.text))
         <|> (ServicePortNode <$> portDecoder)
         <|> (DependsOnNode <$> connectionDecoder)
-        <|> (ServiceContextNode <$> contextDecoder)
+        <|> (ServiceContextNode <$> contextNameDecoder)
         <|> (CIDRSetNode <$> cidrSetDecoder)
 
   let serviceFqdn = Maybe.listToMaybe $ mapMaybe getFQDN mixedChildren
