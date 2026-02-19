@@ -15,6 +15,15 @@ import Core.Model.PortNode
 newtype ServiceName = ServiceName Text
   deriving newtype (Eq, Ord, Show, IsString, Pretty, Display)
 
+data ServiceReference = ServiceReference
+  { referenceName :: ServiceName
+  , referenceContext :: Maybe ContextName
+  }
+  deriving stock (Eq, Show, Ord, Generic)
+
+instance Display ServiceReference where
+  displayBuilder ServiceReference{referenceName} = displayBuilder referenceName
+
 data ConnectionType
   = HTTPS
   | FunctionCall
@@ -53,7 +62,7 @@ defaultServiceInfo =
     }
 
 data Connection = Connection
-  { connectionWith :: ServiceName
+  { connectionWith :: ServiceReference
   , connectionType :: ConnectionType
   , connectionPorts :: Set PortNode
   }

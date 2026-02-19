@@ -1,17 +1,13 @@
 module Core.Model.ContextEntity where
 
 import Data.Set (Set)
-import Data.String
 import GHC.Generics
-import Prettyprinter
 
 import Core.Model.PortNode
-
-newtype EntityName = EntityName Text
-  deriving newtype (Eq, Ord, Show, IsString, Pretty, Display)
+import Core.Model.Service
 
 data ContextEntity = ContextEntity
-  { entityName :: EntityName
+  { entityName :: ServiceName
   , entityInfo :: EntityInfo
   }
   deriving stock (Eq, Show, Ord, Generic)

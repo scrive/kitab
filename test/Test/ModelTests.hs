@@ -25,27 +25,27 @@ test =
 
 testParallelConnectionsDetection :: TestEff ()
 testParallelConnectionsDetection = do
-  let graph = buildGraph [Service "A" defaultServiceInfo [Connection "B" HTTPS [], Connection "B" FunctionCall []] []]
+  let graph = buildGraph [Service "A" defaultServiceInfo [Connection (ServiceReference "B" Nothing) HTTPS [], Connection (ServiceReference "B" Nothing) FunctionCall []] []]
   validationError <- assertLeft "Graph is not validated" $ validationToEither (checkGraph graph)
   assertEqual
     "Parallel edges"
-    (NE.singleton (Parallel "A" "B" [HTTPS, FunctionCall]))
+    (NE.singleton (Parallel (ServiceReference "A" Nothing) (ServiceReference "B" Nothing) [HTTPS, FunctionCall]))
     validationError
 
 testSelfReferentialConnections :: TestEff ()
 testSelfReferentialConnections = do
-  let graph = buildGraph [Service "A" defaultServiceInfo [Connection "A" HTTPS []] []]
+  let graph = buildGraph [Service "A" defaultServiceInfo [Connection (ServiceReference "A" Nothing) HTTPS []] []]
   validationError <- assertLeft "Graph is not validated" $ validationToEither (checkGraph graph)
   assertEqual
     "Self-Referential edges"
-    (NE.singleton (SelfReferential "A"))
+    (NE.singleton (SelfReferential (ServiceReference "A" Nothing)))
     validationError
 
 testMismatchedConnections :: TestEff ()
 testMismatchedConnections = do
-  let graph = buildGraph [Service "A" defaultServiceInfo [Connection "B" HTTPS []] [], Service "B" defaultServiceInfo [Connection "A" FunctionCall []] []]
+  let graph = buildGraph [Service "A" defaultServiceInfo [Connection (ServiceReference "B" Nothing) HTTPS []] [], Service "B" defaultServiceInfo [Connection (ServiceReference "A" Nothing) FunctionCall []] []]
   validationError <- assertLeft "Graph is not validated" $ validationToEither (checkGraph graph)
   assertEqual
     "Mismatched connections"
-    (NE.singleton (Mismatched (("A", "B", HTTPS), ("B", "A", FunctionCall))))
+    (NE.singleton (Mismatched ((ServiceReference "A" Nothing, ServiceReference "B" Nothing, HTTPS), (ServiceReference "A" Nothing, ServiceReference "B" Nothing, FunctionCall))))
     validationError

@@ -25,7 +25,7 @@ test =
 testServiceDecoding :: TestEff ()
 testServiceDecoding = do
   serviceDefinition <- decodeUtf8 <$> FileSystem.readFile "test/fixtures/service-definition.kdl"
-  let expectedResult = Service {serviceName = "media-proxy", serviceInfo = defaultServiceInfo, connections = [Connection {connectionWith = "main-app", connectionType = HTTPS, connectionPorts = [PortNode 3833 "TCP"]}], cidrSets = []}
+  let expectedResult = Service {serviceName = "media-proxy", serviceInfo = defaultServiceInfo, connections = [Connection {connectionWith = ServiceReference "main-app" Nothing, connectionType = HTTPS, connectionPorts = [PortNode 3833 "TCP"]}], cidrSets = []}
   result <- assertRight "KDL file could not be parsed" $ KDL.decodeWith (KDL.document serviceDecoder) serviceDefinition
   assertEqual
     "Expected service definition"

@@ -63,7 +63,10 @@ serviceDecoder = KDL.nodeWith "service" $ do
 
 connectionDecoder :: DecodeArrow NodeList () Connection
 connectionDecoder = KDL.nodeWith "depends-on" $ do
-  connectionWith <- KDL.argWith serviceNameDecoder
+  connectionWith <- do
+    referenceName <- KDL.argWith serviceNameDecoder
+    referenceContext <- KDL.argWith $ KDL.optional (ContextName <$> KDL.text)
+    pure ServiceReference{referenceName, referenceContext}
   (connectionPorts, connectionType) <- KDL.children $ do
     connectionPorts <- Set.fromList <$> KDL.many portDecoder
     connectionType <- KDL.nodeWith "via" connectionTypeDecoder

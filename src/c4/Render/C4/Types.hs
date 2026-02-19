@@ -28,10 +28,10 @@ data C4Service = C4Service
   }
   deriving stock (Eq, Show, Ord)
 
-toC4Service :: Map ServiceName ServiceInfo -> ServiceName -> C4Service
-toC4Service serviceIndex serviceName =
-  let alias = mkC4ServiceAlias serviceName
-      name = serviceName
-      mServiceInfo = Map.lookup serviceName serviceIndex
+toC4Service :: Map ServiceReference ServiceInfo -> ServiceReference -> C4Service
+toC4Service serviceIndex serviceReference =
+  let alias = mkC4ServiceAlias serviceReference.referenceName
+      name = serviceReference.referenceName
+      mServiceInfo = Map.lookup serviceReference serviceIndex
       systemBoundary = mServiceInfo ^? _Just % #serviceContext % _Just
   in C4Service {alias, name, systemBoundary}

@@ -5,12 +5,12 @@ import KDL
 import KDL.Decoder.Internal.Decoder
 
 import Core.Model.ContextEntity
-import Parser.EntityName
 import Parser.PortNode
+import Parser.ServiceName
 
 entityDecoder :: DecodeArrow NodeList () ContextEntity
 entityDecoder = KDL.nodeWith "entity" $ do
-  entityName <- KDL.argWith entityNameDecoder
+  entityName <- KDL.argWith serviceNameDecoder
   ports <- KDL.children . KDL.many $ portDecoder
   let entityInfo = EntityInfo (Set.fromList ports)
   pure ContextEntity {entityName, entityInfo}
