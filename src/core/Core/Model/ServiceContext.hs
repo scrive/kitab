@@ -2,12 +2,12 @@ module Core.Model.ServiceContext where
 
 import GHC.Generics
 
+import Core.Model.ContextEntity
 import Core.Model.ContextName
-import Core.Model.Service
 
 data ServiceContext = ServiceContext
   { contextName :: ContextName
-  , contextServices :: List Service
+  , contextEntities :: List ContextEntity
   }
   deriving stock (Eq, Ord, Show, Generic)
 

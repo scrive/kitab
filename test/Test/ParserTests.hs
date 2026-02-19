@@ -7,9 +7,8 @@ import Effectful.FileSystem.IO.ByteString qualified as FileSystem
 import KDL qualified
 import Test.Tasty
 
-import Core.Model.Port
+import Core.Model.PortNode
 import Core.Model.Service
-import Core.Model.ServiceContext (ServiceContext (..))
 import Parser
 import Parser.Service
 import Parser.Types

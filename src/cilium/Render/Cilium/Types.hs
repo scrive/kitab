@@ -8,7 +8,7 @@ import Data.Map.Strict qualified as Map
 import Prettyprinter
 
 import Core.Model.CIDRSet
-import Core.Model.Port
+import Core.Model.PortNode
 
 -- | Top-level Cilium Policy
 data CiliumNetworkPolicy = CiliumNetworkPolicy

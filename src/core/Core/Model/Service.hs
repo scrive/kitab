@@ -10,7 +10,7 @@ import Prettyprinter
 
 import Core.Model.CIDRSet
 import Core.Model.ContextName
-import Core.Model.Port
+import Core.Model.PortNode
 
 newtype ServiceName = ServiceName Text
   deriving newtype (Eq, Ord, Show, IsString, Pretty, Display)

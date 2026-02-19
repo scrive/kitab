@@ -66,8 +66,11 @@ library
     Driver
     Parser
     Parser.ContextEntity
+    Parser.EntityName
+    Parser.PortNode
     Parser.Service
     Parser.ServiceContext
+    Parser.ServiceName
     Parser.Types
 
   build-depends:
@@ -107,7 +110,7 @@ library kitab-core
     Core.Model.CIDRSet
     Core.Model.ContextEntity
     Core.Model.ContextName
-    Core.Model.Port
+    Core.Model.PortNode
     Core.Model.Service
     Core.Model.ServiceContext
     Core.Validation

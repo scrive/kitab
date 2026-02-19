@@ -10,7 +10,7 @@ import Prettyprinter.Render.Text (renderStrict)
 
 import Core.Model.CIDRSet
 import Core.Model.ContextName
-import Core.Model.Port
+import Core.Model.PortNode
 import Core.Model.Service
 import Render.Cilium.Types
 

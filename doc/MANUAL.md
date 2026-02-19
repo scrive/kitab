@@ -43,6 +43,33 @@ Service definitions are written in [KDL](https://kdl.dev) files.
 ### <a name="context"></a> `context`
 
 At the top-level, `context` node defines a system boundary, like a Kubernetes cluster.
+
+This node can contain the following children
+
+* [`entity`](#entity)
+
+| Argument | Type | Description         |
+|----------|------|---------------------|
+| name     | text | Name of the context |
+
+
+#### Example
+
+```kdl
+context "k8s"
+```
+
+```kdl
+context "cluster" {
+  entity "host" {
+    port 123 "UDP"
+    port 23432 "TCP"
+  }
+}
+```
+
+### <a name="in-context"></a> `in-context`
+
 Within a [`service`](#service) node, this indicates that the service belongs to the name context.
 
 | Argument | Type | Description         |
@@ -52,7 +79,10 @@ Within a [`service`](#service) node, this indicates that the service belongs to 
 #### Example
 
 ```kdl
-context "kubernetes"
+service "media-proxy" {
+  in-context "cluster"
+  depends-on "cluster:host"
+}
 ```
 
 ### <a name="service"></a> `service`

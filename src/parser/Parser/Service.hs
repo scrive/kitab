@@ -7,9 +7,11 @@ import KDL.Decoder.Internal.Decoder
 
 import Core.Model.CIDRSet
 import Core.Model.ContextName
-import Core.Model.Port
+import Core.Model.PortNode
 import Core.Model.Service
+import Parser.PortNode
 import Parser.ServiceContext
+import Parser.ServiceName
 
 data ServiceMetadata
   = FQDNNode Text
@@ -47,7 +49,7 @@ serviceDecoder = KDL.nodeWith "service" $ do
       (FQDNNode <$> KDL.nodeWith "fqdn" (KDL.argWith KDL.text))
         <|> (ServicePortNode <$> portDecoder)
         <|> (DependsOnNode <$> connectionDecoder)
-        <|> (ServiceContextNode <$> contextNameDecoder)
+        <|> (ServiceContextNode <$> contextReferenceDecoder)
         <|> (CIDRSetNode <$> cidrSetDecoder)
 
   let serviceFqdn = Maybe.listToMaybe $ mapMaybe getFQDN mixedChildren
@@ -68,12 +70,6 @@ connectionDecoder = KDL.nodeWith "depends-on" $ do
     pure (connectionPorts, connectionType)
   pure Connection {connectionWith, connectionType, connectionPorts}
 
-portDecoder :: DecodeArrow NodeList () PortNode
-portDecoder = KDL.nodeWith "port" $ do
-  port <- KDL.arg
-  protocol <- KDL.option "TCP" KDL.arg
-  pure PortNode {port, protocol}
-
 connectionTypeDecoder :: DecodeArrow Node () ConnectionType
 connectionTypeDecoder = do
   connTypeText <- arg
@@ -81,9 +77,6 @@ connectionTypeDecoder = do
     "https" -> pure HTTPS
     "function-call" -> pure FunctionCall
     _ -> KDL.fail $ "Found unkonwn connection type: " <> connTypeText
-
-serviceNameDecoder :: ValueDecodeArrow () ServiceName
-serviceNameDecoder = ServiceName <$> KDL.text
 
 cidrSetDecoder :: DecodeArrow NodeList () CIDRSet
 cidrSetDecoder = KDL.nodeWith "cidr-set" $ do
