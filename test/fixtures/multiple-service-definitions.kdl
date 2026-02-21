@@ -1,6 +1,7 @@
 context "k8s"
 
 entity "host"  {
+	in-context "k8s"
 	port 123 "UDP"
 	port 23424 "TCP"	
 }

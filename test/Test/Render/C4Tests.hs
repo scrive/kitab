@@ -20,9 +20,6 @@ import Render.C4 qualified as C4
 import Render.C4.C4Service.Types
 import Test.Utils
 
-diffCmd :: String -> String -> [String]
-diffCmd ref new = ["diff", "-u", ref, new]
-
 test :: TestTree
 test =
   testGroup

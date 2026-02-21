@@ -19,9 +19,6 @@ import Parser.Types
 import Render.Cilium qualified as Cilium
 import Test.Utils
 
-diffCmd :: String -> String -> [String]
-diffCmd ref new = ["diff", "-u", ref, new]
-
 test :: TestTree
 test =
   testGroup
