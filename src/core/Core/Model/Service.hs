@@ -26,8 +26,9 @@ instance Pretty ConnectionType where
 data Service = Service
   { serviceName :: ServiceName
   , serviceInfo :: ServiceInfo
-  , connections :: List Connection
+  , serviceConnections :: List Connection
   , cidrSets :: List CIDRSet
+  , entityAccesses :: List EntityAccess
   }
   deriving stock (Eq, Show, Ord, Generic)
   deriving

@@ -37,8 +37,9 @@
                     }
                 ]
             }
-        , connections = []
+        , serviceConnections = []
         , cidrSets = []
+        , entityAccesses = []
         }
     )
 , ServiceDeclaration
@@ -54,8 +55,9 @@
                     }
                 ]
             }
-        , connections = []
+        , serviceConnections = []
         , cidrSets = []
+        , entityAccesses = []
         }
     )
 , ServiceDeclaration
@@ -71,8 +73,9 @@
                     }
                 ]
             }
-        , connections = []
+        , serviceConnections = []
         , cidrSets = []
+        , entityAccesses = []
         }
     )
 , ServiceDeclaration
@@ -83,7 +86,7 @@
             , serviceContext = Just "k8s"
             , servicePorts = fromList []
             }
-        , connections =
+        , serviceConnections =
             [ Connection
                 { connectionWith = "opensearch"
                 , connectionType = HTTPS
@@ -96,6 +99,10 @@
                 }
             ]
         , cidrSets = []
+        , entityAccesses =
+            [ EntityAccess
+                { accessTarget = "host" }
+            ]
         }
     )
 , ServiceDeclaration
@@ -106,8 +113,9 @@
             , serviceContext = Just "k8s"
             , servicePorts = fromList []
             }
-        , connections = []
+        , serviceConnections = []
         , cidrSets = []
+        , entityAccesses = []
         }
     )
 , ServiceDeclaration
@@ -118,7 +126,7 @@
             , serviceContext = Just "k8s"
             , servicePorts = fromList []
             }
-        , connections =
+        , serviceConnections =
             [ Connection
                 { connectionWith = "s3"
                 , connectionType = HTTPS
@@ -146,6 +154,7 @@
                 }
             ]
         , cidrSets = []
+        , entityAccesses = []
         }
     )
 ]

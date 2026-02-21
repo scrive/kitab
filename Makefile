@@ -11,7 +11,7 @@ test: ## Run the test suite
 	@cabal test
 
 test-accept: ## Run the golden tests and accept new output
-	@cabal run -- kitab-test -p '/golden/' --accept
+	@cabal run -- kitab-test --accept
 
 lint: ## Run the code linter
 	@find kitab-prelude app test/Test test/Main.hs src -name "*.hs" | xargs -P $(PROCS) -I {} hlint --refactor-options="-i" --refactor {}

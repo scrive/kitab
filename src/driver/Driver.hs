@@ -70,7 +70,7 @@ runOptions options = do
           )
           declarations
 
-  let graph = buildGraph serviceDefinitions'
+  let graph = buildGraph serviceDefinitions' entities
   let serviceIndex = buildIndex serviceDefinitions'
   serviceDefinitions <-
     filterServicesByContext

@@ -46,7 +46,16 @@ renderService = runTestEff $ do
               _ -> Nothing
           )
           declarations
-  let graph = buildGraph serviceDefinitions
+
+  let entities =
+        mapMaybe
+          ( \case
+              EntityDeclaration s -> Just s
+              _ -> Nothing
+          )
+          declarations
+
+  let graph = buildGraph serviceDefinitions entities
   let serviceIndex = buildIndex serviceDefinitions
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)
   mediaProxyService <- assertJust "" $ List.find (\s -> s.serviceName == "media-proxy") serviceDefinitions
@@ -63,7 +72,15 @@ renderCIDRSetPolicy = runTestEff $ do
               _ -> Nothing
           )
           declarations
-  let graph = buildGraph serviceDefinitions
+  let entities =
+        mapMaybe
+          ( \case
+              EntityDeclaration s -> Just s
+              _ -> Nothing
+          )
+          declarations
+
+  let graph = buildGraph serviceDefinitions entities
   let serviceIndex = buildIndex serviceDefinitions
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)
   myAppService <- assertJust "" $ List.find (\s -> s.serviceName == "my-app") serviceDefinitions

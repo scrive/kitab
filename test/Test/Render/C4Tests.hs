@@ -49,7 +49,14 @@ renderServices = runTestEff $ do
               _ -> Nothing
           )
           declarations
-  let graph = buildGraph serviceDefinitions
+  let entities =
+        mapMaybe
+          ( \case
+              EntityDeclaration c -> Just c
+              _ -> Nothing
+          )
+          declarations
+  let graph = buildGraph serviceDefinitions entities
   let serviceIndex = buildIndex serviceDefinitions
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)
   let graphEdges =

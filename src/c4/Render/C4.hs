@@ -8,7 +8,6 @@ import Prettyprinter.Render.Text (renderStrict)
 
 import Core.Model.Service
 import Core.Model.ServiceContext
--- import Render.C4.C4Entity.Types
 import Render.C4.C4Service.Types
 
 renderC4

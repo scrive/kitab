@@ -1,4 +1,6 @@
-module Parser.Service where
+module Parser.Service
+  ( serviceDecoder
+  ) where
 
 import Data.Maybe qualified as Maybe
 import Data.Set qualified as Set
@@ -43,6 +45,10 @@ getPort :: ServiceMetadata -> Maybe PortNode
 getPort (ServicePortNode p) = Just p
 getPort _ = Nothing
 
+getEntityAccess :: ServiceMetadata -> Maybe EntityAccess
+getEntityAccess (AccessNode a) = Just a
+getEntityAccess _ = Nothing
+
 serviceDecoder :: DecodeArrow NodeList () Service
 serviceDecoder = KDL.nodeWith "service" $ do
   serviceName <- KDL.argWith serviceNameDecoder
@@ -59,10 +65,11 @@ serviceDecoder = KDL.nodeWith "service" $ do
   let servicePorts = Set.fromList $ mapMaybe getPort mixedChildren
   let serviceContext = Maybe.listToMaybe $ mapMaybe getServiceContext mixedChildren
   let serviceInfo = ServiceInfo {serviceFqdn, serviceContext, servicePorts}
-  let connections = mapMaybe getConnection mixedChildren
+  let serviceConnections = mapMaybe getConnection mixedChildren
   let cidrSets = mapMaybe getCIDRSet mixedChildren
+  let entityAccesses = mapMaybe getEntityAccess mixedChildren
 
-  pure Service {serviceName, serviceInfo, connections, cidrSets}
+  pure Service {serviceName, serviceInfo, serviceConnections, cidrSets, entityAccesses}
 
 dependsOnDecoder :: DecodeArrow NodeList () Connection
 dependsOnDecoder = KDL.nodeWith "depends-on" $ do

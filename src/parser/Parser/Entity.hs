@@ -8,9 +8,9 @@ import KDL.Decoder.Internal.Decoder
 import Core.Model.ContextName
 import Core.Model.Entity
 import Core.Model.PortNode
+import Parser.EntityName
 import Parser.PortNode
 import Parser.ServiceContext
-import Parser.ServiceName
 
 data EntityChild
   = EntityPort PortNode
@@ -27,7 +27,7 @@ getEntityContext _ = Nothing
 
 entityDecoder :: DecodeArrow NodeList () Entity
 entityDecoder = KDL.nodeWith "entity" $ do
-  entityName <- KDL.argWith serviceNameDecoder
+  entityName <- KDL.argWith entityNameDecoder
   mixedChildren <-
     KDL.children . KDL.many $
       (EntityPort <$> portDecoder)

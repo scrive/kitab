@@ -7,6 +7,7 @@ import Test.Tasty
 import Validation (validationToEither)
 
 import Core.Graph
+import Core.Model.Reference
 import Core.Model.Service
 import Core.Model.ServiceName
 import Core.Validation
@@ -26,27 +27,27 @@ test =
 
 testParallelConnectionsDetection :: TestEff ()
 testParallelConnectionsDetection = do
-  let graph = buildGraph [Service "A" defaultServiceInfo [Connection (ServiceName "B") HTTPS [], Connection (ServiceName "B") FunctionCall []] []]
+  let graph = buildGraph [Service "A" defaultServiceInfo [Connection (ServiceName "B") HTTPS [], Connection (ServiceName "B") FunctionCall []] [] []] []
   validationError <- assertLeft "Graph is not validated" $ validationToEither (checkGraph graph)
   assertEqual
     "Parallel edges"
-    (NE.singleton (Parallel (ServiceName "A") (ServiceName "B") [HTTPS, FunctionCall]))
+    (NE.singleton (Parallel (ServiceRef $ ServiceName "A") (ServiceRef $ ServiceName "B") [HTTPS, FunctionCall]))
     validationError
 
 testSelfReferentialConnections :: TestEff ()
 testSelfReferentialConnections = do
-  let graph = buildGraph [Service "A" defaultServiceInfo [Connection (ServiceName "A") HTTPS []] []]
+  let graph = buildGraph [Service "A" defaultServiceInfo [Connection (ServiceName "A") HTTPS []] [] []] []
   validationError <- assertLeft "Graph is not validated" $ validationToEither (checkGraph graph)
   assertEqual
     "Self-Referential edges"
-    (NE.singleton (SelfReferential (ServiceName "A")))
+    (NE.singleton (SelfReferential (ServiceRef $ ServiceName "A")))
     validationError
 
 testMismatchedConnections :: TestEff ()
 testMismatchedConnections = do
-  let graph = buildGraph [Service "A" defaultServiceInfo [Connection (ServiceName "B") HTTPS []] [], Service "B" defaultServiceInfo [Connection (ServiceName "A") FunctionCall []] []]
+  let graph = buildGraph [Service "A" defaultServiceInfo [Connection (ServiceName "B") HTTPS []] [] [], Service "B" defaultServiceInfo [Connection (ServiceName "A") FunctionCall []] [] []] []
   validationError <- assertLeft "Graph is not validated" $ validationToEither (checkGraph graph)
   assertEqual
     "Mismatched connections"
-    (NE.singleton (Mismatched ((ServiceName "A", ServiceName "B", HTTPS), (ServiceName "B", ServiceName "A", FunctionCall))))
+    (NE.singleton (Mismatched ((ServiceRef (ServiceName "A"), ServiceRef (ServiceName "B"), HTTPS), (ServiceRef (ServiceName "B"), ServiceRef (ServiceName "A"), FunctionCall))))
     validationError

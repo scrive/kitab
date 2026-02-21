@@ -35,7 +35,7 @@ toCiliumPolicy services service =
                 Map.singleton "app" (display service.serviceName)
           , egress =
               [dnsEgressRule] -- The implicit DNS requirement
-                <> List.map (serviceEgressRule service.serviceInfo.serviceContext services) service.connections
+                <> List.map (serviceEgressRule service.serviceInfo.serviceContext services) service.serviceConnections
                 <> List.map cidrEgressRule service.cidrSets
           }
     }

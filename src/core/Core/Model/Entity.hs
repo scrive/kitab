@@ -4,11 +4,11 @@ import Data.Set (Set)
 import GHC.Generics
 
 import Core.Model.ContextName
+import Core.Model.EntityName
 import Core.Model.PortNode
-import Core.Model.ServiceName
 
 data Entity = Entity
-  { entityName :: ServiceName
+  { entityName :: EntityName
   , entityInfo :: EntityInfo
   }
   deriving stock (Eq, Show, Ord, Generic)

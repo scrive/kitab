@@ -1,0 +1,16 @@
+digraph 
+{
+  "main-app"
+  "media-proxy"
+  "opensearch"
+  "otel-tracing"
+  "s3"
+  "user-registry"
+  "host"
+  "main-app" -> "media-proxy"
+  "main-app" -> "otel-tracing"
+  "main-app" -> "s3"
+  "main-app" -> "user-registry"
+  "media-proxy" -> "opensearch"
+  "media-proxy" -> "otel-tracing"
+}
