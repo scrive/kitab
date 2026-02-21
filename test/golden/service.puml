@@ -3,13 +3,14 @@
 
 title System Architecture (C4 Container View)
 
+' --- Contexts ---
 System_Boundary(c1,k8s) {
   System(main_app, "main-app")
   System(media_proxy, "media-proxy")
   System(user_registry, "user-registry")
 }
 
-' --- Systems ---
+' --- Outer Systems ---
 System(opensearch, "opensearch")
 System(otel_tracing, "otel-tracing")
 System(s3, "s3")

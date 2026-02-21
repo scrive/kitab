@@ -10,21 +10,21 @@ import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 
 import Core.Model.Service
+import Core.Model.ServiceName
 
-buildIndex :: List Service -> Map ServiceReference ServiceInfo
+buildIndex :: List Service -> Map ServiceName ServiceInfo
 buildIndex =
   foldr
-    ( \Service{serviceName, serviceInfo} ->
-        let reference = ServiceReference serviceName serviceInfo.serviceContext
-        in Map.insert reference serviceInfo
+    ( \Service {serviceName, serviceInfo} ->
+        Map.insert serviceName serviceInfo
     )
     Map.empty
 
-buildGraph :: List Service -> Graph (List ConnectionType) ServiceReference
+buildGraph :: List Service -> Graph (List ConnectionType) ServiceName
 buildGraph =
   foldr
     ( \service ->
-        let incomingService = ServiceReference service.serviceName service.serviceInfo.serviceContext
+        let incomingService = service.serviceName
             builtGraph = Graph.edges [(List.singleton connection.connectionType, incomingService, connection.connectionWith) | connection <- service.connections]
         in Graph.overlay builtGraph
     )

@@ -9,6 +9,7 @@ import Core.Model.CIDRSet
 import Core.Model.ContextName
 import Core.Model.PortNode
 import Core.Model.Service
+import Parser.EntityName
 import Parser.PortNode
 import Parser.ServiceContext
 import Parser.ServiceName
@@ -19,6 +20,7 @@ data ServiceMetadata
   | ServiceContextNode ContextName
   | CIDRSetNode CIDRSet
   | ServicePortNode PortNode
+  | AccessNode EntityAccess
   deriving stock (Eq, Ord, Show)
 
 getFQDN :: ServiceMetadata -> Maybe Text
@@ -48,7 +50,8 @@ serviceDecoder = KDL.nodeWith "service" $ do
     KDL.children . KDL.many $
       (FQDNNode <$> KDL.nodeWith "fqdn" (KDL.argWith KDL.text))
         <|> (ServicePortNode <$> portDecoder)
-        <|> (DependsOnNode <$> connectionDecoder)
+        <|> (DependsOnNode <$> dependsOnDecoder)
+        <|> (AccessNode <$> accessDecoder)
         <|> (ServiceContextNode <$> contextReferenceDecoder)
         <|> (CIDRSetNode <$> cidrSetDecoder)
 
@@ -61,17 +64,22 @@ serviceDecoder = KDL.nodeWith "service" $ do
 
   pure Service {serviceName, serviceInfo, connections, cidrSets}
 
-connectionDecoder :: DecodeArrow NodeList () Connection
-connectionDecoder = KDL.nodeWith "depends-on" $ do
-  connectionWith <- do
-    referenceName <- KDL.argWith serviceNameDecoder
-    referenceContext <- KDL.argWith $ KDL.optional (ContextName <$> KDL.text)
-    pure ServiceReference{referenceName, referenceContext}
+dependsOnDecoder :: DecodeArrow NodeList () Connection
+dependsOnDecoder = KDL.nodeWith "depends-on" $ do
+  connectionWith <- KDL.argWith serviceNameDecoder
+  -- referenceName <- KDL.argWith serviceNameDecoder
+  -- referenceContext <- KDL.optional $ KDL.propWith "context" (ContextName <$> KDL.text)
+  -- pure referenceName
   (connectionPorts, connectionType) <- KDL.children $ do
     connectionPorts <- Set.fromList <$> KDL.many portDecoder
     connectionType <- KDL.nodeWith "via" connectionTypeDecoder
     pure (connectionPorts, connectionType)
   pure Connection {connectionWith, connectionType, connectionPorts}
+
+accessDecoder :: DecodeArrow NodeList () EntityAccess
+accessDecoder = KDL.nodeWith "accesses" $ do
+  accessTarget <- KDL.argWith entityNameDecoder
+  pure EntityAccess {accessTarget}
 
 connectionTypeDecoder :: DecodeArrow Node () ConnectionType
 connectionTypeDecoder = do

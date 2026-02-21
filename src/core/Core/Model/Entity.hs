@@ -1,19 +1,19 @@
-module Core.Model.ContextEntity where
+module Core.Model.Entity where
 
 import Data.Set (Set)
 import GHC.Generics
 
 import Core.Model.PortNode
-import Core.Model.Service
+import Core.Model.ServiceName
 
-data ContextEntity = ContextEntity
+data Entity = Entity
   { entityName :: ServiceName
   , entityInfo :: EntityInfo
   }
   deriving stock (Eq, Show, Ord, Generic)
   deriving
     (Display)
-    via (ShowInstance ContextEntity)
+    via (ShowInstance Entity)
 
 data EntityInfo = EntityInfo
   { entityPorts :: Set PortNode

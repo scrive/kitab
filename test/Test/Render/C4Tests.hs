@@ -17,7 +17,7 @@ import Core.Validation
 import Parser
 import Parser.Types
 import Render.C4 qualified as C4
-import Render.C4.Types
+import Render.C4.C4Service.Types
 import Test.Utils
 
 diffCmd :: String -> String -> [String]

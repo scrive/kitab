@@ -8,19 +8,20 @@ import Data.Map.Strict qualified as Map
 import Validation
 
 import Core.Model.Service
+import Core.Model.ServiceName
 
 data ValidationError
-  = Asymmetric ServiceReference ServiceReference
+  = Asymmetric ServiceName ServiceName
   | -- | Two services declare different ways of reaching each-other.
-    Mismatched ((ServiceReference, ServiceReference, ConnectionType), (ServiceReference, ServiceReference, ConnectionType))
+    Mismatched ((ServiceName, ServiceName, ConnectionType), (ServiceName, ServiceName, ConnectionType))
   | -- | A service declares two different ways to reach another service.
-    Parallel ServiceReference ServiceReference (List ConnectionType)
+    Parallel ServiceName ServiceName (List ConnectionType)
   | -- | A service declares a connection to itself.
-    SelfReferential ServiceReference
+    SelfReferential ServiceName
   deriving stock (Eq, Ord, Show)
 
 checkGraph
-  :: Graph (List ConnectionType) ServiceReference
+  :: Graph (List ConnectionType) ServiceName
   -> Validation (NonEmpty ValidationError) ()
 checkGraph graph =
   sequenceA_
@@ -32,7 +33,7 @@ checkGraph graph =
 -- >>> checkParallelEdges (build [Service "A" [(Connection "B" HTTPS), (Connection "B" FunctionCall)]])
 -- Failure (Parallel "A" "B" [HTTPS,FunctionCall] :| [])
 checkParallelEdges
-  :: Graph (List ConnectionType) ServiceReference
+  :: Graph (List ConnectionType) ServiceName
   -> Validation (NonEmpty ValidationError) ()
 checkParallelEdges graph =
   let parallelGraphEdges =
@@ -44,7 +45,7 @@ checkParallelEdges graph =
 -- >>> checkSelfReferential (build [Service "A" [(Connection "A" HTTPS)]])
 -- Failure (SelfReferential "A" :| [])
 checkSelfReferential
-  :: Graph (List ConnectionType) ServiceReference
+  :: Graph (List ConnectionType) ServiceName
   -> Validation (NonEmpty ValidationError) ()
 checkSelfReferential graph =
   let selfReferentialEdges =
@@ -56,7 +57,7 @@ checkSelfReferential graph =
 -- >>> checkMismatched (build [Service "A" [(Connection "B" HTTPS)], Service "B" [Connection "A" FunctionCall]])
 -- Failure (Mismatched (("A","B",HTTPS),("B","A",FunctionCall)) :| [])
 checkMismatched
-  :: Graph (List ConnectionType) ServiceReference
+  :: Graph (List ConnectionType) ServiceName
   -> Validation (NonEmpty ValidationError) ()
 checkMismatched graph =
   let am =

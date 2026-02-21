@@ -35,7 +35,7 @@ import Core.Validation
 import Parser
 import Parser.Types
 import Render.C4 qualified as C4
-import Render.C4.Types qualified as C4
+import Render.C4.C4Service.Types qualified as C4
 import Render.Cilium qualified as Cilium
 
 runOptions :: (Console :> es, FileSystem :> es, Error (NonEmpty CLIError) :> es) => Options -> Eff es ()
@@ -55,12 +55,18 @@ runOptions options = do
               _ -> Nothing
           )
           declarations
-
+  let entities =
+        mapMaybe
+          ( \case
+              EntityDeclaration e -> Just e
+              _ -> Nothing
+          )
+          declarations
   let serviceDefinitions' =
         mapMaybe
           ( \case
               ServiceDeclaration s -> Just s
-              ContextDeclaration _ -> Nothing
+              _ -> Nothing
           )
           declarations
 

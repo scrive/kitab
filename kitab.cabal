@@ -65,7 +65,8 @@ library
     CLI.Types
     Driver
     Parser
-    Parser.ContextEntity
+    Parser.Entity
+    Parser.EntityName
     Parser.PortNode
     Parser.Service
     Parser.ServiceContext
@@ -107,11 +108,16 @@ library kitab-core
   exposed-modules:
     Core.Graph
     Core.Model.CIDRSet
-    Core.Model.ContextEntity
     Core.Model.ContextName
+    Core.Model.Entity
+    Core.Model.EntityName
+    Core.Model.EntityReference
     Core.Model.PortNode
+    Core.Model.Reference
     Core.Model.Service
     Core.Model.ServiceContext
+    Core.Model.ServiceName
+    Core.Model.ServiceReference
     Core.Validation
 
   build-depends:
@@ -135,7 +141,8 @@ library kitab-c4
   -- cabal-gild: discover src/c4
   exposed-modules:
     Render.C4
-    Render.C4.Types
+    Render.C4.C4Entity.Types
+    Render.C4.C4Service.Types
 
   build-depends:
     algebraic-graphs,
@@ -144,6 +151,7 @@ library kitab-c4
     kitab:kitab-core,
     kitab-prelude,
     optics-core,
+    pretty-simple,
     prettyprinter,
     text,
 
@@ -223,6 +231,7 @@ test-suite kitab-test
     kitab:kitab-cilium,
     kitab:kitab-core,
     kitab-prelude,
+    pretty-simple ^>=4.1.4.0,
     tasty,
     tasty-golden,
     tasty-hunit,

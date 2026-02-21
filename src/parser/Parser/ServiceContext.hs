@@ -5,13 +5,11 @@ import KDL.Decoder.Internal.Decoder
 
 import Core.Model.ContextName
 import Core.Model.ServiceContext
-import Parser.ContextEntity
 
 contextDecoder :: DecodeArrow NodeList () ServiceContext
 contextDecoder = KDL.nodeWith "context" $ do
   contextName <- KDL.argWith (ContextName <$> KDL.text)
-  contextEntities <- KDL.children . KDL.many $ entityDecoder
-  pure ServiceContext {contextName, contextEntities}
+  pure ServiceContext {contextName}
 
 contextReferenceDecoder :: DecodeArrow NodeList () ContextName
 contextReferenceDecoder =

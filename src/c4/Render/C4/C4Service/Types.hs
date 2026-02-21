@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedLabels #-}
 
-module Render.C4.Types where
+module Render.C4.C4Service.Types where
 
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
@@ -10,6 +10,7 @@ import Prettyprinter
 
 import Core.Model.ContextName
 import Core.Model.Service
+import Core.Model.ServiceName
 
 newtype C4ServiceAlias = C4ServiceAlias Text
   deriving newtype (Eq, Show, Ord, Pretty)
@@ -28,10 +29,9 @@ data C4Service = C4Service
   }
   deriving stock (Eq, Show, Ord)
 
-toC4Service :: Map ServiceReference ServiceInfo -> ServiceReference -> C4Service
-toC4Service serviceIndex serviceReference =
-  let alias = mkC4ServiceAlias serviceReference.referenceName
-      name = serviceReference.referenceName
-      mServiceInfo = Map.lookup serviceReference serviceIndex
+toC4Service :: Map ServiceName ServiceInfo -> ServiceName -> C4Service
+toC4Service serviceIndex name =
+  let alias = mkC4ServiceAlias name
+      mServiceInfo = Map.lookup name serviceIndex
       systemBoundary = mServiceInfo ^? _Just % #serviceContext % _Just
   in C4Service {alias, name, systemBoundary}

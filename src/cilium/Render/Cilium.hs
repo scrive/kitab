@@ -12,6 +12,7 @@ import Core.Model.CIDRSet
 import Core.Model.ContextName
 import Core.Model.PortNode
 import Core.Model.Service
+import Core.Model.ServiceName
 import Render.Cilium.Types
 
 renderCilium :: CiliumNetworkPolicy -> Text
@@ -19,7 +20,7 @@ renderCilium = renderStrict . layoutPretty defaultLayoutOptions . pretty
 
 -- | Convert a Kitab Service to a Cilium Policy
 toCiliumPolicy
-  :: Map ServiceReference ServiceInfo
+  :: Map ServiceName ServiceInfo
   -> Service
   -> CiliumNetworkPolicy
 toCiliumPolicy services service =
@@ -57,7 +58,7 @@ dnsEgressRule =
         (Just DNSMatch {dnsMatchNAme = "*"})
     ]
 
-serviceEgressRule :: Maybe ContextName -> Map ServiceReference ServiceInfo -> Connection -> EgressRule
+serviceEgressRule :: Maybe ContextName -> Map ServiceName ServiceInfo -> Connection -> EgressRule
 serviceEgressRule mContext services Connection {connectionWith, connectionPorts}
   | Just ServiceInfo {serviceContext} <- Map.lookup connectionWith services
   , isJust serviceContext
@@ -84,7 +85,7 @@ cidrEgressRule = EgressRule . List.singleton . ToCIDRSet
 -- 1. If no ports are specified by the caller, we use the ones opened by the callee
 -- 2. If the caller specifies ports, we check if they are also defined by the callee
 -- 3. If not, we fallback to port 443 on TCP
-pickPorts :: Map ServiceReference ServiceInfo -> ServiceReference -> Set PortNode -> Set PortProtocol
+pickPorts :: Map ServiceName ServiceInfo -> ServiceName -> Set PortNode -> Set PortProtocol
 pickPorts services with ports
   | Set.null ports
   , Just ServiceInfo {servicePorts} <- Map.lookup with services =

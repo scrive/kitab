@@ -4,25 +4,14 @@ module Core.Model.Service where
 
 import Data.Set
 import Data.Set qualified as Set
-import Data.String (IsString)
 import GHC.Generics
 import Prettyprinter
 
 import Core.Model.CIDRSet
 import Core.Model.ContextName
+import Core.Model.EntityName
 import Core.Model.PortNode
-
-newtype ServiceName = ServiceName Text
-  deriving newtype (Eq, Ord, Show, IsString, Pretty, Display)
-
-data ServiceReference = ServiceReference
-  { referenceName :: ServiceName
-  , referenceContext :: Maybe ContextName
-  }
-  deriving stock (Eq, Show, Ord, Generic)
-
-instance Display ServiceReference where
-  displayBuilder ServiceReference{referenceName} = displayBuilder referenceName
+import Core.Model.ServiceName
 
 data ConnectionType
   = HTTPS
@@ -62,8 +51,13 @@ defaultServiceInfo =
     }
 
 data Connection = Connection
-  { connectionWith :: ServiceReference
+  { connectionWith :: ServiceName
   , connectionType :: ConnectionType
   , connectionPorts :: Set PortNode
+  }
+  deriving stock (Eq, Show, Ord)
+
+data EntityAccess = EntityAccess
+  { accessTarget :: EntityName
   }
   deriving stock (Eq, Show, Ord)

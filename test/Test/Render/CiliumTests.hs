@@ -46,7 +46,7 @@ renderService = runTestEff $ do
         mapMaybe
           ( \case
               ServiceDeclaration s -> Just s
-              ContextDeclaration _ -> Nothing
+              _ -> Nothing
           )
           declarations
   let graph = buildGraph serviceDefinitions
