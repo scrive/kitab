@@ -25,7 +25,7 @@ spec:
     - toCIDRSets:
           cidr: 10.147.128.0/24 # MySQL
       toPorts:
-          ports:
+          - ports:
               - port: 3306
                 protocol: TCP
     - toCIDRSets:
@@ -35,6 +35,6 @@ spec:
     - toCIDRSets:
           cidr: 10.42.42.0/24 # NTP
       toPorts:
-          ports:
+          - ports:
               - port: 123
                 protocol: UDP

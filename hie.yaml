@@ -1,0 +1,32 @@
+cradle:
+  multi:
+    - path: "./src/driver"
+      config: { cradle: { cabal: { component: "lib:kitab" } } }
+       
+    - path: "./src/parser"
+      config: { cradle: { cabal: { component: "lib:kitab" } } }
+
+    - path: "./src/cli"
+      config: { cradle: { cabal: { component: "lib:kitab" } } }
+
+    - path: "./src/core"
+      config: { cradle: { cabal: { component: "kitab:lib:kitab-core" } } }
+
+    - path: "./src/c4"
+      config: { cradle: { cabal: { component: "kitab:lib:kitab-c4" } } }
+
+    - path: "./src/cilium"
+      config: { cradle: { cabal: { component: "kitab:lib:kitab-cilium" } } }
+
+    - path: "./app/Main.hs"
+      config: { cradle: { cabal: { component: "kitab:exe:kitab" } } }
+
+    - path: "./test"
+      config: { cradle: { cabal: { component: "kitab:test:kitab-test" } } }
+
+    - path: "./test/golden"
+      config: { cradle: { none: } }
+
+    - path: "kitab-prelude/src"
+      config: { cradle: { cabal: { component: "lib:kitab-prelude" } } }
+

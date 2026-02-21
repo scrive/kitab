@@ -12,7 +12,7 @@ import System.OsPath
 import System.OsPath qualified as OsPath
 
 import CLI.Types
-import Core.Model.ServiceContext
+import Core.Model.ContextName
 import Paths_kitab (version)
 
 parseOptions :: Parser Options

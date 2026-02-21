@@ -19,9 +19,6 @@ import Parser.Types
 import Render.Cilium qualified as Cilium
 import Test.Utils
 
-diffCmd :: String -> String -> [String]
-diffCmd ref new = ["diff", "-u", ref, new]
-
 test :: TestTree
 test =
   testGroup
@@ -46,14 +43,24 @@ renderService = runTestEff $ do
         mapMaybe
           ( \case
               ServiceDeclaration s -> Just s
-              ContextDeclaration _ -> Nothing
+              _ -> Nothing
           )
           declarations
-  let graph = buildGraph serviceDefinitions
-  let serviceIndex = buildIndex serviceDefinitions
+
+  let entities =
+        mapMaybe
+          ( \case
+              EntityDeclaration s -> Just s
+              _ -> Nothing
+          )
+          declarations
+
+  let graph = buildGraph serviceDefinitions entities
+  let serviceIndex = buildServiceIndex serviceDefinitions
+  let entityIndex = buildEntityIndex entities
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)
   mediaProxyService <- assertJust "" $ List.find (\s -> s.serviceName == "media-proxy") serviceDefinitions
-  ((pure . TL.encodeUtf8) . T.fromStrict) . Cilium.renderCilium $ Cilium.toCiliumPolicy serviceIndex mediaProxyService
+  ((pure . TL.encodeUtf8) . T.fromStrict) . Cilium.renderCilium $ Cilium.toCiliumPolicy serviceIndex entityIndex mediaProxyService
 
 renderCIDRSetPolicy :: IO LazyByteString
 renderCIDRSetPolicy = runTestEff $ do
@@ -66,8 +73,17 @@ renderCIDRSetPolicy = runTestEff $ do
               _ -> Nothing
           )
           declarations
-  let graph = buildGraph serviceDefinitions
-  let serviceIndex = buildIndex serviceDefinitions
+  let entities =
+        mapMaybe
+          ( \case
+              EntityDeclaration s -> Just s
+              _ -> Nothing
+          )
+          declarations
+
+  let graph = buildGraph serviceDefinitions entities
+  let serviceIndex = buildServiceIndex serviceDefinitions
+  let entityIndex = buildEntityIndex entities
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)
   myAppService <- assertJust "" $ List.find (\s -> s.serviceName == "my-app") serviceDefinitions
-  ((pure . TL.encodeUtf8) . T.fromStrict) . Cilium.renderCilium $ Cilium.toCiliumPolicy serviceIndex myAppService
+  ((pure . TL.encodeUtf8) . T.fromStrict) . Cilium.renderCilium $ Cilium.toCiliumPolicy serviceIndex entityIndex myAppService

@@ -1,4 +1,6 @@
-module Parser.Service where
+module Parser.Service
+  ( serviceDecoder
+  ) where
 
 import Data.Maybe qualified as Maybe
 import Data.Set qualified as Set
@@ -6,24 +8,28 @@ import KDL
 import KDL.Decoder.Internal.Decoder
 
 import Core.Model.CIDRSet
-import Core.Model.Port
+import Core.Model.ContextName
+import Core.Model.PortNode
 import Core.Model.Service
-import Core.Model.ServiceContext
+import Parser.EntityName
+import Parser.PortNode
 import Parser.ServiceContext
+import Parser.ServiceName
 
 data ServiceMetadata
   = FQDNNode Text
   | DependsOnNode Connection
-  | ServiceContextNode ServiceContext
+  | ServiceContextNode ContextName
   | CIDRSetNode CIDRSet
   | ServicePortNode PortNode
+  | AccessNode EntityAccess
   deriving stock (Eq, Ord, Show)
 
 getFQDN :: ServiceMetadata -> Maybe Text
 getFQDN (FQDNNode t) = Just t
 getFQDN _ = Nothing
 
-getServiceContext :: ServiceMetadata -> Maybe ServiceContext
+getServiceContext :: ServiceMetadata -> Maybe ContextName
 getServiceContext (ServiceContextNode c) = Just c
 getServiceContext _ = Nothing
 
@@ -39,6 +45,10 @@ getPort :: ServiceMetadata -> Maybe PortNode
 getPort (ServicePortNode p) = Just p
 getPort _ = Nothing
 
+getEntityAccess :: ServiceMetadata -> Maybe EntityAccess
+getEntityAccess (AccessNode a) = Just a
+getEntityAccess _ = Nothing
+
 serviceDecoder :: DecodeArrow NodeList () Service
 serviceDecoder = KDL.nodeWith "service" $ do
   serviceName <- KDL.argWith serviceNameDecoder
@@ -46,33 +56,40 @@ serviceDecoder = KDL.nodeWith "service" $ do
     KDL.children . KDL.many $
       (FQDNNode <$> KDL.nodeWith "fqdn" (KDL.argWith KDL.text))
         <|> (ServicePortNode <$> portDecoder)
-        <|> (DependsOnNode <$> connectionDecoder)
-        <|> (ServiceContextNode <$> contextDecoder)
+        <|> (DependsOnNode <$> dependsOnDecoder)
+        <|> (AccessNode <$> accessDecoder)
+        <|> (ServiceContextNode <$> contextReferenceDecoder)
         <|> (CIDRSetNode <$> cidrSetDecoder)
 
   let serviceFqdn = Maybe.listToMaybe $ mapMaybe getFQDN mixedChildren
   let servicePorts = Set.fromList $ mapMaybe getPort mixedChildren
   let serviceContext = Maybe.listToMaybe $ mapMaybe getServiceContext mixedChildren
   let serviceInfo = ServiceInfo {serviceFqdn, serviceContext, servicePorts}
-  let connections = mapMaybe getConnection mixedChildren
+  let serviceConnections = mapMaybe getConnection mixedChildren
   let cidrSets = mapMaybe getCIDRSet mixedChildren
+  let entityAccesses = mapMaybe getEntityAccess mixedChildren
 
-  pure Service {serviceName, serviceInfo, connections, cidrSets}
+  pure Service {serviceName, serviceInfo, serviceConnections, cidrSets, entityAccesses}
 
-connectionDecoder :: DecodeArrow NodeList () Connection
-connectionDecoder = KDL.nodeWith "depends-on" $ do
+dependsOnDecoder :: DecodeArrow NodeList () Connection
+dependsOnDecoder = KDL.nodeWith "depends-on" $ do
   connectionWith <- KDL.argWith serviceNameDecoder
+  -- referenceName <- KDL.argWith serviceNameDecoder
+  -- referenceContext <- KDL.optional $ KDL.propWith "context" (ContextName <$> KDL.text)
+  -- pure referenceName
   (connectionPorts, connectionType) <- KDL.children $ do
     connectionPorts <- Set.fromList <$> KDL.many portDecoder
     connectionType <- KDL.nodeWith "via" connectionTypeDecoder
     pure (connectionPorts, connectionType)
   pure Connection {connectionWith, connectionType, connectionPorts}
 
-portDecoder :: DecodeArrow NodeList () PortNode
-portDecoder = KDL.nodeWith "port" $ do
-  port <- KDL.arg
-  protocol <- KDL.option "TCP" KDL.arg
-  pure PortNode {port, protocol}
+accessDecoder :: DecodeArrow NodeList () EntityAccess
+accessDecoder = KDL.nodeWith "access" $ do
+  accessTarget <- KDL.argWith entityNameDecoder
+  accessPorts <-
+    KDL.children $
+      Set.fromList <$> KDL.many portDecoder
+  pure EntityAccess {accessTarget, accessPorts}
 
 connectionTypeDecoder :: DecodeArrow Node () ConnectionType
 connectionTypeDecoder = do
@@ -81,9 +98,6 @@ connectionTypeDecoder = do
     "https" -> pure HTTPS
     "function-call" -> pure FunctionCall
     _ -> KDL.fail $ "Found unkonwn connection type: " <> connTypeText
-
-serviceNameDecoder :: ValueDecodeArrow () ServiceName
-serviceNameDecoder = ServiceName <$> KDL.text
 
 cidrSetDecoder :: DecodeArrow NodeList () CIDRSet
 cidrSetDecoder = KDL.nodeWith "cidr-set" $ do

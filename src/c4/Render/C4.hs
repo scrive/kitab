@@ -8,7 +8,7 @@ import Prettyprinter.Render.Text (renderStrict)
 
 import Core.Model.Service
 import Core.Model.ServiceContext
-import Render.C4.Types
+import Render.C4.C4Service.Types
 
 renderC4
   :: List ServiceContext
@@ -24,9 +24,10 @@ renderC4 contexts graph = renderStrict . layoutPretty defaultLayoutOptions $ pum
         , ""
         , "title System Architecture (C4 Container View)"
         , ""
+        , "' --- Contexts ---"
         , prettyContexts contexts (AM.vertexList graph)
         , ""
-        , "' --- Systems ---"
+        , "' --- Outer Systems ---"
         , prettyOutOfContext (AM.vertexList graph)
         , ""
         , "' --- Relationships ---"

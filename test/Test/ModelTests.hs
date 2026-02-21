@@ -7,7 +7,9 @@ import Test.Tasty
 import Validation (validationToEither)
 
 import Core.Graph
+import Core.Model.Reference
 import Core.Model.Service
+import Core.Model.ServiceName
 import Core.Validation
 import Test.Utils
 
@@ -25,27 +27,27 @@ test =
 
 testParallelConnectionsDetection :: TestEff ()
 testParallelConnectionsDetection = do
-  let graph = buildGraph [Service "A" defaultServiceInfo [Connection "B" HTTPS [], Connection "B" FunctionCall []] []]
+  let graph = buildGraph [Service "A" defaultServiceInfo [Connection (ServiceName "B") HTTPS [], Connection (ServiceName "B") FunctionCall []] [] []] []
   validationError <- assertLeft "Graph is not validated" $ validationToEither (checkGraph graph)
   assertEqual
     "Parallel edges"
-    (NE.singleton (Parallel "A" "B" [HTTPS, FunctionCall]))
+    (NE.singleton (Parallel (ServiceRef $ ServiceName "A") (ServiceRef $ ServiceName "B") [HTTPS, FunctionCall]))
     validationError
 
 testSelfReferentialConnections :: TestEff ()
 testSelfReferentialConnections = do
-  let graph = buildGraph [Service "A" defaultServiceInfo [Connection "A" HTTPS []] []]
+  let graph = buildGraph [Service "A" defaultServiceInfo [Connection (ServiceName "A") HTTPS []] [] []] []
   validationError <- assertLeft "Graph is not validated" $ validationToEither (checkGraph graph)
   assertEqual
     "Self-Referential edges"
-    (NE.singleton (SelfReferential "A"))
+    (NE.singleton (SelfReferential (ServiceRef $ ServiceName "A")))
     validationError
 
 testMismatchedConnections :: TestEff ()
 testMismatchedConnections = do
-  let graph = buildGraph [Service "A" defaultServiceInfo [Connection "B" HTTPS []] [], Service "B" defaultServiceInfo [Connection "A" FunctionCall []] []]
+  let graph = buildGraph [Service "A" defaultServiceInfo [Connection (ServiceName "B") HTTPS []] [] [], Service "B" defaultServiceInfo [Connection (ServiceName "A") FunctionCall []] [] []] []
   validationError <- assertLeft "Graph is not validated" $ validationToEither (checkGraph graph)
   assertEqual
     "Mismatched connections"
-    (NE.singleton (Mismatched (("A", "B", HTTPS), ("B", "A", FunctionCall))))
+    (NE.singleton (Mismatched ((ServiceRef (ServiceName "A"), ServiceRef (ServiceName "B"), HTTPS), (ServiceRef (ServiceName "B"), ServiceRef (ServiceName "A"), FunctionCall))))
     validationError

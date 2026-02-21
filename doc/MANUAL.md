@@ -43,7 +43,51 @@ Service definitions are written in [KDL](https://kdl.dev) files.
 ### <a name="context"></a> `context`
 
 At the top-level, `context` node defines a system boundary, like a Kubernetes cluster.
-Within a [`service`](#service) node, this indicates that the service belongs to the name context.
+
+This node can contain the following children
+
+* [`entity`](#entity)
+
+| Argument | Type | Description         |
+|----------|------|---------------------|
+| name     | text | Name of the context |
+
+
+#### Example
+
+```kdl
+context "k8s"
+```
+
+### <a name="entity"></a> `entity`
+
+Declare an abstract entity linked to a context, oftentimes used by specific renderers.
+
+This node can contain the following children
+
+* [`in-context`](#in-context)
+* [`port`](#port)
+
+| Argument | Type | Description         |
+|----------|------|---------------------|
+| name     | text | Name of the context |
+
+#### Examples
+
+This defines a `"host"` entity that will be used by the Cilium renderer
+to emit a `toEntities` section.
+
+```kdl
+entity "host" {
+  in-context "k8s"
+  port 123 "UDP"
+  port 23432 "TCP"
+}
+```
+
+### <a name="in-context"></a> `in-context`
+
+Within a [`service`](#service) or an [`entity`](#entity) node, this indicates that it belongs to the named context.
 
 | Argument | Type | Description         |
 |----------|------|---------------------|
@@ -52,7 +96,10 @@ Within a [`service`](#service) node, this indicates that the service belongs to 
 #### Example
 
 ```kdl
-context "kubernetes"
+service "media-proxy" {
+  in-context "cluster"
+  depends-on "cluster:host"
+}
 ```
 
 ### <a name="service"></a> `service`
@@ -110,7 +157,7 @@ service "opensearch" {
 
 ### <a name="depends-on"></a> `depends-on`
 
-Declare an outgoing connection to a service. This node can contain the following children:
+Declare an outgoing connection to another service. This node can contain the following children:
 
 * [`via`](#via);
 * [`port`](#port).
@@ -251,6 +298,23 @@ cidr-set {
   cidr "0.0.0.0/0" "Internet"
   except "10.0.0.0/8" "Internal network, to be refined further down"
 }
+```
+
+### <a name="access"></a> `access`
+
+Declare an access to an [`entity`](#entity).
+
+| Argument    | Type |
+|-------------|------|
+| Entity name | text |
+
+#### Examples
+
+```kdl
+service "media-proxy" {
+	access "host"
+}
+
 ```
 
 ## ENVIRONMENT

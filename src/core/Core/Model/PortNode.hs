@@ -1,4 +1,4 @@
-module Core.Model.Port where
+module Core.Model.PortNode where
 
 import Data.Word
 

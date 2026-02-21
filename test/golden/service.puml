@@ -3,13 +3,15 @@
 
 title System Architecture (C4 Container View)
 
+' --- Contexts ---
 System_Boundary(c1,k8s) {
   System(main_app, "main-app")
   System(media_proxy, "media-proxy")
   System(user_registry, "user-registry")
 }
 
-' --- Systems ---
+' --- Outer Systems ---
+System(host, "host")
 System(opensearch, "opensearch")
 System(otel_tracing, "otel-tracing")
 System(s3, "s3")
@@ -19,6 +21,7 @@ Rel(main_app, media_proxy, "Connects via", "HTTPS")
 Rel(main_app, otel_tracing, "Connects via", "HTTPS")
 Rel(main_app, s3, "Connects via", "HTTPS")
 Rel(main_app, user_registry, "using", "Function call")
+Rel(media_proxy, host, "Connects via", "HTTPS")
 Rel(media_proxy, opensearch, "Connects via", "HTTPS")
 Rel(media_proxy, otel_tracing, "Connects via", "HTTPS")
 @enduml

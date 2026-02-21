@@ -1,6 +1,7 @@
 module Core.Graph
   ( buildGraph
-  , buildIndex
+  , buildServiceIndex
+  , buildEntityIndex
   ) where
 
 import Algebra.Graph.Labelled (Graph)
@@ -9,21 +10,46 @@ import Data.List qualified as List
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 
+import Core.Model.Entity
+import Core.Model.EntityName
+import Core.Model.Reference
 import Core.Model.Service
+import Core.Model.ServiceName
 
-buildIndex :: List Service -> Map ServiceName ServiceInfo
-buildIndex =
+buildServiceIndex :: List Service -> Map ServiceName ServiceInfo
+buildServiceIndex =
   foldr
-    ( \service ->
-        Map.insert service.serviceName service.serviceInfo
+    ( \Service {serviceName, serviceInfo} ->
+        Map.insert serviceName serviceInfo
     )
     Map.empty
 
-buildGraph :: List Service -> Graph (List ConnectionType) ServiceName
-buildGraph =
+buildEntityIndex :: List Entity -> Map EntityName EntityInfo
+buildEntityIndex =
   foldr
-    ( \service ->
-        let builtGraph = Graph.edges [(List.singleton connection.connectionType, service.serviceName, connection.connectionWith) | connection <- service.connections]
-        in Graph.overlay builtGraph
+    ( \Entity {entityName, entityInfo} ->
+        Map.insert entityName entityInfo
     )
-    Graph.empty
+    Map.empty
+buildGraph :: List Service -> List Entity -> Graph (List ConnectionType) Reference
+buildGraph services entities =
+  let serviceGraph =
+        foldr
+          ( \service acc ->
+              let incomingService = ServiceRef service.serviceName
+                  serviceConnectionsGraph =
+                    Graph.edges [(List.singleton connection.connectionType, incomingService, ServiceRef connection.connectionWith) | connection <- service.serviceConnections]
+                  entityConnectionsGraph =
+                    Graph.edges [(List.singleton HTTPS, incomingService, EntityRef access.accessTarget) | access <- service.entityAccesses]
+              in Graph.overlays [serviceConnectionsGraph, entityConnectionsGraph, acc]
+          )
+          Graph.empty
+          services
+  in foldr
+       ( \entity ->
+           let incomingEntity = EntityRef entity.entityName
+               builtGraph = Graph.vertex incomingEntity
+           in Graph.overlay builtGraph
+       )
+       serviceGraph
+       entities

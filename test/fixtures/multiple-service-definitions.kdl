@@ -1,5 +1,11 @@
 context "k8s"
 
+entity "host"  {
+	in-context "k8s"
+	port 123 "UDP"
+	port 30928 "TCP"	
+}
+
 service "otel-tracing" {
 	fqdn "tracing.internal.network"
 	port 4317
@@ -17,7 +23,7 @@ service "s3" {
 }
 
 service "media-proxy" {
-	context "k8s"
+	in-context "k8s"
 
 	depends-on "opensearch" {
 		via "https"
@@ -26,14 +32,16 @@ service "media-proxy" {
 	depends-on "otel-tracing" {
 		via "https"
 	} 
+
+	access "host"
 }
 
 service "user-registry" {
-	context "k8s"
+	in-context "k8s"
 }
 
 service "main-app" {
-	context "k8s"
+	in-context "k8s"
 
 	depends-on "s3"  {
 		via "https"

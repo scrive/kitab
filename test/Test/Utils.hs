@@ -9,6 +9,7 @@ module Test.Utils
   , assertNothing
   , assertRight
   , assertLeft
+  , diffCmd
   ) where
 
 import Effectful
@@ -58,3 +59,6 @@ assertRight message (Left a) = liftIO . Test.assertFailure $ (message <> ". Foun
 assertLeft :: HasCallStack => String -> Either a b -> TestEff a
 assertLeft description (Right _b) = liftIO $ Test.assertFailure description
 assertLeft _ (Left a) = pure a
+
+diffCmd :: String -> String -> [String]
+diffCmd ref new = ["diff", "-u", ref, new]

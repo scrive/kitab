@@ -17,11 +17,8 @@ import Core.Validation
 import Parser
 import Parser.Types
 import Render.C4 qualified as C4
-import Render.C4.Types
+import Render.C4.C4Service.Types
 import Test.Utils
-
-diffCmd :: String -> String -> [String]
-diffCmd ref new = ["diff", "-u", ref, new]
 
 test :: TestTree
 test =
@@ -52,8 +49,15 @@ renderServices = runTestEff $ do
               _ -> Nothing
           )
           declarations
-  let graph = buildGraph serviceDefinitions
-  let serviceIndex = buildIndex serviceDefinitions
+  let entities =
+        mapMaybe
+          ( \case
+              EntityDeclaration c -> Just c
+              _ -> Nothing
+          )
+          declarations
+  let graph = buildGraph serviceDefinitions entities
+  let serviceIndex = buildServiceIndex serviceDefinitions
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)
   let graphEdges =
         graph

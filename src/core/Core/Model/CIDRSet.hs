@@ -2,7 +2,7 @@ module Core.Model.CIDRSet where
 
 import GHC.Generics
 
-import Core.Model.Port
+import Core.Model.PortNode
 
 data CIDRSet = CIDRSet
   { items :: List CIDRSetItem

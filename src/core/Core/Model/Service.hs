@@ -4,16 +4,14 @@ module Core.Model.Service where
 
 import Data.Set
 import Data.Set qualified as Set
-import Data.String (IsString)
 import GHC.Generics
 import Prettyprinter
 
 import Core.Model.CIDRSet
-import Core.Model.Port
-import Core.Model.ServiceContext
-
-newtype ServiceName = ServiceName Text
-  deriving newtype (Eq, Ord, Show, IsString, Pretty, Display)
+import Core.Model.ContextName
+import Core.Model.EntityName
+import Core.Model.PortNode
+import Core.Model.ServiceName
 
 data ConnectionType
   = HTTPS
@@ -28,8 +26,9 @@ instance Pretty ConnectionType where
 data Service = Service
   { serviceName :: ServiceName
   , serviceInfo :: ServiceInfo
-  , connections :: List Connection
+  , serviceConnections :: List Connection
   , cidrSets :: List CIDRSet
+  , entityAccesses :: List EntityAccess
   }
   deriving stock (Eq, Show, Ord, Generic)
   deriving
@@ -39,7 +38,7 @@ data Service = Service
 data ServiceInfo = ServiceInfo
   { serviceFqdn :: Maybe Text
   -- ^ Fqdn is a Cilium thing.
-  , serviceContext :: Maybe ServiceContext
+  , serviceContext :: Maybe ContextName
   , servicePorts :: Set PortNode
   }
   deriving stock (Eq, Show, Ord, Generic)
@@ -56,5 +55,11 @@ data Connection = Connection
   { connectionWith :: ServiceName
   , connectionType :: ConnectionType
   , connectionPorts :: Set PortNode
+  }
+  deriving stock (Eq, Show, Ord)
+
+data EntityAccess = EntityAccess
+  { accessTarget :: EntityName
+  , accessPorts :: Set PortNode
   }
   deriving stock (Eq, Show, Ord)

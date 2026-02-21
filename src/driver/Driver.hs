@@ -28,13 +28,14 @@ import Validation
 import CLI.Error
 import CLI.Types
 import Core.Graph
+import Core.Model.ContextName
 import Core.Model.Service
 import Core.Model.ServiceContext
 import Core.Validation
 import Parser
 import Parser.Types
 import Render.C4 qualified as C4
-import Render.C4.Types qualified as C4
+import Render.C4.C4Service.Types qualified as C4
 import Render.Cilium qualified as Cilium
 
 runOptions :: (Console :> es, FileSystem :> es, Error (NonEmpty CLIError) :> es) => Options -> Eff es ()
@@ -54,17 +55,24 @@ runOptions options = do
               _ -> Nothing
           )
           declarations
-
+  let entities =
+        mapMaybe
+          ( \case
+              EntityDeclaration e -> Just e
+              _ -> Nothing
+          )
+          declarations
   let serviceDefinitions' =
         mapMaybe
           ( \case
               ServiceDeclaration s -> Just s
-              ContextDeclaration _ -> Nothing
+              _ -> Nothing
           )
           declarations
 
-  let graph = buildGraph serviceDefinitions'
-  let serviceIndex = buildIndex serviceDefinitions'
+  let graph = buildGraph serviceDefinitions' entities
+  let serviceIndex = buildServiceIndex serviceDefinitions'
+  let entitiesIndex = buildEntityIndex entities
   serviceDefinitions <-
     filterServicesByContext
       options.contextFilters
@@ -87,7 +95,7 @@ runOptions options = do
           FileSystem.writeFile outputPath (T.encodeUtf8 rendered)
         CiliumFormat -> do
           outputs <- forM serviceDefinitions $ \service -> do
-            let rendered = Cilium.renderCilium (Cilium.toCiliumPolicy serviceIndex service)
+            let rendered = Cilium.renderCilium (Cilium.toCiliumPolicy serviceIndex entitiesIndex service)
             outputFile <- OsPath.encodeUtf . T.unpack $ display service.serviceName
             outputPath <- OsPath.decodeUtf (options.outputDir </> outputFile <> [osp|-network-policy.yaml|])
             pure (outputPath, rendered)
@@ -110,4 +118,4 @@ filterServicesByContext contextFilters contexts services = do
     filterServices contextFilter = do
       unless (List.any (\c -> c.contextName == contextFilter) contexts) $ Error.throwError (NE.singleton (unknownContextFilter contextFilter))
       pure $
-        List.filter (\s -> (s ^. #serviceInfo ^? #serviceContext %? #contextName :: Maybe ContextName) == Just contextFilter) services
+        List.filter (\s -> (s ^. #serviceInfo % #serviceContext :: Maybe ContextName) == Just contextFilter) services
