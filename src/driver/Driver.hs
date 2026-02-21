@@ -71,7 +71,8 @@ runOptions options = do
           declarations
 
   let graph = buildGraph serviceDefinitions' entities
-  let serviceIndex = buildIndex serviceDefinitions'
+  let serviceIndex = buildServiceIndex serviceDefinitions'
+  let entitiesIndex = buildEntityIndex entities
   serviceDefinitions <-
     filterServicesByContext
       options.contextFilters
@@ -94,7 +95,7 @@ runOptions options = do
           FileSystem.writeFile outputPath (T.encodeUtf8 rendered)
         CiliumFormat -> do
           outputs <- forM serviceDefinitions $ \service -> do
-            let rendered = Cilium.renderCilium (Cilium.toCiliumPolicy serviceIndex service)
+            let rendered = Cilium.renderCilium (Cilium.toCiliumPolicy serviceIndex entitiesIndex service)
             outputFile <- OsPath.encodeUtf . T.unpack $ display service.serviceName
             outputPath <- OsPath.decodeUtf (options.outputDir </> outputFile <> [osp|-network-policy.yaml|])
             pure (outputPath, rendered)

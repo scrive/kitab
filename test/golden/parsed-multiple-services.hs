@@ -8,7 +8,7 @@
                     , protocol = "UDP"
                     }
                 , PortNode
-                    { port = 23424
+                    { port = 30928
                     , protocol = "TCP"
                     }
                 ]
@@ -101,7 +101,9 @@
         , cidrSets = []
         , entityAccesses =
             [ EntityAccess
-                { accessTarget = "host" }
+                { accessTarget = "host"
+                , accessPorts = fromList []
+                }
             ]
         }
     )

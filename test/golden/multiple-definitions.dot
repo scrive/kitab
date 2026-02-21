@@ -13,4 +13,5 @@ digraph
   "main-app" -> "user-registry"
   "media-proxy" -> "opensearch"
   "media-proxy" -> "otel-tracing"
+  "media-proxy" -> "host"
 }

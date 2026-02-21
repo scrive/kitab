@@ -86,7 +86,10 @@ dependsOnDecoder = KDL.nodeWith "depends-on" $ do
 accessDecoder :: DecodeArrow NodeList () EntityAccess
 accessDecoder = KDL.nodeWith "accesses" $ do
   accessTarget <- KDL.argWith entityNameDecoder
-  pure EntityAccess {accessTarget}
+  accessPorts <-
+    KDL.children $
+      Set.fromList <$> KDL.many portDecoder
+  pure EntityAccess {accessTarget, accessPorts}
 
 connectionTypeDecoder :: DecodeArrow Node () ConnectionType
 connectionTypeDecoder = do

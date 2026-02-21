@@ -57,7 +57,7 @@ renderServices = runTestEff $ do
           )
           declarations
   let graph = buildGraph serviceDefinitions entities
-  let serviceIndex = buildIndex serviceDefinitions
+  let serviceIndex = buildServiceIndex serviceDefinitions
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)
   let graphEdges =
         graph

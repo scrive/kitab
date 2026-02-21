@@ -56,10 +56,11 @@ renderService = runTestEff $ do
           declarations
 
   let graph = buildGraph serviceDefinitions entities
-  let serviceIndex = buildIndex serviceDefinitions
+  let serviceIndex = buildServiceIndex serviceDefinitions
+  let entityIndex = buildEntityIndex entities
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)
   mediaProxyService <- assertJust "" $ List.find (\s -> s.serviceName == "media-proxy") serviceDefinitions
-  ((pure . TL.encodeUtf8) . T.fromStrict) . Cilium.renderCilium $ Cilium.toCiliumPolicy serviceIndex mediaProxyService
+  ((pure . TL.encodeUtf8) . T.fromStrict) . Cilium.renderCilium $ Cilium.toCiliumPolicy serviceIndex entityIndex mediaProxyService
 
 renderCIDRSetPolicy :: IO LazyByteString
 renderCIDRSetPolicy = runTestEff $ do
@@ -81,7 +82,8 @@ renderCIDRSetPolicy = runTestEff $ do
           declarations
 
   let graph = buildGraph serviceDefinitions entities
-  let serviceIndex = buildIndex serviceDefinitions
+  let serviceIndex = buildServiceIndex serviceDefinitions
+  let entityIndex = buildEntityIndex entities
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)
   myAppService <- assertJust "" $ List.find (\s -> s.serviceName == "my-app") serviceDefinitions
-  ((pure . TL.encodeUtf8) . T.fromStrict) . Cilium.renderCilium $ Cilium.toCiliumPolicy serviceIndex myAppService
+  ((pure . TL.encodeUtf8) . T.fromStrict) . Cilium.renderCilium $ Cilium.toCiliumPolicy serviceIndex entityIndex myAppService

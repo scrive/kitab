@@ -60,5 +60,6 @@ data Connection = Connection
 
 data EntityAccess = EntityAccess
   { accessTarget :: EntityName
+  , accessPorts :: Set PortNode
   }
   deriving stock (Eq, Show, Ord)
