@@ -33,7 +33,7 @@ service "media-proxy" {
 		via "https"
 	} 
 
-	accesses "host"
+	access "host"
 }
 
 service "user-registry" {
