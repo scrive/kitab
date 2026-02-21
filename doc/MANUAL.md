@@ -59,18 +59,35 @@ This node can contain the following children
 context "k8s"
 ```
 
+### <a name="entity"></a> `entity`
+
+Declare an abstract entity linked to a context, oftentimes used by specific renderers.
+
+This node can contain the following children
+
+* [`in-context`](#in-context)
+* [`port`](#port)
+
+| Argument | Type | Description         |
+|----------|------|---------------------|
+| name     | text | Name of the context |
+
+#### Examples
+
+This defines a `"host"` entity that will be used by the Cilium renderer
+to emit a `toEntities` section.
+
 ```kdl
-context "cluster" {
-  entity "host" {
-    port 123 "UDP"
-    port 23432 "TCP"
-  }
+entity "host" {
+  in-context "k8s"
+  port 123 "UDP"
+  port 23432 "TCP"
 }
 ```
 
 ### <a name="in-context"></a> `in-context`
 
-Within a [`service`](#service) node, this indicates that the service belongs to the name context.
+Within a [`service`](#service) or an [`entity`](#entity) node, this indicates that it belongs to the named context.
 
 | Argument | Type | Description         |
 |----------|------|---------------------|
@@ -140,7 +157,7 @@ service "opensearch" {
 
 ### <a name="depends-on"></a> `depends-on`
 
-Declare an outgoing connection to a service. This node can contain the following children:
+Declare an outgoing connection to another service. This node can contain the following children:
 
 * [`via`](#via);
 * [`port`](#port).
@@ -281,6 +298,23 @@ cidr-set {
   cidr "0.0.0.0/0" "Internet"
   except "10.0.0.0/8" "Internal network, to be refined further down"
 }
+```
+
+### <a name="access"></a> `access`
+
+Declare an access to an [`entity`](#entity).
+
+| Argument    | Type |
+|-------------|------|
+| Entity name | text |
+
+#### Examples
+
+```kdl
+service "media-proxy" {
+	access "host"
+}
+
 ```
 
 ## ENVIRONMENT
