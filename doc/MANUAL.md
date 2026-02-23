@@ -327,10 +327,13 @@ Declare an access to an [`entity`](#entity).
 service "media-proxy" {
 	access "host"
 }
-
 ```
 
 ## ENVIRONMENT
+
+## EXAMPLES
+
+See the `examples/` directory in the git repository.
 
 ## BUGS
 
