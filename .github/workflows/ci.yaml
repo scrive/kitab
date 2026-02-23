@@ -55,6 +55,16 @@ jobs:
       - name: Test - ${{ matrix.ghc }}
         run: cabal test
 
+      - name: "Re-generate examples - ${{ matrix.ghc }}"
+        run: |
+          make -C examples all
+          result=$(git status --porcelain -uno)
+          if [[ -n "$result" ]]
+          then
+            print "Please update the examples directory with `make all`!"
+            exit 1
+          fi
+
   package-macos:
     name: Build on macos-latest
     runs-on: macos-latest
