@@ -1,7 +1,6 @@
 module Render.Cilium where
 
 import Data.List qualified as List
-import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Data.Set (Set)
 import Data.Set qualified as Set
@@ -12,6 +11,7 @@ import Core.Model.CIDRSet
 import Core.Model.ContextName
 import Core.Model.Entity
 import Core.Model.EntityName
+import Core.Model.FQDN
 import Core.Model.PortNode
 import Core.Model.Service
 import Core.Model.ServiceName
@@ -68,18 +68,16 @@ serviceEgressRule mContext services Connection {connectionWith, connectionPorts}
   , isJust serviceContext
   , serviceContext == mContext =
       EgressRule . pure $ ToEndpoint (EndpointSelector $ Map.singleton "app" (display connectionWith))
-  | Just ServiceInfo {serviceFqdn} <- Map.lookup connectionWith services
+  | Just ServiceInfo {serviceFqdns} <- Map.lookup connectionWith services
   , let ports = Set.toList $ pickServicePorts services connectionWith connectionPorts =
-      EgressRule $
-        maybe
-          []
-          ( \hostname ->
-              pure $
-                ToFQDN
-                  (FQDNMatch hostname)
-                  (PortRule (List.map (\portNode -> PortProtocol (display portNode.port) portNode.protocol) ports))
+      (EgressRule . List.singleton) . ToFQDNs $
+        fmap
+          ( \FQDN {fqdn} ->
+              ToFQDNItem
+                (FQDNMatch fqdn)
+                (PortRule (List.map (\portNode -> PortProtocol (display portNode.port) portNode.protocol) ports))
           )
-          serviceFqdn
+          serviceFqdns
   | otherwise = error $ "missing service " ++ show connectionWith
 
 -- | Select which ports to use for a connection:

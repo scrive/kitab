@@ -10,6 +10,7 @@ import Prettyprinter
 import Core.Model.CIDRSet
 import Core.Model.ContextName
 import Core.Model.EntityName
+import Core.Model.FQDN
 import Core.Model.PortNode
 import Core.Model.ServiceName
 
@@ -36,7 +37,7 @@ data Service = Service
     via (ShowInstance Service)
 
 data ServiceInfo = ServiceInfo
-  { serviceFqdn :: Maybe Text
+  { serviceFqdns :: List FQDN
   -- ^ Fqdn is a Cilium thing.
   , serviceContext :: Maybe ContextName
   , servicePorts :: Set PortNode
@@ -46,7 +47,7 @@ data ServiceInfo = ServiceInfo
 defaultServiceInfo :: ServiceInfo
 defaultServiceInfo =
   ServiceInfo
-    { serviceFqdn = Nothing
+    { serviceFqdns = mempty
     , serviceContext = Nothing
     , servicePorts = Set.empty
     }

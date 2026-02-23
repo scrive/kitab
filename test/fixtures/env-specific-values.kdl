@@ -1,0 +1,15 @@
+context "k8s"
+
+service "cache" {
+	fqdn "prod.valkey.internal.network" env="prod"
+	fqdn "staging.valkey.internal.network" env="staging"
+	fqdn "staging.valkey.internal.network" env="dev"
+}
+
+service "app" {
+	in-context "k8s"
+	depends-on "cache" {
+		via "https"
+	}
+
+}

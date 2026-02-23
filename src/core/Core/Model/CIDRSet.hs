@@ -7,6 +7,7 @@ import Core.Model.PortNode
 data CIDRSet = CIDRSet
   { items :: List CIDRSetItem
   , ports :: List PortNode
+  , props :: Map Text Text
   }
   deriving stock (Eq, Ord, Show)
 

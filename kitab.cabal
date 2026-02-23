@@ -62,6 +62,7 @@ library
   exposed-modules:
     CLI
     CLI.Error
+    CLI.Filter.Parser
     CLI.Types
     Driver
     Parser
@@ -69,6 +70,7 @@ library
     Parser.EntityName
     Parser.PortNode
     Parser.Service
+    Parser.Service.FQDN
     Parser.ServiceContext
     Parser.ServiceName
     Parser.Types
@@ -87,6 +89,7 @@ library
     kitab:kitab-cilium,
     kitab:kitab-core,
     kitab-prelude,
+    megaparsec,
     optics-core,
     optparse-applicative,
     text,
@@ -106,12 +109,15 @@ library kitab-core
   import: ghc-options
   -- cabal-gild: discover src/core
   exposed-modules:
+    Core.Filtering
+    Core.Filtering.Types
     Core.Graph
     Core.Model.CIDRSet
     Core.Model.ContextName
     Core.Model.Entity
     Core.Model.EntityName
     Core.Model.EntityReference
+    Core.Model.FQDN
     Core.Model.PortNode
     Core.Model.Reference
     Core.Model.Service
@@ -125,6 +131,7 @@ library kitab-core
     base ^>=4.21,
     containers,
     kitab-prelude,
+    optics-core,
     prettyprinter,
     text,
     text-display,
@@ -212,6 +219,7 @@ test-suite kitab-test
   hs-source-dirs: test
   -- cabal-gild: discover test --exclude "test/Main.hs"
   other-modules:
+    Test.CLITests
     Test.ModelTests
     Test.ParserTests
     Test.Render.C4Tests
@@ -231,6 +239,7 @@ test-suite kitab-test
     kitab:kitab-cilium,
     kitab:kitab-core,
     kitab-prelude,
+    megaparsec,
     pretty-simple ^>=4.1.4.0,
     tasty,
     tasty-golden,

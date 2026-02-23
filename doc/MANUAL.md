@@ -4,12 +4,21 @@ kitab — Documentation and Infrastructure for service-oriented architectures
 
 ## SYNOPSIS
 
-Usage: kitab [-q|--quiet] (-f|--format FORMAT) (-i|--input FILE) (-o|--output-dir DIRECTORY)
+Usage: kitab [-q|--quiet] (-f|--format FORMAT) (-i|--input FILE) (-o|--output-dir DIRECTORY) [--filter EXPRESSION]
 
 ## DESCRIPTION
 
 Kitab gathers service definition files and assembles them to create an infrastructure graph.
 This graph can then be used to create network access policies and architecture diagrams.
+
+## CONCEPTS
+
+### Filtering
+
+Some configuration nodes allow arbitrary properties that you can filter on.
+With this feature, deployment environment can be used to select some nodes rather than others.
+This allows the production of network rules that select the appropriate FQDNs
+or CIDRs based on the `env` attribute.
 
 ## OPTIONS
 
@@ -146,6 +155,10 @@ It has no child nodes.
 | Argument | Type |
 |----------|------|
 | name     | text |
+
+| Property | Type |
+|----------|------|
+| env      | text |
 
 #### Example
 

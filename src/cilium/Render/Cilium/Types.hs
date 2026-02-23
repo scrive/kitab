@@ -3,7 +3,6 @@
 module Render.Cilium.Types where
 
 import Data.List qualified as List
-import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Prettyprinter
 
@@ -18,7 +17,7 @@ data CiliumNetworkPolicy = CiliumNetworkPolicy
   , metadata :: Metadata
   , spec :: PolicySpec
   }
-  deriving (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord)
 
 instance Pretty CiliumNetworkPolicy where
   pretty CiliumNetworkPolicy {..} =
@@ -42,7 +41,7 @@ data PolicySpec = PolicySpec
   { endpointSelector :: EndpointSelector
   , egress :: [EgressRule]
   }
-  deriving (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord)
 
 instance Pretty PolicySpec where
   pretty PolicySpec {..} =
@@ -55,7 +54,7 @@ instance Pretty PolicySpec where
 newtype EndpointSelector = EndpointSelector
   { matchLabels :: Map Text Text
   }
-  deriving (Show, Eq, Ord)
+  deriving newtype (Show, Eq, Ord)
 
 instance Pretty EndpointSelector where
   pretty (EndpointSelector labels) =
@@ -67,7 +66,7 @@ instance Pretty EndpointSelector where
 newtype EgressRule = EgressRule
   { egressRuleItems :: List EgressRuleItem
   }
-  deriving (Show, Eq, Ord)
+  deriving newtype (Show, Eq, Ord)
 
 instance Pretty EgressRule where
   pretty EgressRule {..} = align . vsep $ List.map pretty egressRuleItems
@@ -75,7 +74,7 @@ instance Pretty EgressRule where
 -- | An item in a single Egress Rule
 data EgressRuleItem
   = -- | For external/fqdn-based rules
-    ToFQDN FQDNMatch PortRule
+    ToFQDNs (List ToFQDNItem)
   | -- | For internal/k8s-based rules (e.g. DNS)
     ToEndpoint EndpointSelector
   | -- | For allowed ports/protocols
@@ -85,16 +84,24 @@ data EgressRuleItem
   | -- | For Cilium Entities like "host", "world", etc.
     -- See https://docs.cilium.io/en/stable/security/policy/language/#entities-based
     ToEntity EntityName PortRule
-  deriving (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord)
+
+data ToFQDNItem = ToFQDNItem FQDNMatch PortRule
+  deriving stock (Show, Eq, Ord)
+
+instance Pretty ToFQDNItem where
+  pretty (ToFQDNItem fqdn portRule) =
+    vsep
+      [ "-" <+> align (pretty fqdn)
+      , if List.null portRule.ports
+          then mempty
+          else keyBlock "toPorts" (indent 2 $ pretty portRule)
+      ]
 
 instance Pretty EgressRuleItem where
   pretty = \case
-    (ToFQDN fqdn ports) ->
-      keyBlock "toFQDNs" $
-        vsep
-          [ "-" <+> align (pretty fqdn)
-          , keyBlock "toPorts" (indent 2 $ pretty ports)
-          ]
+    (ToFQDNs items) ->
+      keyBlock "toFQDNs" . vsep $ map pretty items
     (ToEndpoint ep) -> keyBlock "toEndpoints" $ "-" <+> align (pretty ep)
     (ToPort portRules dnsMatch) ->
       keyBlock "toPorts" . nest 2 $
@@ -102,7 +109,7 @@ instance Pretty EgressRuleItem where
           [ pretty portRules
           , keyBlock "rules" . keyBlock "dns" $ "-" <+> pretty dnsMatch
           ]
-    (ToCIDRSet (CIDRSet cidrs ports)) ->
+    (ToCIDRSet (CIDRSet cidrs ports _)) ->
       vsep
         [ (keyBlock "toCIDRSets" . indent 2) . vsep $
             List.map
@@ -160,7 +167,7 @@ instance Pretty EgressRuleItem where
 newtype FQDNMatch = FQDNMatch
   { matchName :: Text
   }
-  deriving (Show, Eq, Ord)
+  deriving newtype (Show, Eq, Ord)
 
 instance Pretty FQDNMatch where
   pretty (FQDNMatch name) = keyValue "matchName" (dquotes $ pretty name)
@@ -168,7 +175,7 @@ instance Pretty FQDNMatch where
 newtype DNSMatch = DNSMatch
   { dnsMatchNAme :: Text
   }
-  deriving (Show, Eq, Ord)
+  deriving newtype (Show, Eq, Ord)
 
 instance Pretty DNSMatch where
   pretty (DNSMatch name) = keyValue "matchPattern" (dquotes $ pretty name)
@@ -177,7 +184,7 @@ instance Pretty DNSMatch where
 newtype PortRule = PortRule
   { ports :: [PortProtocol]
   }
-  deriving (Show, Eq, Ord)
+  deriving newtype (Show, Eq, Ord)
 
 instance Pretty PortRule where
   pretty (PortRule ports) =

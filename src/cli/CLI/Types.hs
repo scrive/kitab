@@ -2,6 +2,7 @@ module CLI.Types where
 
 import System.OsPath
 
+import Core.Filtering.Types
 import Core.Model.ContextName
 
 data Options = Options
@@ -10,6 +11,7 @@ data Options = Options
   , inputs :: List OsPath
   , outputDir :: OsPath
   , contextFilters :: List ContextName
+  , filters :: List FilterAction
   }
   deriving stock (Eq, Ord, Show)
 

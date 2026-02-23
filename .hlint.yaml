@@ -13,25 +13,11 @@
 - ignore: {name: "Use list comprehension"}
 - ignore: {name: "Redundant id"}
 - ignore: {name: "Use TH quotation brackets"}
-# This should be removed once we can use `Functor.NonEmpty.Unzip`, at base >= 4.19 (GHC 9.8)
-- ignore: {name: Avoid NonEmpty.unzip}
-# We don't want this as there are many places in the code where we have
-#   someFunction <$> theDocument >>= hugeLambdaExpression
-# With this substitution, the above becomes
-#   theDocument >>= (hugeLambdaExpression) . someFunction
-# which is even harder to read than the original.
 - ignore: {name: "Redundant <$>"}
+- ignore: {name: "Use <$>"}
 
 # Not great for readability.
 - ignore: {name: "Use map with tuple-section"}
-
-# We don't want this as it doesn't really help anything and sometimes
-# makes the code harder to read:
-# Found:
-#   \ did actual
-#     -> DocumentObjectVersionDoesNotMatch did object_version actual
-# Perhaps:
-#   (`DocumentObjectVersionDoesNotMatch` object_version)
 - ignore: {name: "Avoid lambda using `infix`"}
 
 # Condemn nub and friends

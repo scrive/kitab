@@ -2,7 +2,6 @@
 
 module Render.C4.C4Service.Types where
 
-import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Data.Text qualified as T
 import Optics.Core

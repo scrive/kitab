@@ -10,8 +10,11 @@ import Options.Applicative
 import Options.Applicative.Help.Pretty
 import System.OsPath
 import System.OsPath qualified as OsPath
+import Text.Megaparsec (errorBundlePretty, parse)
 
+import CLI.Filter.Parser
 import CLI.Types
+import Core.Filtering.Types
 import Core.Model.ContextName
 import Paths_kitab (version)
 
@@ -23,6 +26,7 @@ parseOptions =
     <*> some (option pathParser (long "input" <> short 'i' <> metavar "FILE" <> help "input file, can be specified multiple times" <> action "file"))
     <*> option pathParser (long "output-dir" <> short 'o' <> metavar "DIRECTORY" <> help "Output directory" <> action "directory")
     <*> many (option contextFilterParser (long "context" <> metavar "CONTEXT" <> help "Only output services belonging to a specific context"))
+    <*> many (option filterParser (long "filter" <> metavar "EXPRESSION" <> help "Provide filter expression to match on attributes"))
 
 contextFilterParser :: ReadM ContextName
 contextFilterParser = str
@@ -66,3 +70,9 @@ outputFormat = eitherReader $
 
 supportedFormats :: [String]
 supportedFormats = T.unpack . display <$> ([minBound .. maxBound] :: [OutputFormat])
+
+filterParser :: ReadM FilterAction
+filterParser = eitherReader $ \input ->
+  case parse cmpParser "EXPRESSION" (T.pack input) of
+    Left err -> Left $ errorBundlePretty err
+    Right cmp -> Right cmp

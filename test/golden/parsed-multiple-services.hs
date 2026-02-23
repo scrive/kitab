@@ -24,7 +24,12 @@
     ( Service
         { serviceName = "otel-tracing"
         , serviceInfo = ServiceInfo
-            { serviceFqdn = Just "tracing.internal.network"
+            { serviceFqdns =
+                [ FQDN
+                    { fqdn = "tracing.internal.network"
+                    , props = fromList []
+                    }
+                ]
             , serviceContext = Nothing
             , servicePorts = fromList
                 [ PortNode
@@ -46,7 +51,12 @@
     ( Service
         { serviceName = "opensearch"
         , serviceInfo = ServiceInfo
-            { serviceFqdn = Just "opensearch.internal.network"
+            { serviceFqdns =
+                [ FQDN
+                    { fqdn = "opensearch.internal.network"
+                    , props = fromList []
+                    }
+                ]
             , serviceContext = Nothing
             , servicePorts = fromList
                 [ PortNode
@@ -64,7 +74,12 @@
     ( Service
         { serviceName = "s3"
         , serviceInfo = ServiceInfo
-            { serviceFqdn = Just "s3.amazonaws.com"
+            { serviceFqdns =
+                [ FQDN
+                    { fqdn = "s3.amazonaws.com"
+                    , props = fromList []
+                    }
+                ]
             , serviceContext = Nothing
             , servicePorts = fromList
                 [ PortNode
@@ -82,7 +97,7 @@
     ( Service
         { serviceName = "media-proxy"
         , serviceInfo = ServiceInfo
-            { serviceFqdn = Nothing
+            { serviceFqdns = []
             , serviceContext = Just "k8s"
             , servicePorts = fromList []
             }
@@ -111,7 +126,7 @@
     ( Service
         { serviceName = "user-registry"
         , serviceInfo = ServiceInfo
-            { serviceFqdn = Nothing
+            { serviceFqdns = []
             , serviceContext = Just "k8s"
             , servicePorts = fromList []
             }
@@ -124,7 +139,7 @@
     ( Service
         { serviceName = "main-app"
         , serviceInfo = ServiceInfo
-            { serviceFqdn = Nothing
+            { serviceFqdns = []
             , serviceContext = Just "k8s"
             , servicePorts = fromList []
             }

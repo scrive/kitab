@@ -27,6 +27,7 @@ import Validation
 
 import CLI.Error
 import CLI.Types
+import Core.Filtering
 import Core.Graph
 import Core.Model.ContextName
 import Core.Model.Service
@@ -40,6 +41,7 @@ import Render.Cilium qualified as Cilium
 
 runOptions :: (Console :> es, FileSystem :> es, Error (NonEmpty CLIError) :> es) => Options -> Eff es ()
 runOptions options = do
+  let filters = options.filters
   outputDirectory <- OsPath.decodeUtf options.outputDir
   FileSystem.createDirectoryIfMissing True outputDirectory
   declarations <- concatForM options.inputs $ \inputPath -> do
@@ -63,12 +65,13 @@ runOptions options = do
           )
           declarations
   let serviceDefinitions' =
-        mapMaybe
-          ( \case
-              ServiceDeclaration s -> Just s
-              _ -> Nothing
-          )
-          declarations
+        declarations
+          & mapMaybe
+            ( \case
+                ServiceDeclaration s -> Just s
+                _ -> Nothing
+            )
+          & concatMap (\s -> fmap (\f -> filterServiceOnAttributes f s) filters)
 
   let graph = buildGraph serviceDefinitions' entities
   let serviceIndex = buildServiceIndex serviceDefinitions'

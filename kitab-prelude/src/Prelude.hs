@@ -18,6 +18,7 @@ module Prelude
   , List
   , Text
   , Vector
+  , Map
   , identity
   , (&)
   ) where
@@ -32,6 +33,7 @@ import Data.Foldable
 import Data.Function ((&))
 import Data.Functor
 import Data.List (List)
+import Data.Map.Strict (Map)
 import Data.Maybe
 import Data.Monoid
 import Data.Ord

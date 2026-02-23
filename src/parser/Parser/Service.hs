@@ -9,15 +9,17 @@ import KDL.Decoder.Internal.Decoder
 
 import Core.Model.CIDRSet
 import Core.Model.ContextName
+import Core.Model.FQDN
 import Core.Model.PortNode
 import Core.Model.Service
 import Parser.EntityName
 import Parser.PortNode
+import Parser.Service.FQDN
 import Parser.ServiceContext
 import Parser.ServiceName
 
 data ServiceMetadata
-  = FQDNNode Text
+  = FQDNNode FQDN
   | DependsOnNode Connection
   | ServiceContextNode ContextName
   | CIDRSetNode CIDRSet
@@ -25,7 +27,7 @@ data ServiceMetadata
   | AccessNode EntityAccess
   deriving stock (Eq, Ord, Show)
 
-getFQDN :: ServiceMetadata -> Maybe Text
+getFQDN :: ServiceMetadata -> Maybe FQDN
 getFQDN (FQDNNode t) = Just t
 getFQDN _ = Nothing
 
@@ -54,17 +56,17 @@ serviceDecoder = KDL.nodeWith "service" $ do
   serviceName <- KDL.argWith serviceNameDecoder
   mixedChildren <-
     KDL.children . KDL.many $
-      (FQDNNode <$> KDL.nodeWith "fqdn" (KDL.argWith KDL.text))
+      (FQDNNode <$> fqdnDecoder)
         <|> (ServicePortNode <$> portDecoder)
         <|> (DependsOnNode <$> dependsOnDecoder)
         <|> (AccessNode <$> accessDecoder)
         <|> (ServiceContextNode <$> contextReferenceDecoder)
         <|> (CIDRSetNode <$> cidrSetDecoder)
 
-  let serviceFqdn = Maybe.listToMaybe $ mapMaybe getFQDN mixedChildren
+  let serviceFqdns = mapMaybe getFQDN mixedChildren
   let servicePorts = Set.fromList $ mapMaybe getPort mixedChildren
   let serviceContext = Maybe.listToMaybe $ mapMaybe getServiceContext mixedChildren
-  let serviceInfo = ServiceInfo {serviceFqdn, serviceContext, servicePorts}
+  let serviceInfo = ServiceInfo {serviceFqdns, serviceContext, servicePorts}
   let serviceConnections = mapMaybe getConnection mixedChildren
   let cidrSets = mapMaybe getCIDRSet mixedChildren
   let entityAccesses = mapMaybe getEntityAccess mixedChildren
@@ -101,6 +103,7 @@ connectionTypeDecoder = do
 
 cidrSetDecoder :: DecodeArrow NodeList () CIDRSet
 cidrSetDecoder = KDL.nodeWith "cidr-set" $ do
+  props <- KDL.remainingProps
   ports <- KDL.children $ KDL.many portDecoder
   items <-
     KDL.children $
@@ -108,7 +111,8 @@ cidrSetDecoder = KDL.nodeWith "cidr-set" $ do
         ( cidrDecoder
             <|> exceptionDecoder
         )
-  pure $ CIDRSet items ports
+
+  pure $ CIDRSet items ports props
 
 cidrDecoder :: DecodeArrow NodeList () CIDRSetItem
 cidrDecoder = KDL.nodeWith "cidr" $ do
