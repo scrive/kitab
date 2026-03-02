@@ -1,0 +1,6 @@
+variable "env" {
+	description """
+		Deployment environment in a specific cloud
+		"""
+	values "dev" "staging" "prod"
+}

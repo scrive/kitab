@@ -33,6 +33,7 @@ import Core.Model.ContextName
 import Core.Model.Service
 import Core.Model.ServiceContext
 import Core.Validation
+import Core.VariableIndex
 import Parser
 import Parser.Types
 import Render.C4 qualified as C4
@@ -50,6 +51,14 @@ runOptions options = do
     case result of
       Right a -> pure a
       Left err -> Error.throwError . NE.singleton $ kdlParseError inputPath err
+  let variables =
+        mapMaybe
+          ( \case
+              VariableDeclaration v -> Just v
+              _ -> Nothing
+          )
+          declarations
+  let variableIndex = buildVariableIndex variables
   let contexts =
         mapMaybe
           ( \case

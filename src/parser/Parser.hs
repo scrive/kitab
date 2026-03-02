@@ -6,6 +6,7 @@ import Parser.Entity
 import Parser.Service
 import Parser.ServiceContext
 import Parser.Types
+import Parser.Variable
 
 decodeServiceDocument :: KDL.DocumentDecoder [Declaration]
 decodeServiceDocument =
@@ -14,4 +15,5 @@ decodeServiceDocument =
       [ EntityDeclaration <$> entityDecoder
       , ContextDeclaration <$> contextDecoder
       , ServiceDeclaration <$> serviceDecoder
+      , VariableDeclaration <$> variableDecoder
       ]

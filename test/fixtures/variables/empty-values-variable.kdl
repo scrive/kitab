@@ -1,0 +1,7 @@
+variable "no-validation" {
+	description """
+		Variable without validation
+		"""
+	type "text"
+	values
+}

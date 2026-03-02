@@ -13,12 +13,11 @@ This graph can then be used to create network access policies and architecture d
 
 ## CONCEPTS
 
-### Filtering
+### Input Variables
 
-Some configuration nodes allow arbitrary properties that you can filter on.
-With this feature, deployment environment can be used to select some nodes rather than others.
-This allows the production of network rules that select the appropriate FQDNs
-or CIDRs based on the `env` attribute.
+Input variables allow you to expect user-provided input, like a deployment environment.
+Matching on this input, Kitab can select the most appropriate value from
+your configuration files.
 
 ## OPTIONS
 
@@ -255,8 +254,8 @@ This is mainly used by the Cilium renderer. See https://docs.cilium.io/en/stable
 This node can contain the following children:
 
 * [`cidr`](#cidr);
-* [`except`](#except).
-* [`port`](#port)
+* [`except`](#except);
+* [`port`](#port).
 
 #### Examples
 
@@ -317,6 +316,8 @@ cidr-set {
 
 Declare an access to an [`entity`](#entity).
 
+It has no child nodes.
+
 | Argument    | Type |
 |-------------|------|
 | Entity name | text |
@@ -326,6 +327,68 @@ Declare an access to an [`entity`](#entity).
 ```kdl
 service "media-proxy" {
 	access "host"
+}
+```
+
+### <a name="variable"></a> `variable`
+
+| Argument    | Type |
+|-------------|------|
+| Variable name | text |
+
+This node can contain the following children:
+
+* [`description`](#description) (mandatory);
+* [`values`](#values) (optional).
+
+#### Examples
+
+```kdl
+variable "env" {
+	description """
+		Deployment environment in a specific cloud
+		"""
+	values "dev" "staging" "prod"
+}
+```
+
+### <a name="description"></a> `description`
+
+| Argument    | Type |
+|-------------|------|
+| Multi-line text | text |
+
+It has no child nodes.
+
+#### Examples
+
+```kdl
+variable "env" {
+	type "text"
+	description """
+		Deployment environment in a specific cloud
+		"""
+	values "dev" "staging" "prod"
+}
+```
+
+### <a name="values"></a> `values`
+
+| Arguments       | Type |
+|-----------------|------|
+| Expected values | text |
+
+It has no child nodes.
+
+#### Examples
+
+```kdl
+variable "env" {
+	type "text"
+	description """
+		Deployment environment in a specific cloud
+		"""
+	values "dev" "staging" "prod"
 }
 ```
 

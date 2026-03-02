@@ -30,6 +30,7 @@ buildEntityIndex =
         Map.insert entityName entityInfo
     )
     Map.empty
+
 buildGraph :: List Service -> List Entity -> Graph (List ConnectionType) Reference
 buildGraph services entities =
   let serviceGraph =

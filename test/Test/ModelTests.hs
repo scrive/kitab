@@ -66,7 +66,7 @@ testMismatchedConnections = do
 
 testFqdnEnvFiltering :: TestEff ()
 testFqdnEnvFiltering = do
-  serviceDefinition <- decodeUtf8 <$> FileSystem.readFile "test/fixtures/env-specific-values.kdl"
+  serviceDefinition <- decodeUtf8 <$> FileSystem.readFile "test/fixtures/services/env-specific-values.kdl"
   declarations <-
     assertRight "KDL file could not be parsed" $
       KDL.decodeWith decodeServiceDocument serviceDefinition

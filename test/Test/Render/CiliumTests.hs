@@ -37,7 +37,7 @@ test =
 
 renderService :: IO LazyByteString
 renderService = runTestEff $ do
-  fileContent <- T.decodeUtf8 <$> FileSystem.readFile "test/fixtures/multiple-service-definitions.kdl"
+  fileContent <- T.decodeUtf8 <$> FileSystem.readFile "test/fixtures/services/multiple-service-definitions.kdl"
   declarations <- assertRight "KDL file could not be parsed" $ KDL.decodeWith decodeServiceDocument fileContent
   let serviceDefinitions =
         mapMaybe
@@ -64,7 +64,7 @@ renderService = runTestEff $ do
 
 renderCIDRSetPolicy :: IO LazyByteString
 renderCIDRSetPolicy = runTestEff $ do
-  fileContent <- T.decodeUtf8 <$> FileSystem.readFile "test/fixtures/cidrset.kdl"
+  fileContent <- T.decodeUtf8 <$> FileSystem.readFile "test/fixtures/services/cidrset.kdl"
   declarations <- assertRight "KDL file could not be parsed" $ KDL.decodeWith decodeServiceDocument fileContent
   let serviceDefinitions =
         mapMaybe

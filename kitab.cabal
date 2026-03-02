@@ -74,6 +74,7 @@ library
     Parser.ServiceContext
     Parser.ServiceName
     Parser.Types
+    Parser.Variable
 
   build-depends:
     algebraic-graphs,
@@ -124,7 +125,9 @@ library kitab-core
     Core.Model.ServiceContext
     Core.Model.ServiceName
     Core.Model.ServiceReference
+    Core.Model.Variable
     Core.Validation
+    Core.VariableIndex
 
   build-depends:
     algebraic-graphs,
