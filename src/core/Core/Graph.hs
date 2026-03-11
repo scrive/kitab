@@ -7,7 +7,6 @@ module Core.Graph
 import Algebra.Graph.Labelled (Graph)
 import Algebra.Graph.Labelled qualified as Graph
 import Data.List qualified as List
-import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 
 import Core.Model.Entity

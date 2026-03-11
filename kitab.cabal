@@ -124,6 +124,7 @@ library kitab-core
     algebraic-graphs,
     base ^>=4.21,
     containers,
+    extra,
     kitab-prelude,
     prettyprinter,
     text,
