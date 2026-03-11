@@ -3,10 +3,13 @@
 module Test.ModelTests where
 
 import Data.List.NonEmpty qualified as NE
+import Data.Map.Strict qualified as Map
 import Test.Tasty
 import Validation (validationToEither)
 
 import Core.Graph
+import Core.Model.Inventory
+import Core.Model.InventoryVariable
 import Core.Model.Reference
 import Core.Model.Service
 import Core.Model.ServiceName
@@ -22,6 +25,12 @@ test =
         [ testThat "Parallel connections are forbidden" testParallelConnectionsDetection
         , testThat "Self-referential connections are forbidden" testSelfReferentialConnections
         , testThat "Mismatched connections are forbiddden" testMismatchedConnections
+        ]
+    , testGroup
+        "Inventory"
+        [ testThat
+            "Inventory merge"
+            testInventoryMerge
         ]
     ]
 
@@ -51,3 +60,41 @@ testMismatchedConnections = do
     "Mismatched connections"
     (NE.singleton (Mismatched ((ServiceRef (ServiceName "A"), ServiceRef (ServiceName "B"), HTTPS), (ServiceRef (ServiceName "B"), ServiceRef (ServiceName "A"), FunctionCall))))
     validationError
+
+testInventoryMerge :: TestEff ()
+testInventoryMerge = do
+  let baseOpenSearchFQDN =
+        InventoryVariable
+          { name = "opensearch-fqdn"
+          , value = "opensearch.aws.internal.network"
+          , description = Just "OpenSearch in use in our AWS environment"
+          }
+  let i1 =
+        Inventory
+          { name = "base"
+          , vars =
+              Map.fromList
+                [ ("opensearch-fqdn", baseOpenSearchFQDN)
+                ]
+          }
+  let overridenOpenSearchFQDN =
+        InventoryVariable
+          { name = "opensearch-fqdn"
+          , value = "opensearch.aws.2423423f.internal.network"
+          , description = Just "OpenSearch in use in our AWS environment for dev specifically"
+          }
+  let i2 =
+        Inventory
+          { name = "aws.dev"
+          , vars = Map.fromList [("opensearch-fqdn", overridenOpenSearchFQDN)]
+          }
+  let aggregatedInventory =
+        AggregatedInventory
+          { names = ["base", "aws.dev"]
+          , aggregatedVars = Map.fromList [("opensearch-fqdn", overridenOpenSearchFQDN)]
+          }
+
+  assertEqual
+    "Inventories are merged correctly"
+    (mergeInventories [i1, i2])
+    aggregatedInventory

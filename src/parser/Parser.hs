@@ -3,6 +3,7 @@ module Parser where
 import KDL
 
 import Parser.Entity
+import Parser.Inventory
 import Parser.Service
 import Parser.ServiceContext
 import Parser.Types
@@ -14,4 +15,5 @@ decodeServiceDocument =
       [ EntityDeclaration <$> entityDecoder
       , ContextDeclaration <$> contextDecoder
       , ServiceDeclaration <$> serviceDecoder
+      , InventoryDeclaration <$> inventoryDecoder
       ]

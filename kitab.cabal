@@ -67,6 +67,7 @@ library
     Parser
     Parser.Entity
     Parser.EntityName
+    Parser.Inventory
     Parser.PortNode
     Parser.Service
     Parser.ServiceContext
@@ -112,6 +113,8 @@ library kitab-core
     Core.Model.Entity
     Core.Model.EntityName
     Core.Model.EntityReference
+    Core.Model.Inventory
+    Core.Model.InventoryVariable
     Core.Model.PortNode
     Core.Model.Reference
     Core.Model.Service
@@ -125,6 +128,7 @@ library kitab-core
     base ^>=4.21,
     containers,
     extra,
+    filepath,
     kitab-prelude,
     prettyprinter,
     text,

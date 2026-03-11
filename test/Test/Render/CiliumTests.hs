@@ -6,7 +6,6 @@ import Data.Text.Encoding qualified as T
 import Data.Text.Lazy qualified as T
 import Data.Text.Lazy.Encoding qualified as TL
 import Effectful.FileSystem.IO.ByteString qualified as FileSystem
-import KDL qualified
 import Test.Tasty
 import Test.Tasty.Golden
 import Validation
@@ -38,7 +37,7 @@ test =
 renderService :: IO LazyByteString
 renderService = runTestEff $ do
   fileContent <- T.decodeUtf8 <$> FileSystem.readFile "test/fixtures/multiple-service-definitions.kdl"
-  declarations <- assertRight "KDL file could not be parsed" $ KDL.decodeWith decodeServiceDocument fileContent
+  declarations <- assertParse decodeServiceDocument fileContent
   let serviceDefinitions =
         mapMaybe
           ( \case
@@ -65,7 +64,7 @@ renderService = runTestEff $ do
 renderCIDRSetPolicy :: IO LazyByteString
 renderCIDRSetPolicy = runTestEff $ do
   fileContent <- T.decodeUtf8 <$> FileSystem.readFile "test/fixtures/cidrset.kdl"
-  declarations <- assertRight "KDL file could not be parsed" $ KDL.decodeWith decodeServiceDocument fileContent
+  declarations <- assertParse decodeServiceDocument fileContent
   let serviceDefinitions =
         mapMaybe
           ( \case

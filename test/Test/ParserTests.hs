@@ -14,10 +14,13 @@ import Test.Tasty.Golden
 import Text.Pretty.Simple
 
 import Core.Graph
+import Core.Model.Inventory
+import Core.Model.InventoryVariable
 import Core.Model.PortNode
 import Core.Model.Service
 import Core.Model.ServiceName
 import Parser
+import Parser.Inventory (inventoryDecoder)
 import Parser.Service
 import Parser.Types
 import Test.Utils
@@ -40,13 +43,22 @@ test =
             "test/golden/multiple-definitions.dot"
             testGraphToDot
         ]
+    , testGroup
+        "Inventory"
+        [ testThat
+            "Decode inventory"
+            testInventoryDecoding
+        , testThat
+            "Service with variable"
+            testParsingServiceWithVar
+        ]
     ]
 
 testServiceDecoding :: TestEff ()
 testServiceDecoding = do
   serviceDefinition <- decodeUtf8 <$> FileSystem.readFile "test/fixtures/service-definition.kdl"
   let expectedResult = Service {serviceName = "media-proxy", serviceInfo = defaultServiceInfo, entityAccesses = [], serviceConnections = [Connection {connectionWith = ServiceName "main-app", connectionType = HTTPS, connectionPorts = [PortNode 3833 "TCP"]}], cidrSets = []}
-  result <- assertRight "KDL file could not be parsed" $ KDL.decodeWith (KDL.document serviceDecoder) serviceDefinition
+  result <- assertParse (KDL.document serviceDecoder) serviceDefinition
   assertEqual
     "Expected service definition"
     expectedResult
@@ -55,13 +67,13 @@ testServiceDecoding = do
 testServiceDefinitionsParsing :: IO LazyByteString
 testServiceDefinitionsParsing = runTestEff $ do
   serviceDefinition <- decodeUtf8 <$> FileSystem.readFile "test/fixtures/multiple-service-definitions.kdl"
-  declarations <- assertRight "KDL file could not be parsed" $ KDL.decodeWith decodeServiceDocument serviceDefinition
+  declarations <- assertParse decodeServiceDocument serviceDefinition
   pure . TL.encodeUtf8 $ pShowNoColor declarations
 
 testGraphToDot :: IO LazyByteString
 testGraphToDot = runTestEff $ do
   serviceDefinition <- decodeUtf8 <$> FileSystem.readFile "test/fixtures/multiple-service-definitions.kdl"
-  declarations <- assertRight "KDL file could not be parsed" $ KDL.decodeWith decodeServiceDocument serviceDefinition
+  declarations <- assertParse decodeServiceDocument serviceDefinition
   let entities =
         mapMaybe
           ( \case
@@ -80,3 +92,23 @@ testGraphToDot = runTestEff $ do
   let graph = buildGraph serviceDefinitions' entities
 
   pure . TL.encodeUtf8 $ TL.fromStrict (export (defaultStyle display) graph)
+
+testInventoryDecoding :: TestEff ()
+testInventoryDecoding = do
+  inventoryDefinition <- decodeUtf8 <$> FileSystem.readFile "test/fixtures/inventory.kdl"
+  let expectedResult = Inventory {name = "base", vars = [("opensearch-fqdn", InventoryVariable {name = "opensearch-fqdn", value = "opensearch.aws.internal.network", description = Just "OpenSearch instance in AWS"})]}
+  result <- assertParse (KDL.document inventoryDecoder) inventoryDefinition
+  assertEqual
+    "Expected inventory definition"
+    expectedResult
+    result
+
+testParsingServiceWithVar :: TestEff ()
+testParsingServiceWithVar = do
+  serviceDefinition <- decodeUtf8 <$> FileSystem.readFile "test/fixtures/service-with-var.kdl"
+  let expectedResult = Service {serviceName = "opensearch", serviceInfo = ServiceInfo {serviceFqdn = Just "opensearch-fqdn", serviceContext = Nothing, servicePorts = []}, serviceConnections = [], cidrSets = [], entityAccesses = []}
+  result <- assertParse (KDL.document serviceDecoder) serviceDefinition
+  assertEqual
+    "Expected service definition"
+    expectedResult
+    result

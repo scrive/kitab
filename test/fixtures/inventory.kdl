@@ -1,0 +1,6 @@
+inventory "base" {
+	var "opensearch-fqdn" {
+		value "opensearch.aws.internal.network"
+		description "OpenSearch instance in AWS"
+	}
+}

@@ -54,7 +54,7 @@ serviceDecoder = KDL.nodeWith "service" $ do
   serviceName <- KDL.argWith serviceNameDecoder
   mixedChildren <-
     KDL.children . KDL.many $
-      (FQDNNode <$> KDL.nodeWith "fqdn" (KDL.argWith KDL.text))
+      (FQDNNode <$> KDL.nodeWith "fqdn" (KDL.argWith' ["text", "var"] KDL.text))
         <|> (ServicePortNode <$> portDecoder)
         <|> (DependsOnNode <$> dependsOnDecoder)
         <|> (AccessNode <$> accessDecoder)

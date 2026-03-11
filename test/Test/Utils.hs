@@ -10,6 +10,7 @@ module Test.Utils
   , assertRight
   , assertLeft
   , diffCmd
+  , assertParse
   ) where
 
 import Effectful
@@ -17,6 +18,8 @@ import Effectful.FileSystem
 import GHC.Stack
 import Test.Tasty (TestTree)
 import Test.Tasty.HUnit qualified as Test
+import KDL
+import qualified Data.Text as T
 
 type TestEff a =
   Eff
@@ -41,7 +44,7 @@ assertEqual message expected actual = liftIO $ Test.assertEqual message expected
 assertBool :: HasCallStack => String -> Bool -> TestEff ()
 assertBool message assertion = liftIO $ Test.assertBool message assertion
 
-assertFailure :: HasCallStack => String -> TestEff ()
+assertFailure :: HasCallStack => String -> TestEff a
 assertFailure = liftIO . Test.assertFailure
 
 assertJust :: HasCallStack => String -> Maybe a -> TestEff a
@@ -55,6 +58,12 @@ assertNothing _ Nothing = pure ()
 assertRight :: (HasCallStack, Show a) => String -> Either a b -> TestEff b
 assertRight _ (Right b) = pure b
 assertRight message (Left a) = liftIO . Test.assertFailure $ (message <> ". Found " <> show a)
+
+assertParse :: (HasCallStack) => DocumentDecoder a -> Text -> TestEff a
+assertParse decoder input =
+  case KDL.decodeWith decoder input of
+    Left decodeError -> assertFailure (T.unpack $ renderDecodeError decodeError)
+    Right result -> pure result
 
 assertLeft :: HasCallStack => String -> Either a b -> TestEff a
 assertLeft description (Right _b) = liftIO $ Test.assertFailure description
