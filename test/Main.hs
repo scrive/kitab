@@ -2,6 +2,7 @@ module Main (main) where
 
 import Test.Tasty
 
+import Test.InventoryTests qualified as InventoryTests
 import Test.ModelTests qualified as ModelTests
 import Test.ParserTests qualified as ParserTests
 import Test.Render.C4Tests qualified as C4Tests
@@ -17,4 +18,5 @@ tests =
   , ParserTests.test
   , C4Tests.test
   , CiliumTests.test
+  , InventoryTests.test
   ]

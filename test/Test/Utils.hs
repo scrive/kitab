@@ -13,13 +13,14 @@ module Test.Utils
   , assertParse
   ) where
 
+import Data.Text qualified as T
+import Data.Text.IO qualified as T
 import Effectful
 import Effectful.FileSystem
 import GHC.Stack
+import KDL
 import Test.Tasty (TestTree)
 import Test.Tasty.HUnit qualified as Test
-import KDL
-import qualified Data.Text as T
 
 type TestEff a =
   Eff
@@ -59,7 +60,7 @@ assertRight :: (HasCallStack, Show a) => String -> Either a b -> TestEff b
 assertRight _ (Right b) = pure b
 assertRight message (Left a) = liftIO . Test.assertFailure $ (message <> ". Found " <> show a)
 
-assertParse :: (HasCallStack) => DocumentDecoder a -> Text -> TestEff a
+assertParse :: HasCallStack => DocumentDecoder a -> Text -> TestEff a
 assertParse decoder input =
   case KDL.decodeWith decoder input of
     Left decodeError -> assertFailure (T.unpack $ renderDecodeError decodeError)
