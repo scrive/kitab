@@ -15,9 +15,10 @@ import Parser.EntityName
 import Parser.PortNode
 import Parser.ServiceContext
 import Parser.ServiceName
+import Parser.Utils
 
 data ServiceMetadata
-  = FQDNNode Text
+  = FQDNNode LitVar
   | DependsOnNode Connection
   | ServiceContextNode ContextName
   | CIDRSetNode CIDRSet
@@ -25,7 +26,7 @@ data ServiceMetadata
   | AccessNode EntityAccess
   deriving stock (Eq, Ord, Show)
 
-getFQDN :: ServiceMetadata -> Maybe Text
+getFQDN :: ServiceMetadata -> Maybe LitVar
 getFQDN (FQDNNode t) = Just t
 getFQDN _ = Nothing
 
@@ -54,7 +55,7 @@ serviceDecoder = KDL.nodeWith "service" $ do
   serviceName <- KDL.argWith serviceNameDecoder
   mixedChildren <-
     KDL.children . KDL.many $
-      (FQDNNode <$> KDL.nodeWith "fqdn" (KDL.argWith' ["text", "var"] KDL.text))
+      (FQDNNode <$> fqdnDecoder)
         <|> (ServicePortNode <$> portDecoder)
         <|> (DependsOnNode <$> dependsOnDecoder)
         <|> (AccessNode <$> accessDecoder)
@@ -121,3 +122,9 @@ exceptionDecoder = KDL.nodeWith "except" $ do
   cidr <- KDL.arg @Text
   reason <- KDL.arg @Text
   pure $ Except cidr reason
+
+fqdnDecoder :: DecodeArrow NodeList () LitVar
+fqdnDecoder =
+  KDL.nodeWith "fqdn" $
+      Literal <$> KDL.argWith' ["text"] KDL.text
+      <|> (Var <$> KDL.argWith' ["var"] KDL.text)

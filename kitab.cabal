@@ -74,6 +74,7 @@ library
     Parser.ServiceContext
     Parser.ServiceName
     Parser.Types
+    Parser.Utils
 
   build-depends:
     algebraic-graphs,
