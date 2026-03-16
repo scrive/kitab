@@ -11,8 +11,10 @@ import Test.Tasty.Golden
 import Validation
 
 import Core.Graph
+import Core.Model.Inventory
 import Core.Model.Service
 import Core.Validation
+import Driver.Variable
 import Parser
 import Parser.Types
 import Render.Cilium qualified as Cilium
@@ -38,7 +40,7 @@ renderService :: IO LazyByteString
 renderService = runTestEff $ do
   fileContent <- T.decodeUtf8 <$> FileSystem.readFile "test/fixtures/multiple-service-definitions.kdl"
   declarations <- assertParse decodeServiceDocument fileContent
-  let serviceDefinitions =
+  let serviceDefinitions' =
         mapMaybe
           ( \case
               ServiceDeclaration s -> Just s
@@ -54,6 +56,8 @@ renderService = runTestEff $ do
           )
           declarations
 
+  let aggregatedInventory = AggregatedInventory mempty mempty
+  serviceDefinitions <- traverse (resolveServiceVars aggregatedInventory) serviceDefinitions'
   let graph = buildGraph serviceDefinitions entities
   let serviceIndex = buildServiceIndex serviceDefinitions
   let entityIndex = buildEntityIndex entities
@@ -65,7 +69,7 @@ renderCIDRSetPolicy :: IO LazyByteString
 renderCIDRSetPolicy = runTestEff $ do
   fileContent <- T.decodeUtf8 <$> FileSystem.readFile "test/fixtures/cidrset.kdl"
   declarations <- assertParse decodeServiceDocument fileContent
-  let serviceDefinitions =
+  let serviceDefinitions' =
         mapMaybe
           ( \case
               ServiceDeclaration s -> Just s
@@ -80,6 +84,8 @@ renderCIDRSetPolicy = runTestEff $ do
           )
           declarations
 
+  let aggregatedInventory = AggregatedInventory mempty mempty
+  serviceDefinitions <- traverse (resolveServiceVars aggregatedInventory) serviceDefinitions'
   let graph = buildGraph serviceDefinitions entities
   let serviceIndex = buildServiceIndex serviceDefinitions
   let entityIndex = buildEntityIndex entities

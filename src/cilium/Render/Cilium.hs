@@ -62,7 +62,11 @@ dnsEgressRule =
         (Just DNSMatch {dnsMatchNAme = "*"})
     ]
 
-serviceEgressRule :: Maybe ContextName -> Map ServiceName (ServiceInfo Void) -> Connection -> EgressRule
+serviceEgressRule
+  :: Maybe ContextName
+  -> Map ServiceName (ServiceInfo Void)
+  -> Connection
+  -> EgressRule
 serviceEgressRule mContext services Connection {connectionWith, connectionPorts}
   | Just ServiceInfo {serviceContext} <- Map.lookup connectionWith services
   , isJust serviceContext

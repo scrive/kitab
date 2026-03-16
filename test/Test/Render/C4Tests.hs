@@ -12,7 +12,9 @@ import Test.Tasty.Golden
 import Validation
 
 import Core.Graph
+import Core.Model.Inventory
 import Core.Validation
+import Driver.Variable
 import Parser
 import Parser.Types
 import Render.C4 qualified as C4
@@ -34,7 +36,7 @@ renderServices :: IO LazyByteString
 renderServices = runTestEff $ do
   fileContent <- T.decodeUtf8 <$> FileSystem.readFile "test/fixtures/multiple-service-definitions.kdl"
   declarations <- assertParse decodeServiceDocument fileContent
-  let serviceDefinitions =
+  let serviceDefinitions' =
         mapMaybe
           ( \case
               ServiceDeclaration s -> Just s
@@ -55,6 +57,8 @@ renderServices = runTestEff $ do
               _ -> Nothing
           )
           declarations
+  let aggregatedInventory = AggregatedInventory mempty mempty
+  serviceDefinitions <- traverse (resolveServiceVars aggregatedInventory) serviceDefinitions'
   let graph = buildGraph serviceDefinitions entities
   let serviceIndex = buildServiceIndex serviceDefinitions
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)

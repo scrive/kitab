@@ -2,12 +2,11 @@ module Parser.Inventory where
 
 import Data.Map.Strict qualified as Map
 import KDL
-import KDL.Decoder.Internal.Decoder
 
 import Core.Model.Inventory
 import Core.Model.InventoryVariable
 
-inventoryDecoder :: DecodeArrow NodeList () Inventory
+inventoryDecoder :: NodeListDecoder Inventory
 inventoryDecoder = KDL.nodeWith "inventory" $ do
   name <-
     KDL.optional (KDL.arg @Text)
@@ -19,13 +18,13 @@ inventoryDecoder = KDL.nodeWith "inventory" $ do
     pure $ Map.fromList (fmap (\r -> (r.name, r)) results)
   pure Inventory {name, vars}
 
-varDecoder :: DecodeArrow NodeList () InventoryVariable
+varDecoder :: NodeListDecoder InventoryVariable
 varDecoder = KDL.nodeWith "var" $ do
   name <- KDL.argWith variableNameDecoder
   value <- KDL.children $ KDL.argAt "value"
   description <- KDL.children . KDL.optional . KDL.argAt $ "description"
   pure InventoryVariable {name, value, description}
 
-variableNameDecoder :: DecodeArrow Value () VariableName
+variableNameDecoder :: ValueDecoder VariableName
 variableNameDecoder =
   VariableName <$> KDL.text

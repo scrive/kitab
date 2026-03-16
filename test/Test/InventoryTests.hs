@@ -1,6 +1,7 @@
 module Test.InventoryTests where
 
 import Data.Map.Strict qualified as Map
+import Data.Set qualified as Set
 import Test.Tasty
 
 import Core.Model.Inventory
@@ -69,5 +70,5 @@ testCollectingInventoriesFromFileSystem = do
   inventories <- listInventoryFiles "./test/fixtures/inventory"
   assertEqual
     "Inventories"
-    ["./test/fixtures/inventory/aws/staging/inventory.kdl", "./test/fixtures/inventory/aws/prod/inventory.kdl", "./test/fixtures/inventory/aws/dev/inventory.kdl"]
-    inventories
+    (Set.fromList ["./test/fixtures/inventory/aws/staging/inventory.kdl", "./test/fixtures/inventory/aws/prod/inventory.kdl", "./test/fixtures/inventory/aws/dev/inventory.kdl"])
+    (Set.fromList inventories)

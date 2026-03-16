@@ -17,6 +17,14 @@ import CLI.Error (CLIError, kdlParseError)
 import Core.Model.Inventory
 import Parser.Inventory
 
+getInventories
+  :: (FileSystem :> es, Error (NonEmpty CLIError) :> es)
+  => FilePath
+  -> Eff es (List Inventory)
+getInventories baseDir = do
+  files <- listInventoryFiles baseDir
+  parseInventories files
+
 listInventoryFiles
   :: FileSystem :> es
   => FilePath

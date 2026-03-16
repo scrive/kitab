@@ -64,7 +64,9 @@ library
     CLI.Error
     CLI.Types
     Driver
+    Driver.Cilium
     Driver.Inventory
+    Driver.Puml
     Driver.Variable
     Parser
     Parser.Entity

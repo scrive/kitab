@@ -24,6 +24,7 @@ import Parser.Inventory (inventoryDecoder)
 import Parser.Service
 import Parser.Types
 import Test.Utils
+import Core.Variable
 
 test :: TestTree
 test =
@@ -106,7 +107,14 @@ testInventoryDecoding = do
 testParsingServiceWithVar :: TestEff ()
 testParsingServiceWithVar = do
   serviceDefinition <- decodeUtf8 <$> FileSystem.readFile "test/fixtures/service-with-var.kdl"
-  let expectedResult = Service {serviceName = "opensearch", serviceInfo = ServiceInfo {serviceFqdn = Just "opensearch-fqdn", serviceContext = Nothing, servicePorts = []}, serviceConnections = [], cidrSets = [], entityAccesses = []}
+  let expectedResult =
+        Service
+          { serviceName = "opensearch"
+          , serviceInfo = ServiceInfo {serviceFqdn = Just (Left (Var "opensearch-fqdn")), serviceContext = Nothing, servicePorts = []}
+          , serviceConnections = []
+          , cidrSets = []
+          , entityAccesses = []
+          }
   result <- assertParse (KDL.document serviceDecoder) serviceDefinition
   assertEqual
     "Expected service definition"

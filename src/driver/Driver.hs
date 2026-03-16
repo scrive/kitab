@@ -1,19 +1,11 @@
-{-# LANGUAGE QuasiQuotes #-}
-
 module Driver where
 
-import Algebra.Graph.Labelled qualified as Graph
-import Algebra.Graph.Labelled.AdjacencyMap qualified as AM
-import Control.DeepSeq
-import Data.ByteString.Char8 qualified as BS8
 import Data.List qualified as List
 import Data.List.NonEmpty (NonEmpty)
 import Data.List.NonEmpty qualified as NE
-import Data.Text qualified as T
 import Data.Text.Encoding qualified as T
 import Effectful
 import Effectful.Console.ByteString (Console)
-import Effectful.Console.ByteString qualified as Console
 import Effectful.Error.Static (Error)
 import Effectful.Error.Static qualified as Error
 import Effectful.FileSystem (FileSystem)
@@ -21,7 +13,6 @@ import Effectful.FileSystem qualified as FileSystem
 import Effectful.FileSystem.IO.ByteString qualified as FileSystem
 import KDL qualified
 import Optics.Core
-import System.OsPath (osp, (</>))
 import System.OsPath qualified as OsPath
 import Validation
 
@@ -29,16 +20,21 @@ import CLI.Error
 import CLI.Types
 import Core.Graph
 import Core.Model.ContextName
+import Core.Model.Inventory
 import Core.Model.Service
 import Core.Model.ServiceContext
 import Core.Validation
+import Driver.Cilium (renderToCilium)
+import Driver.Inventory
+import Driver.Puml (renderToPuml)
+import Driver.Variable
 import Parser
 import Parser.Types
-import Render.C4 qualified as C4
-import Render.C4.C4Service.Types qualified as C4
-import Render.Cilium qualified as Cilium
 
-runOptions :: (Console :> es, FileSystem :> es, Error (NonEmpty CLIError) :> es) => Options -> Eff es ()
+runOptions
+  :: (Console :> es, FileSystem :> es, Error (NonEmpty CLIError) :> es)
+  => Options
+  -> Eff es ()
 runOptions options = do
   outputDirectory <- OsPath.decodeUtf options.outputDir
   FileSystem.createDirectoryIfMissing True outputDirectory
@@ -70,37 +66,35 @@ runOptions options = do
           )
           declarations
 
+  inventories <- getInventories "./"
+  let aggregatedInventory = mergeInventories inventories
   let graph = buildGraph serviceDefinitions' entities
-  let serviceIndex = buildServiceIndex serviceDefinitions'
   let entitiesIndex = buildEntityIndex entities
-  serviceDefinitions <-
+  serviceDefinitions'' <-
     filterServicesByContext
       options.contextFilters
       contexts
       serviceDefinitions'
+  serviceDefinitions <- traverse (resolveServiceVars aggregatedInventory) serviceDefinitions''
+  let serviceIndex = buildServiceIndex serviceDefinitions
   case checkGraph graph of
     Failure errors -> Error.throwError $ fmap graphValidationError errors
     Success _ -> do
       case options.format of
-        PumlFormat -> do
-          let graphEdges =
-                graph
-                  & Graph.edgeList
-                  & fmap (\(es, a, b) -> (es, C4.toC4Service serviceIndex a, C4.toC4Service serviceIndex b))
-          let adjacencyMap = AM.edges graphEdges
-          let rendered = C4.renderC4 contexts adjacencyMap
-          outputPath <- OsPath.decodeUtf (options.outputDir </> [osp|architecture.c4|])
-          unless options.quiet (Console.putStrLn $ "Writing file " <> BS8.pack outputPath)
-          FileSystem.writeFile outputPath (T.encodeUtf8 rendered)
-        CiliumFormat -> do
-          outputs <- forM serviceDefinitions $ \service -> do
-            let rendered = Cilium.renderCilium (Cilium.toCiliumPolicy serviceIndex entitiesIndex service)
-            outputFile <- OsPath.encodeUtf . T.unpack $ display service.serviceName
-            outputPath <- OsPath.decodeUtf (options.outputDir </> outputFile <> [osp|-network-policy.yaml|])
-            pure (outputPath, rendered)
-          forM_ (force outputs) $ \(outputPath, rendered) -> do
-            unless options.quiet (Console.putStrLn $ "Writing file " <> BS8.pack outputPath)
-            FileSystem.writeFile outputPath (T.encodeUtf8 rendered)
+        PumlFormat ->
+          renderToPuml
+            serviceIndex
+            contexts
+            options.outputDir
+            options.quiet
+            graph
+        CiliumFormat ->
+          renderToCilium
+            serviceIndex
+            entitiesIndex
+            options.outputDir
+            options.quiet
+            serviceDefinitions
 
 filterServicesByContext
   :: Error (NonEmpty CLIError) :> es
