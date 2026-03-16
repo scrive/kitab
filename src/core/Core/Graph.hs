@@ -15,7 +15,7 @@ import Core.Model.Reference
 import Core.Model.Service
 import Core.Model.ServiceName
 
-buildServiceIndex :: List Service -> Map ServiceName ServiceInfo
+buildServiceIndex :: List (Service var) -> Map ServiceName (ServiceInfo var)
 buildServiceIndex =
   foldr
     ( \Service {serviceName, serviceInfo} ->
@@ -30,7 +30,8 @@ buildEntityIndex =
         Map.insert entityName entityInfo
     )
     Map.empty
-buildGraph :: List Service -> List Entity -> Graph (List ConnectionType) Reference
+
+buildGraph :: List (Service var) -> List Entity -> Graph (List ConnectionType) Reference
 buildGraph services entities =
   let serviceGraph =
         foldr

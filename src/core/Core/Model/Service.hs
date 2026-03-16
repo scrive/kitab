@@ -23,9 +23,9 @@ instance Pretty ConnectionType where
     HTTPS -> "HTTPS"
     FunctionCall -> "Function call"
 
-data Service = Service
+data Service (var :: Type) = Service
   { serviceName :: ServiceName
-  , serviceInfo :: ServiceInfo
+  , serviceInfo :: ServiceInfo var
   , serviceConnections :: List Connection
   , cidrSets :: List CIDRSet
   , entityAccesses :: List EntityAccess
@@ -33,17 +33,17 @@ data Service = Service
   deriving stock (Eq, Show, Ord, Generic)
   deriving
     (Display)
-    via (ShowInstance Service)
+    via (ShowInstance (Service var))
 
-data ServiceInfo = ServiceInfo
-  { serviceFqdn :: Maybe Text
+data ServiceInfo (var :: Type) = ServiceInfo
+  { serviceFqdn :: Maybe (Either var Text)
   -- ^ Fqdn is a Cilium thing.
   , serviceContext :: Maybe ContextName
   , servicePorts :: Set PortNode
   }
   deriving stock (Eq, Show, Ord, Generic)
 
-defaultServiceInfo :: ServiceInfo
+defaultServiceInfo :: ServiceInfo a
 defaultServiceInfo =
   ServiceInfo
     { serviceFqdn = Nothing

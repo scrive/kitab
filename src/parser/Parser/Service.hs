@@ -1,5 +1,6 @@
 module Parser.Service
   ( serviceDecoder
+  , ServiceMetadata (..)
   ) where
 
 import Data.Maybe qualified as Maybe
@@ -9,16 +10,16 @@ import KDL.Decoder.Internal.Decoder
 
 import Core.Model.CIDRSet
 import Core.Model.ContextName
+import Core.Model.InventoryVariable (VariableName (..))
 import Core.Model.PortNode
 import Core.Model.Service
 import Parser.EntityName
 import Parser.PortNode
 import Parser.ServiceContext
 import Parser.ServiceName
-import Parser.Utils
 
-data ServiceMetadata
-  = FQDNNode LitVar
+data ServiceMetadata (var :: Type)
+  = FQDNNode (Either var Text)
   | DependsOnNode Connection
   | ServiceContextNode ContextName
   | CIDRSetNode CIDRSet
@@ -26,31 +27,31 @@ data ServiceMetadata
   | AccessNode EntityAccess
   deriving stock (Eq, Ord, Show)
 
-getFQDN :: ServiceMetadata -> Maybe LitVar
+getFQDN :: ServiceMetadata var -> Maybe (Either var Text)
 getFQDN (FQDNNode t) = Just t
 getFQDN _ = Nothing
 
-getServiceContext :: ServiceMetadata -> Maybe ContextName
+getServiceContext :: ServiceMetadata var -> Maybe ContextName
 getServiceContext (ServiceContextNode c) = Just c
 getServiceContext _ = Nothing
 
-getConnection :: ServiceMetadata -> Maybe Connection
+getConnection :: ServiceMetadata var -> Maybe Connection
 getConnection (DependsOnNode c) = Just c
 getConnection _ = Nothing
 
-getCIDRSet :: ServiceMetadata -> Maybe CIDRSet
+getCIDRSet :: ServiceMetadata var -> Maybe CIDRSet
 getCIDRSet (CIDRSetNode c) = Just c
 getCIDRSet _ = Nothing
 
-getPort :: ServiceMetadata -> Maybe PortNode
+getPort :: ServiceMetadata var -> Maybe PortNode
 getPort (ServicePortNode p) = Just p
 getPort _ = Nothing
 
-getEntityAccess :: ServiceMetadata -> Maybe EntityAccess
+getEntityAccess :: ServiceMetadata var -> Maybe EntityAccess
 getEntityAccess (AccessNode a) = Just a
 getEntityAccess _ = Nothing
 
-serviceDecoder :: DecodeArrow NodeList () Service
+serviceDecoder :: DecodeArrow NodeList () (Service VariableName)
 serviceDecoder = KDL.nodeWith "service" $ do
   serviceName <- KDL.argWith serviceNameDecoder
   mixedChildren <-
@@ -123,8 +124,8 @@ exceptionDecoder = KDL.nodeWith "except" $ do
   reason <- KDL.arg @Text
   pure $ Except cidr reason
 
-fqdnDecoder :: DecodeArrow NodeList () LitVar
+fqdnDecoder :: DecodeArrow NodeList () (Either VariableName Text)
 fqdnDecoder =
   KDL.nodeWith "fqdn" $
-      Literal <$> KDL.argWith' ["text"] KDL.text
-      <|> (Var <$> KDL.argWith' ["var"] KDL.text)
+    (Right <$> KDL.argWith' ["text"] KDL.text)
+      <|> (Left <$> KDL.argWith' ["var"] (VariableName <$> KDL.text))

@@ -30,7 +30,7 @@ data C4Service = C4Service
   }
   deriving stock (Eq, Show, Ord)
 
-toC4Service :: Map ServiceName ServiceInfo -> Reference -> C4Service
+toC4Service :: Map ServiceName (ServiceInfo var) -> Reference -> C4Service
 toC4Service serviceIndex = \case
   ServiceRef (ServiceName name) ->
     let alias = mkC4ServiceAlias name

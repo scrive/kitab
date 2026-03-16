@@ -9,7 +9,11 @@ import Core.Model.InventoryVariable
 
 inventoryDecoder :: DecodeArrow NodeList () Inventory
 inventoryDecoder = KDL.nodeWith "inventory" $ do
-  name <- KDL.arg @Text
+  name <-
+    KDL.optional (KDL.arg @Text)
+      >>= \case
+        Nothing -> KDL.fail "Expected name for inventory"
+        Just n -> pure n
   vars <- do
     results <- KDL.children (KDL.many varDecoder)
     pure $ Map.fromList (fmap (\r -> (r.name, r)) results)

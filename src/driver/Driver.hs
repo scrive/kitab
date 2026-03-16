@@ -106,14 +106,13 @@ filterServicesByContext
   :: Error (NonEmpty CLIError) :> es
   => List ContextName
   -> List ServiceContext
-  -> List Service
-  -> Eff es (List Service)
+  -> List (Service var)
+  -> Eff es (List (Service var))
 filterServicesByContext [] _ services = pure services
 filterServicesByContext contextFilters contexts services = do
   filteredServices <- forM contextFilters $ \contextFilter -> filterServices contextFilter
   pure $ List.concat filteredServices
   where
-    filterServices :: Error (NonEmpty CLIError) :> es => ContextName -> Eff es (List Service)
     filterServices contextFilter = do
       unless (List.any (\c -> c.contextName == contextFilter) contexts) $ Error.throwError (NE.singleton (unknownContextFilter contextFilter))
       pure $

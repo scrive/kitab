@@ -65,6 +65,7 @@ library
     CLI.Types
     Driver
     Driver.Inventory
+    Driver.Variable
     Parser
     Parser.Entity
     Parser.EntityName
@@ -74,7 +75,6 @@ library
     Parser.ServiceContext
     Parser.ServiceName
     Parser.Types
-    Parser.Utils
 
   build-depends:
     algebraic-graphs,
@@ -123,13 +123,14 @@ library kitab-core
     Core.Model.ServiceContext
     Core.Model.ServiceName
     Core.Model.ServiceReference
-    Core.Resolver
     Core.Validation
+    Core.Variable
 
   build-depends:
     algebraic-graphs,
     base ^>=4.21,
     containers,
+    effectful,
     extra,
     filepath,
     kitab-prelude,
@@ -138,7 +139,9 @@ library kitab-core
     text-display,
     validation-selective,
 
-  hs-source-dirs: src/core
+  hs-source-dirs:
+    src/core
+
   mixins:
     base hiding (Prelude),
     kitab-prelude (Prelude),

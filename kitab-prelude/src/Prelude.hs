@@ -15,6 +15,7 @@ module Prelude
   , module Data.Eq
   , module Data.Monoid
   , module Control.Monad.IO.Class
+  , Type
   , List
   , Text
   , Vector
@@ -32,6 +33,7 @@ import Data.Eq
 import Data.Foldable
 import Data.Function ((&))
 import Data.Functor
+import Data.Kind (Type)
 import Data.List (List)
 import Data.Map.Strict (Map)
 import Data.Maybe
