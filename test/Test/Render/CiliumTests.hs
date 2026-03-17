@@ -38,8 +38,7 @@ test =
 
 renderService :: IO LazyByteString
 renderService = runTestEff $ do
-  fileContent <- T.decodeUtf8 <$> FileSystem.readFile "test/fixtures/multiple-service-definitions.kdl"
-  declarations <- assertParse decodeServiceDocument fileContent
+  declarations <- assertParseFile decodeServiceDocument "test/fixtures/multiple-service-definitions.kdl"
   let serviceDefinitions' =
         mapMaybe
           ( \case
@@ -67,8 +66,7 @@ renderService = runTestEff $ do
 
 renderCIDRSetPolicy :: IO LazyByteString
 renderCIDRSetPolicy = runTestEff $ do
-  fileContent <- T.decodeUtf8 <$> FileSystem.readFile "test/fixtures/cidrset.kdl"
-  declarations <- assertParse decodeServiceDocument fileContent
+  declarations <- assertParseFile decodeServiceDocument "test/fixtures/cidrset.kdl"
   let serviceDefinitions' =
         mapMaybe
           ( \case

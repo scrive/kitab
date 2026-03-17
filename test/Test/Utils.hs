@@ -11,6 +11,7 @@ module Test.Utils
   , assertLeft
   , diffCmd
   , assertParse
+  , assertParseFile
   ) where
 
 import Data.Text qualified as T
@@ -63,6 +64,12 @@ assertRight message (Left a) = liftIO . Test.assertFailure $ (message <> ". Foun
 assertParse :: HasCallStack => DocumentDecoder a -> Text -> TestEff a
 assertParse decoder input =
   case KDL.decodeWith decoder input of
+    Left decodeError -> assertFailure (T.unpack $ renderDecodeError decodeError)
+    Right result -> pure result
+
+assertParseFile :: HasCallStack => DocumentDecoder a -> FilePath -> TestEff a
+assertParseFile decoder filePath =
+  liftIO (KDL.decodeFileWith decoder filePath) >>= \case
     Left decodeError -> assertFailure (T.unpack $ renderDecodeError decodeError)
     Right result -> pure result
 
