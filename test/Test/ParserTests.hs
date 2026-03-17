@@ -91,7 +91,14 @@ testGraphToDot = runTestEff $ do
 
 testInventoryDecoding :: TestEff ()
 testInventoryDecoding = do
-  let expectedResult = Inventory {name = "base", vars = [("opensearch-fqdn", InventoryVariable {name = "opensearch-fqdn", value = "opensearch.aws.internal.network", description = Just "OpenSearch instance in AWS"})]}
+  let expectedResult =
+        Inventory
+          { name = "base"
+          , vars =
+              [ ("opensearch-fqdn", InventoryVariable {name = "opensearch-fqdn", value = "opensearch.aws.internal.network", description = Just "OpenSearch instance in AWS"})
+              , ("otel-tracing-fqdn", InventoryVariable {name = "otel-tracing-fqdn", value = "otel.aws.internal.network", description = Just "OpenTelemetry ingestion in AWS"})
+              ]
+          }
   result <- assertParseFile (KDL.document inventoryDecoder) "test/fixtures/inventory.kdl"
   assertEqual
     "Expected inventory definition"

@@ -7,9 +7,10 @@ import Core.Model.ContextName
 data Options = Options
   { quiet :: Bool
   , format :: OutputFormat
-  , inputs :: List OsPath
   , outputDir :: OsPath
   , contextFilters :: List ContextName
+  , inventory :: Maybe OsPath
+  , inputs :: List OsPath
   }
   deriving stock (Eq, Ord, Show)
 

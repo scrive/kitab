@@ -1,19 +1,23 @@
+{-# LANGUAGE QuasiQuotes #-}
+
 module Test.InventoryTests where
 
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import GHC.Stack
 import KDL qualified
+import System.OsPath
+import System.OsPath qualified as OsPath
 import Test.Tasty
 
 import Core.Model.Inventory
 import Core.Model.InventoryVariable
 import Core.Model.Service
+import Core.Variable
 import Driver.Inventory
 import Driver.Variable
 import Parser.Service
 import Test.Utils
-import Core.Variable
 
 test :: TestTree
 test =
@@ -74,13 +78,15 @@ testInventoryMerge = do
 
 testCollectingInventoriesFromFileSystem :: TestEff ()
 testCollectingInventoriesFromFileSystem = do
-  inventories <- listInventoryFiles "./test/fixtures/inventory"
+  inventories <-
+    listInventoryFiles [osp|./test/fixtures/inventory|]
+      >>= traverse OsPath.decodeUtf
   assertEqual
     "Inventories"
     (Set.fromList ["./test/fixtures/inventory/aws/staging/inventory.kdl", "./test/fixtures/inventory/aws/prod/inventory.kdl", "./test/fixtures/inventory/aws/dev/inventory.kdl"])
     (Set.fromList inventories)
 
-testResolvingVariableFromInventory :: TestEff ()
+testResolvingVariableFromInventory :: HasCallStack => TestEff ()
 testResolvingVariableFromInventory = do
   let opensearchFqdn =
         InventoryVariable
@@ -95,7 +101,7 @@ testResolvingVariableFromInventory = do
           }
 
   service <- assertParseFile (KDL.document serviceDecoder) "test/fixtures/service-with-var.kdl"
-  assertEqual 
+  assertEqual
     "OpenSearch FQDN is not yet resolved"
     (Just (Left (Var "opensearch-fqdn")))
     service.serviceInfo.serviceFqdn

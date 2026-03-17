@@ -2,10 +2,8 @@ module Test.Render.CiliumTests where
 
 import Data.ByteString.Lazy (LazyByteString)
 import Data.List qualified as List
-import Data.Text.Encoding qualified as T
 import Data.Text.Lazy qualified as T
 import Data.Text.Lazy.Encoding qualified as TL
-import Effectful.FileSystem.IO.ByteString qualified as FileSystem
 import Test.Tasty
 import Test.Tasty.Golden
 import Validation

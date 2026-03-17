@@ -3,4 +3,9 @@ inventory "base" {
 		value "opensearch.aws.internal.network"
 		description "OpenSearch instance in AWS"
 	}
+
+	var "otel-tracing-fqdn" {
+		value "otel.aws.internal.network"
+		description "OpenTelemetry ingestion in AWS"
+	}
 }

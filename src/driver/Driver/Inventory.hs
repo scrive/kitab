@@ -12,6 +12,8 @@ import Effectful.FileSystem qualified as FileSystem
 import Effectful.FileSystem.IO.ByteString qualified as FileSystem
 import KDL qualified
 import System.FilePath (takeFileName, (</>))
+import System.OsPath (OsPath)
+import System.OsPath qualified as OsPath
 
 import CLI.Error (CLIError, kdlParseError)
 import Core.Model.Inventory
@@ -19,7 +21,7 @@ import Parser.Inventory
 
 getInventories
   :: (FileSystem :> es, Error (NonEmpty CLIError) :> es)
-  => FilePath
+  => OsPath
   -> Eff es (List Inventory)
 getInventories baseDir = do
   files <- listInventoryFiles baseDir
@@ -27,10 +29,12 @@ getInventories baseDir = do
 
 listInventoryFiles
   :: FileSystem :> es
-  => FilePath
-  -> Eff es (List FilePath)
-listInventoryFiles baseDir = do
-  go [] baseDir
+  => OsPath
+  -> Eff es (List OsPath)
+listInventoryFiles baseDir =
+  OsPath.decodeUtf baseDir
+    >>= go []
+    >>= traverse OsPath.encodeUtf
   where
     go state dirPath = do
       names <- FileSystem.listDirectory dirPath
@@ -42,12 +46,13 @@ listInventoryFiles baseDir = do
 
 parseInventories
   :: (Error (NonEmpty CLIError) :> es, FileSystem :> es)
-  => List FilePath
+  => List OsPath
   -> Eff es (List Inventory)
 parseInventories inventoryFilePaths = do
   concatForM inventoryFilePaths $ \inputPath -> do
-    fileContent <- FileSystem.readFile inputPath
+    fileContent <- FileSystem.readFile =<< OsPath.decodeUtf inputPath
     let result = KDL.decodeWith (KDL.document inventoryDecoder) (T.decodeUtf8 fileContent)
     case result of
       Right a -> pure [a]
-      Left err -> Error.throwError . NE.singleton $ kdlParseError undefined err
+      Left err -> do
+        Error.throwError . NE.singleton $ kdlParseError inputPath err

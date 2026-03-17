@@ -3,11 +3,11 @@
 module CLI.Error where
 
 import Data.Text qualified as T
-import Data.Word
 import KDL (DecodeError)
 import System.OsPath
 
 import Core.Model.ContextName
+import Core.Model.InventoryVariable
 import Core.Validation
 
 data CLIErrorType
@@ -15,6 +15,7 @@ data CLIErrorType
   | FileDoesNotExist
   | GraphValidationError
   | UnkownContextFilter
+  | VariableNotFound
   deriving stock (Eq, Show, Ord)
 
 errorCodeFromType :: CLIErrorType -> ErrorCode
@@ -23,8 +24,9 @@ errorCodeFromType = \case
   FileDoesNotExist -> ErrorCode 100
   GraphValidationError -> ErrorCode 241
   UnkownContextFilter -> ErrorCode 154
+  VariableNotFound -> ErrorCode 523
 
-newtype ErrorCode = ErrorCode Word8
+newtype ErrorCode = ErrorCode Word
   deriving newtype (Eq, Show, Ord)
 
 instance Display ErrorCode where
@@ -39,9 +41,7 @@ data CLIError = CLIError
 
 instance Display CLIError where
   displayBuilder CLIError {..} =
-    displayBuilder errorCode
-      <> " "
-      <> displayBuilder errorMessage
+    "Error: " <> displayBuilder errorCode <> " " <> displayBuilder errorMessage
 
 noFileAtProvidedLocation :: OsPath -> CLIError
 noFileAtProvidedLocation path =
@@ -73,4 +73,12 @@ unknownContextFilter contextFilter =
     { errorType = UnkownContextFilter
     , errorCode = errorCodeFromType UnkownContextFilter
     , errorMessage = "Could not find context " <> display contextFilter <> " to filter services."
+    }
+
+variableNotFound :: VariableName -> CLIError
+variableNotFound expectedVariable =
+  CLIError
+    { errorType = VariableNotFound
+    , errorCode = errorCodeFromType VariableNotFound
+    , errorMessage = "Could not find a definition for " <> display expectedVariable <> " in provided inventories."
     }

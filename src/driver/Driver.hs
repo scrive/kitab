@@ -51,6 +51,8 @@ runOptions options = do
               _ -> Nothing
           )
           declarations
+  inventories <- concat <$> traverse getInventories options.inventory
+  let aggregatedInventory = mergeInventories inventories
   let entities =
         mapMaybe
           ( \case
@@ -58,24 +60,17 @@ runOptions options = do
               _ -> Nothing
           )
           declarations
-  let serviceDefinitions' =
-        mapMaybe
-          ( \case
-              ServiceDeclaration s -> Just s
-              _ -> Nothing
-          )
-          declarations
+  serviceDefinitions <- do
+    declarations
+      & mapMaybe
+        ( \case
+            ServiceDeclaration s -> Just s
+            _ -> Nothing
+        )
+      & traverse (resolveServiceVars aggregatedInventory)
 
-  inventories <- getInventories "./"
-  let aggregatedInventory = mergeInventories inventories
-  let graph = buildGraph serviceDefinitions' entities
+  let graph = buildGraph serviceDefinitions entities
   let entitiesIndex = buildEntityIndex entities
-  serviceDefinitions'' <-
-    filterServicesByContext
-      options.contextFilters
-      contexts
-      serviceDefinitions'
-  serviceDefinitions <- traverse (resolveServiceVars aggregatedInventory) serviceDefinitions''
   let serviceIndex = buildServiceIndex serviceDefinitions
   case checkGraph graph of
     Failure errors -> Error.throwError $ fmap graphValidationError errors
