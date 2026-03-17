@@ -19,12 +19,12 @@ import Core.Model.InventoryVariable
 import Core.Model.PortNode
 import Core.Model.Service
 import Core.Model.ServiceName
+import Core.Variable
 import Parser
 import Parser.Inventory (inventoryDecoder)
 import Parser.Service
 import Parser.Types
 import Test.Utils
-import Core.Variable
 
 test :: TestTree
 test =

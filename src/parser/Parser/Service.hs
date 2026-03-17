@@ -127,11 +127,13 @@ exceptionDecoder = KDL.nodeWith "except" $ do
 fqdnDecoder :: NodeListDecoder (Either Var Text)
 fqdnDecoder =
   KDL.nodeWith "fqdn" $ do
-    KDL.argWith' ["text", "var"] . KDL.withDecoder KDL.any $ (\val -> do
-        s <- case val.data_ of
-          KDL.String s -> pure s
-          _ -> KDL.failM "Expected string"
-        case (.identifier.value) <$> val.ann of
-          Just "var" -> pure . Left $ Var (VariableName s)
-          -- Nothing or Just "text"
-          _ -> pure . Right $ s)
+    KDL.argWith' ["text", "var"] . KDL.withDecoder KDL.any $
+      ( \val -> do
+          s <- case val.data_ of
+            KDL.String s -> pure s
+            _ -> KDL.failM "Expected string"
+          case (.identifier.value) <$> val.ann of
+            Just "var" -> pure . Left $ Var (VariableName s)
+            -- Nothing or Just "text"
+            _ -> pure . Right $ s
+      )
