@@ -4,7 +4,6 @@ module Test.InventoryTests where
 
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
-import Debug.Trace
 import GHC.Stack
 import KDL qualified
 import System.OsPath
@@ -12,6 +11,8 @@ import System.OsPath qualified as OsPath
 import Test.Tasty
 
 import Core.Model.Inventory
+import Core.Model.Inventory.Aggregated
+import Core.Model.Inventory.Selector
 import Core.Model.InventoryVariable
 import Core.Model.Service
 import Core.Variable
@@ -52,7 +53,7 @@ testInventoryMerge = do
           }
   let i1 =
         Inventory
-          { name = "base"
+          { attributes = Map.fromList [("cloud", "aws")]
           , vars =
               Map.fromList
                 [ ("opensearch-fqdn", baseOpenSearchFQDN)
@@ -67,18 +68,18 @@ testInventoryMerge = do
           }
   let i2 =
         Inventory
-          { name = "aws.dev"
+          { attributes = Map.fromList [("cloud", "aws"), ("env", "dev")]
           , vars = Map.fromList [("opensearch-fqdn", overridenOpenSearchFQDN)]
           }
   let expectedAggregatedInventory =
         AggregatedInventory
-          { names = ["base", "aws.dev"]
+          { aggregatedAttributes = Map.fromList [("cloud", "aws"), ("env", "dev")]
           , aggregatedVars = Map.fromList [("opensearch-fqdn", overridenOpenSearchFQDN), ("redis-fqdn", baseRedisFQDN)]
           }
   assertEqual
     "Inventories are merged correctly"
     expectedAggregatedInventory
-    (mergeInventories [i1, i2])
+    (mergeInventories (Selector (Just "aws")) (Selector Nothing) (Selector (Just "dev")) [i1, i2])
 
 testCollectingInventoriesFromFileSystem :: TestEff ()
 testCollectingInventoriesFromFileSystem = do
@@ -87,8 +88,8 @@ testCollectingInventoriesFromFileSystem = do
       >>= traverse OsPath.decodeUtf
   assertEqual
     "Inventories"
-    ["./test/fixtures/inventory/aws/staging/inventory.kdl", "./test/fixtures/inventory/aws/prod/inventory.kdl", "./test/fixtures/inventory/aws/dev/inventory.kdl", "./test/fixtures/inventory/aws/inventory.kdl"]
-    inventories
+    (Set.fromList ["./test/fixtures/inventory/aws/staging/inventory.kdl", "./test/fixtures/inventory/aws/prod/inventory.kdl", "./test/fixtures/inventory/aws/dev/inventory.kdl", "./test/fixtures/inventory/aws/inventory.kdl"])
+    (Set.fromList inventories)
 
 testResolvingVariableFromInventory :: HasCallStack => TestEff ()
 testResolvingVariableFromInventory = do
@@ -100,7 +101,7 @@ testResolvingVariableFromInventory = do
           }
   let aggregatedInventory =
         AggregatedInventory
-          { names = ["base", "aws.dev"]
+          { aggregatedAttributes = Map.fromList [("cloud", "aws"), ("env", "dev")]
           , aggregatedVars = Map.fromList [("opensearch-fqdn", opensearchFqdn)]
           }
 
@@ -119,11 +120,11 @@ testResolvingVariableFromInventory = do
 testInventoryMergeFromFileSystem :: TestEff ()
 testInventoryMergeFromFileSystem = do
   inventories <- getInventories [osp|./test/fixtures/inventory|]
-  let aggregatedInventory = mergeInventories inventories
+  let aggregatedInventory = mergeInventories (Selector (Just "aws")) (Selector Nothing) (Selector (Just "dev")) inventories
 
   assertEqual
-    "Inventories are aggregated in the correct order"
-    AggregatedInventory {names = ["aws-staging", "aws-prod", "aws-dev", "aws-base"], aggregatedVars = Map.fromList [("my-var", InventoryVariable {name = "my-var", value = "aws-base-inventory", description = Just "Base value for the AWS environment"})]}
+    "Inventories are aggregated correctly"
+    AggregatedInventory {aggregatedAttributes = Map.fromList [("cloud", "aws"), ("env", "dev")], aggregatedVars = Map.fromList [("my-var", InventoryVariable {name = "my-var", value = "aws-base-inventory", description = Just "Base value for the AWS environment"})]}
     aggregatedInventory
 
   let service = Service {serviceName = "app", serviceInfo = ServiceInfo {serviceFqdn = Just (Left (Var "my-var")), serviceContext = Nothing, servicePorts = Set.fromList []}, serviceConnections = [], cidrSets = [], entityAccesses = []}

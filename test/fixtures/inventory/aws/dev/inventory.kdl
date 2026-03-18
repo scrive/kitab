@@ -1,4 +1,4 @@
-inventory "aws-dev" {
+inventory cloud="aws" env="dev" {
 	var "my-var"{
 		value "aws-dev-value"
 		description "Specifically for aws-dev"

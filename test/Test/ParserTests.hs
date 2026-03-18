@@ -4,6 +4,7 @@ module Test.ParserTests where
 
 import Algebra.Graph.Export.Dot
 import Data.ByteString.Lazy (LazyByteString)
+import Data.Map.Strict qualified as Map
 import Data.Text.Lazy qualified as TL
 import Data.Text.Lazy.Encoding qualified as TL
 import KDL qualified
@@ -93,7 +94,7 @@ testInventoryDecoding :: TestEff ()
 testInventoryDecoding = do
   let expectedResult =
         Inventory
-          { name = "base"
+          { attributes = Map.fromList [("cloud", "aws"), ("env", "prod"), ("region", "eu-west-1")]
           , vars =
               [ ("opensearch-fqdn", InventoryVariable {name = "opensearch-fqdn", value = "opensearch.aws.internal.network", description = Just "OpenSearch instance in AWS"})
               , ("otel-tracing-fqdn", InventoryVariable {name = "otel-tracing-fqdn", value = "otel.aws.internal.network", description = Just "OpenTelemetry ingestion in AWS"})

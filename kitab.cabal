@@ -118,6 +118,8 @@ library kitab-core
     Core.Model.EntityName
     Core.Model.EntityReference
     Core.Model.Inventory
+    Core.Model.Inventory.Aggregated
+    Core.Model.Inventory.Selector
     Core.Model.InventoryVariable
     Core.Model.PortNode
     Core.Model.Reference

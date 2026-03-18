@@ -20,7 +20,8 @@ import CLI.Error
 import CLI.Types
 import Core.Graph
 import Core.Model.ContextName
-import Core.Model.Inventory
+import Core.Model.Inventory.Aggregated
+import Core.Model.Inventory.Selector
 import Core.Model.Service
 import Core.Model.ServiceContext
 import Core.Validation
@@ -51,8 +52,16 @@ runOptions options = do
               _ -> Nothing
           )
           declarations
+  let cloudSelector = Selector options.cloud
+  let regionSelector = Selector options.region
+  let envSelector = Selector options.environment
   inventories <- concat <$> traverse getInventories options.inventory
-  let aggregatedInventory = mergeInventories inventories
+  let aggregatedInventory =
+        mergeInventories
+          cloudSelector
+          regionSelector
+          envSelector
+          inventories
   let entities =
         mapMaybe
           ( \case

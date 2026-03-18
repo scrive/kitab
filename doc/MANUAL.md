@@ -322,7 +322,28 @@ service "media-proxy" {
 
 In a scenario where some values change betweeen deployment environment and infrastructure providers, you can use the inventory system.
 
-## ENVIRONMENT
+An inventory is a directory of KDL files that declare an `inventory` node
+and attributes that will allow you to select the node: cloud, env, region.
+
+Inventories are combined by order of specificity. If you have two inventories, one with only a `cloud` property, and another with both `cloud` and `env`,
+then the second one, more specific, will overwrite the variables defined in the first one, but will leave the ones it does not replace.
+
+### Example 1
+
+```kdl
+inventory cloud=aws region=eu-west-1 env=prod {
+  …
+}
+```
+
+To pick the values from such an inventory, call `kitab` like this:
+
+```bash
+$ kitab -i ./inventory --cloud aws --region eu-west-1 --env prod
+```
+
+
+## ENVIRONMENT VARIABLES
 
 ## BUGS
 

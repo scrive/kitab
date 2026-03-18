@@ -1,1 +1,1 @@
-inventory "aws-staging" {}
+inventory cloud="aws" env="staging" {}

@@ -9,7 +9,7 @@ import Test.Tasty.Golden
 import Validation
 
 import Core.Graph
-import Core.Model.Inventory
+import Core.Model.Inventory.Aggregated
 import Core.Model.Service
 import Core.Validation
 import Driver.Variable

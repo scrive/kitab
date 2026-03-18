@@ -8,15 +8,11 @@ import Core.Model.InventoryVariable
 
 inventoryDecoder :: NodeListDecoder Inventory
 inventoryDecoder = KDL.nodeWith "inventory" $ do
-  name <-
-    KDL.optional (KDL.arg @Text)
-      >>= \case
-        Nothing -> KDL.fail "Expected name for inventory"
-        Just n -> pure n
+  attributes <- remainingPropsWith KDL.text
   vars <- do
     results <- KDL.children (KDL.many varDecoder)
     pure $ Map.fromList (fmap (\r -> (r.name, r)) results)
-  pure Inventory {name, vars}
+  pure Inventory {attributes, vars}
 
 varDecoder :: NodeListDecoder InventoryVariable
 varDecoder = KDL.nodeWith "var" $ do

@@ -9,6 +9,9 @@ data Options = Options
   , format :: OutputFormat
   , outputDir :: OsPath
   , contextFilters :: List ContextName
+  , cloud :: Maybe Text
+  , region :: Maybe Text
+  , environment :: Maybe Text
   , inventory :: Maybe OsPath
   , inputs :: List OsPath
   }

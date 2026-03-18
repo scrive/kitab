@@ -1,1 +1,1 @@
-inventory "aws-prod" {}
+inventory cloud=aws {}
