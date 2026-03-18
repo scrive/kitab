@@ -4,7 +4,8 @@ kitab — Documentation and Infrastructure for service-oriented architectures
 
 ## SYNOPSIS
 
-Usage: kitab [-q|--quiet] (-f|--format FORMAT) (-i|--input FILE) (-o|--output-dir DIRECTORY)
+Usage: kitab [-q|--quiet] (-f|--format FORMAT) (-o|--output-dir DIRECTORY)
+             [--context CONTEXT] [-i|--inventory DIRECTORY] FILES
 
 ## DESCRIPTION
 
@@ -20,8 +21,8 @@ This graph can then be used to create network access policies and architecture d
   <dt>-f,--format=FORMAT</dt>
   <dd style="margin-left: 3rem"> Output format </dd>
 
-  <dt>-i,--input=FILE</dt>
-  <dd style="margin-left: 3rem"> input file, can be specified multiple times </dd>
+  <dt>-i,--inventory=FILE</dt>
+  <dd style="margin-left: 3rem"> Path to an inventory directory </dd>
 
   <dt>-o,--output-dir=DIRECTORY</dt>
   <dd style="margin-left: 3rem"> Output directory </dd>
@@ -316,6 +317,10 @@ service "media-proxy" {
 }
 
 ```
+
+## INVENTORY
+
+In a scenario where some values change betweeen deployment environment and infrastructure providers, you can use the inventory system.
 
 ## ENVIRONMENT
 

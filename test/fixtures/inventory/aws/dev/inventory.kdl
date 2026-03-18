@@ -1,1 +1,6 @@
-inventory "aws-dev" {}
+inventory "aws-dev" {
+	var "my-var"{
+		value "aws-dev-value"
+		description "Specifically for aws-dev"
+	}
+}

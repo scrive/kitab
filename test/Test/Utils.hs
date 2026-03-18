@@ -16,16 +16,13 @@ module Test.Utils
   , assertParseFile
   ) where
 
-import Data.ByteString.Char8 qualified as BS8
 import Data.List.NonEmpty (NonEmpty)
 import Data.Text qualified as T
-import Data.Text.IO qualified as T
 import Effectful
 import Effectful.Error.Static (Error, runErrorWith)
 import Effectful.FileSystem
 import GHC.Stack
 import KDL
-import System.IO
 import Test.Tasty (TestTree)
 import Test.Tasty.HUnit qualified as HUnit
 import Test.Tasty.HUnit qualified as Test

@@ -3,7 +3,7 @@
 module CLI.Error where
 
 import Data.Text qualified as T
-import KDL (DecodeError)
+import KDL (DecodeError, renderDecodeError)
 import System.OsPath
 
 import Core.Model.ContextName
@@ -56,7 +56,7 @@ kdlParseError path decodeError =
   CLIError
     { errorType = ParseError
     , errorCode = errorCodeFromType ParseError
-    , errorMessage = "Could not parse file " <> T.show path <> ". Got the following error: " <> T.show decodeError
+    , errorMessage = "Could not parse file " <> T.show path <> ". Got the following error: " <> renderDecodeError decodeError
     }
 
 graphValidationError :: ValidationError -> CLIError

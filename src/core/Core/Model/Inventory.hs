@@ -23,8 +23,8 @@ data AggregatedInventory = AggregatedInventory
 mergeInventories :: List Inventory -> AggregatedInventory
 mergeInventories inventories =
   let (aggregatedNames, aggregatedVars) =
-        List.foldl'
-          (\(accNames, accVars) inventory -> (inventory.name : accNames, Map.union inventory.vars accVars))
+        List.foldr
+          (\inventory (accNames, accVars) -> (inventory.name : accNames, Map.union inventory.vars accVars))
           (mempty, Map.empty)
           inventories
       names = List.reverse aggregatedNames
