@@ -52,7 +52,7 @@ service "opensearch" {
 // Services that live inside the cluster are labelled with "k8s"
 // and declare their dependencies to other services.
 service "media-proxy" {
-	context "k8s"
+	in-context "k8s"
 
   // This creates a edge between `media-proxy` and `opensearch`.
 	depends-on "opensearch" {
@@ -69,11 +69,11 @@ service "media-proxy" {
 }
 
 service "user-registry" {
-	context "k8s"
+	in-context "k8s"
 }
 
 service "main-app" {
-	context "k8s"
+	in-context "k8s"
 
 	depends-on "s3"  {
 		via "https"
@@ -93,8 +93,6 @@ service "main-app" {
 		via "https"
 	}
 }
-
-
 ```
 
 We will get the following PlantUML syntax:
