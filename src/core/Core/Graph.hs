@@ -7,8 +7,8 @@ module Core.Graph
 import Algebra.Graph.Labelled (Graph)
 import Algebra.Graph.Labelled qualified as Graph
 import Data.List qualified as List
-import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
+import Data.Void
 
 import Core.Model.Entity
 import Core.Model.EntityName
@@ -16,7 +16,7 @@ import Core.Model.Reference
 import Core.Model.Service
 import Core.Model.ServiceName
 
-buildServiceIndex :: List Service -> Map ServiceName ServiceInfo
+buildServiceIndex :: List (Service Void) -> Map ServiceName (ServiceInfo Void)
 buildServiceIndex =
   foldr
     ( \Service {serviceName, serviceInfo} ->
@@ -31,7 +31,8 @@ buildEntityIndex =
         Map.insert entityName entityInfo
     )
     Map.empty
-buildGraph :: List Service -> List Entity -> Graph (List ConnectionType) Reference
+
+buildGraph :: List (Service var) -> List Entity -> Graph (List ConnectionType) Reference
 buildGraph services entities =
   let serviceGraph =
         foldr

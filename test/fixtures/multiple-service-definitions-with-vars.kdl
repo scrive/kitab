@@ -1,0 +1,62 @@
+context "k8s"
+
+entity "host" {
+	in-context "k8s"
+	port 123 "UDP"
+	port 30928 "TCP"
+}
+
+service "otel-tracing" {
+	fqdn (var)"otel-tracing-fqdn"
+	port 4317
+	port 4318
+}
+
+service "opensearch" {
+	fqdn (var)"opensearch-fqdn"
+	port 443
+}
+
+service "s3" {
+	fqdn "s3.amazonaws.com"
+	port 443
+}
+
+service "media-proxy" {
+	in-context "k8s"
+
+	depends-on "opensearch" {
+		via "https"
+	}
+
+	depends-on "otel-tracing" {
+		via "https"
+	} 
+
+	access "host"
+}
+
+service "user-registry" {
+	in-context "k8s"
+}
+
+service "main-app" {
+	in-context "k8s"
+
+	depends-on "s3"  {
+		via "https"
+	}
+
+	depends-on "media-proxy" {
+		via "https"
+	}
+
+	depends-on "user-registry" {
+		via "function-call"
+	}
+
+	depends-on "otel-tracing" {
+		via "https"
+		port 4317
+	}
+}

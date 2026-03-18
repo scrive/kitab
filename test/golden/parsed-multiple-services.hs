@@ -24,7 +24,8 @@
     ( Service
         { serviceName = "otel-tracing"
         , serviceInfo = ServiceInfo
-            { serviceFqdn = Just "tracing.internal.network"
+            { serviceFqdn = Just
+                ( Right "tracing.internal.network" )
             , serviceContext = Nothing
             , servicePorts = fromList
                 [ PortNode
@@ -46,7 +47,8 @@
     ( Service
         { serviceName = "opensearch"
         , serviceInfo = ServiceInfo
-            { serviceFqdn = Just "opensearch.internal.network"
+            { serviceFqdn = Just
+                ( Right "opensearch.internal.network" )
             , serviceContext = Nothing
             , servicePorts = fromList
                 [ PortNode
@@ -64,7 +66,8 @@
     ( Service
         { serviceName = "s3"
         , serviceInfo = ServiceInfo
-            { serviceFqdn = Just "s3.amazonaws.com"
+            { serviceFqdn = Just
+                ( Right "s3.amazonaws.com" )
             , serviceContext = Nothing
             , servicePorts = fromList
                 [ PortNode

@@ -1,3 +1,5 @@
+{-# LANGUAGE RecordWildCards #-}
+
 module Test.Utils
   ( TestEff
   , runTestEff
@@ -10,28 +12,59 @@ module Test.Utils
   , assertRight
   , assertLeft
   , diffCmd
+  , assertParse
+  , assertParseFile
   ) where
 
+import Data.List.NonEmpty (NonEmpty)
+import Data.Text qualified as T
 import Effectful
+import Effectful.Error.Static (Error, runErrorWith)
 import Effectful.FileSystem
 import GHC.Stack
+import KDL
 import Test.Tasty (TestTree)
+import Test.Tasty.HUnit qualified as HUnit
 import Test.Tasty.HUnit qualified as Test
+
+import CLI.Error
 
 type TestEff a =
   Eff
     '[ FileSystem
+     , Error (NonEmpty CLIError)
      , IOE
      ]
     a
 
-runTestEff :: TestEff a -> IO a
+runTestEff :: HasCallStack => TestEff a -> IO a
 runTestEff action =
   action
     & runFileSystem
+    & runErrorWith handleTestError
     & runEff
+  where
+    handleTestError :: IOE :> es => CallStack -> NonEmpty CLIError -> Eff es b
+    handleTestError cs errs = do
+      let prettyCS = unlines $ map formatFunCall (getCallStack cs)
+      -- liftIO $ BS8.hPutStrLn stderr ("\n" <> BS8.pack )
+      let message =
+            concatMap (T.unpack . display) errs
+              <> "\n"
+              <> "\t"
+              <> prettyCS
+      liftIO $ HUnit.assertFailure ("Test failure.\n\t" <> message)
+    formatFunCall :: (String, SrcLoc) -> String
+    formatFunCall (fun, SrcLoc {..}) =
+      fun
+        ++ " at "
+        ++ srcLocFile
+        ++ ":"
+        ++ show srcLocStartLine
+        ++ ":"
+        ++ show srcLocStartCol
 
-testThat :: String -> TestEff () -> TestTree
+testThat :: HasCallStack => String -> TestEff () -> TestTree
 testThat name assertion =
   Test.testCase name $ runTestEff assertion
 
@@ -41,7 +74,7 @@ assertEqual message expected actual = liftIO $ Test.assertEqual message expected
 assertBool :: HasCallStack => String -> Bool -> TestEff ()
 assertBool message assertion = liftIO $ Test.assertBool message assertion
 
-assertFailure :: HasCallStack => String -> TestEff ()
+assertFailure :: HasCallStack => String -> TestEff a
 assertFailure = liftIO . Test.assertFailure
 
 assertJust :: HasCallStack => String -> Maybe a -> TestEff a
@@ -55,6 +88,18 @@ assertNothing _ Nothing = pure ()
 assertRight :: (HasCallStack, Show a) => String -> Either a b -> TestEff b
 assertRight _ (Right b) = pure b
 assertRight message (Left a) = liftIO . Test.assertFailure $ (message <> ". Found " <> show a)
+
+assertParse :: HasCallStack => DocumentDecoder a -> Text -> TestEff a
+assertParse decoder input =
+  case KDL.decodeWith decoder input of
+    Left decodeError -> assertFailure (T.unpack $ renderDecodeError decodeError)
+    Right result -> pure result
+
+assertParseFile :: HasCallStack => DocumentDecoder a -> FilePath -> TestEff a
+assertParseFile decoder filePath =
+  liftIO (KDL.decodeFileWith decoder filePath) >>= \case
+    Left decodeError -> assertFailure (T.unpack $ renderDecodeError decodeError)
+    Right result -> pure result
 
 assertLeft :: HasCallStack => String -> Either a b -> TestEff a
 assertLeft description (Right _b) = liftIO $ Test.assertFailure description

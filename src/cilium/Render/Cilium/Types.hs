@@ -3,7 +3,6 @@
 module Render.Cilium.Types where
 
 import Data.List qualified as List
-import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Prettyprinter
 

@@ -7,13 +7,14 @@ import Data.Text.Encoding qualified as T
 import Data.Text.Lazy qualified as T
 import Data.Text.Lazy.Encoding qualified as TL
 import Effectful.FileSystem.IO.ByteString qualified as FileSystem
-import KDL qualified
 import Test.Tasty
 import Test.Tasty.Golden
 import Validation
 
 import Core.Graph
+import Core.Model.Inventory.Aggregated
 import Core.Validation
+import Driver.Variable
 import Parser
 import Parser.Types
 import Render.C4 qualified as C4
@@ -34,8 +35,8 @@ test =
 renderServices :: IO LazyByteString
 renderServices = runTestEff $ do
   fileContent <- T.decodeUtf8 <$> FileSystem.readFile "test/fixtures/multiple-service-definitions.kdl"
-  declarations <- assertRight "KDL file could not be parsed" $ KDL.decodeWith decodeServiceDocument fileContent
-  let serviceDefinitions =
+  declarations <- assertParse decodeServiceDocument fileContent
+  let serviceDefinitions' =
         mapMaybe
           ( \case
               ServiceDeclaration s -> Just s
@@ -56,6 +57,8 @@ renderServices = runTestEff $ do
               _ -> Nothing
           )
           declarations
+  let aggregatedInventory = AggregatedInventory mempty mempty
+  serviceDefinitions <- traverse (resolveServiceVars aggregatedInventory) serviceDefinitions'
   let graph = buildGraph serviceDefinitions entities
   let serviceIndex = buildServiceIndex serviceDefinitions
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)

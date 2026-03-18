@@ -1,0 +1,6 @@
+inventory cloud="aws" {
+	var "my-var" {
+		value "aws-base-inventory"
+		description "Base value for the AWS environment"
+	}
+}

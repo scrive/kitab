@@ -4,7 +4,9 @@ kitab — Documentation and Infrastructure for service-oriented architectures
 
 ## SYNOPSIS
 
-Usage: kitab [-q|--quiet] (-f|--format FORMAT) (-i|--input FILE) (-o|--output-dir DIRECTORY)
+Usage: kitab [-q|--quiet] (-f|--format FORMAT) (-o|--output-dir DIRECTORY)
+             [--context CONTEXT] [--cloud CLOUD] [--region REGION]
+             [--env ENVIRONMENT] [-i|--inventory DIRECTORY] FILES
 
 ## DESCRIPTION
 
@@ -20,14 +22,23 @@ This graph can then be used to create network access policies and architecture d
   <dt>-f,--format=FORMAT</dt>
   <dd style="margin-left: 3rem"> Output format </dd>
 
-  <dt>-i,--input=FILE</dt>
-  <dd style="margin-left: 3rem"> input file, can be specified multiple times </dd>
-
   <dt>-o,--output-dir=DIRECTORY</dt>
   <dd style="margin-left: 3rem"> Output directory </dd>
 
   <dt>--context=CONTEXT</dt>
   <dd style="margin-left: 3rem"> Only output services belonging to a specific context </dd>
+
+  <dt>--cloud=CLOUD</dt>
+  <dd style="margin-left: 3rem"> Specify inventory values for a specific cloud provider </dd>
+
+  <dt>--region=REGION</dt>
+  <dd style="margin-left: 3rem"> Specify inventory values for a specific cloud region </dd>
+
+  <dt>--env=ENVIRONMENT</dt>
+  <dd style="margin-left: 3rem"> Specify inventory values for a specific deployment environment </dd>
+
+  <dt>-i,--inventory=DIRECTORY</dt>
+  <dd style="margin-left: 3rem"> Path to an inventory directory</dd>
 
   <dt>--version</dt>
   <dd style="margin-left: 3rem"> Show version information </dd>
@@ -317,7 +328,32 @@ service "media-proxy" {
 
 ```
 
-## ENVIRONMENT
+## INVENTORY
+
+In a scenario where some values change betweeen deployment environment and infrastructure providers, you can use the inventory system.
+
+An inventory is a directory of KDL files that declare an `inventory` node
+and attributes that will allow you to select the node: cloud, env, region.
+
+Inventories are combined by order of specificity. If you have two inventories, one with only a `cloud` property, and another with both `cloud` and `env`,
+then the second one, more specific, will overwrite the variables defined in the first one, but will leave the ones it does not replace.
+
+### Example 1
+
+```kdl
+inventory cloud=aws region=eu-west-1 env=prod {
+  …
+}
+```
+
+To pick the values from such an inventory, call `kitab` like this:
+
+```bash
+$ kitab -i ./inventory --cloud aws --region eu-west-1 --env prod
+```
+
+
+## ENVIRONMENT VARIABLES
 
 ## BUGS
 

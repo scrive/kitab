@@ -12,8 +12,13 @@ on:
       - master
   workflow_dispatch:
 
+env:
+    LANG: "en_GB.UTF-8"
+    LANGUAGE: "en_GB.UTF-8"
+    LC_ALL: "en_GB.UTF-8"
 jobs:
   tests:
+    name: "Test on ubuntu-24"
     runs-on:
       - aws-standard-ubuntu24
     strategy:
@@ -23,6 +28,11 @@ jobs:
           - 9.12.2
     steps:
 
+      - name: Set locale
+        run: |
+            sudo apt install locales
+            sudo locale-gen en_GB.UTF-8
+            sudo update-locale LANG=en_GB.UTF-8
       - uses: actions/checkout@v6
 
       - name: Cleanup stale ghcup
@@ -56,7 +66,7 @@ jobs:
         run: cabal test
 
   package-macos:
-    name: Build on macos-latest
+    name: Test on macos-latest
     runs-on: macos-latest
     steps:
       - name: Checkout base repo
@@ -112,7 +122,7 @@ jobs:
           path: ${{ env.KITAB_EXEC_TAR }}
 
   package-linux-static:
-      name: Build on alpine-9.19
+      name: Test on alpine-9.19
       runs-on: ubuntu-latest
       container: "alpine:3.19"
       steps: 

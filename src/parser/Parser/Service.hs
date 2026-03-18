@@ -1,23 +1,25 @@
 module Parser.Service
   ( serviceDecoder
+  , ServiceMetadata (..)
   ) where
 
 import Data.Maybe qualified as Maybe
 import Data.Set qualified as Set
 import KDL
-import KDL.Decoder.Internal.Decoder
 
 import Core.Model.CIDRSet
 import Core.Model.ContextName
+import Core.Model.InventoryVariable (VariableName (..))
 import Core.Model.PortNode
 import Core.Model.Service
+import Core.Variable
 import Parser.EntityName
 import Parser.PortNode
 import Parser.ServiceContext
 import Parser.ServiceName
 
-data ServiceMetadata
-  = FQDNNode Text
+data ServiceMetadata (var :: Type)
+  = FQDNNode (Either var Text)
   | DependsOnNode Connection
   | ServiceContextNode ContextName
   | CIDRSetNode CIDRSet
@@ -25,36 +27,36 @@ data ServiceMetadata
   | AccessNode EntityAccess
   deriving stock (Eq, Ord, Show)
 
-getFQDN :: ServiceMetadata -> Maybe Text
+getFQDN :: ServiceMetadata var -> Maybe (Either var Text)
 getFQDN (FQDNNode t) = Just t
 getFQDN _ = Nothing
 
-getServiceContext :: ServiceMetadata -> Maybe ContextName
+getServiceContext :: ServiceMetadata var -> Maybe ContextName
 getServiceContext (ServiceContextNode c) = Just c
 getServiceContext _ = Nothing
 
-getConnection :: ServiceMetadata -> Maybe Connection
+getConnection :: ServiceMetadata var -> Maybe Connection
 getConnection (DependsOnNode c) = Just c
 getConnection _ = Nothing
 
-getCIDRSet :: ServiceMetadata -> Maybe CIDRSet
+getCIDRSet :: ServiceMetadata var -> Maybe CIDRSet
 getCIDRSet (CIDRSetNode c) = Just c
 getCIDRSet _ = Nothing
 
-getPort :: ServiceMetadata -> Maybe PortNode
+getPort :: ServiceMetadata var -> Maybe PortNode
 getPort (ServicePortNode p) = Just p
 getPort _ = Nothing
 
-getEntityAccess :: ServiceMetadata -> Maybe EntityAccess
+getEntityAccess :: ServiceMetadata var -> Maybe EntityAccess
 getEntityAccess (AccessNode a) = Just a
 getEntityAccess _ = Nothing
 
-serviceDecoder :: DecodeArrow NodeList () Service
+serviceDecoder :: NodeListDecoder (Service Var)
 serviceDecoder = KDL.nodeWith "service" $ do
   serviceName <- KDL.argWith serviceNameDecoder
   mixedChildren <-
     KDL.children . KDL.many $
-      (FQDNNode <$> KDL.nodeWith "fqdn" (KDL.argWith KDL.text))
+      (FQDNNode <$> fqdnDecoder)
         <|> (ServicePortNode <$> portDecoder)
         <|> (DependsOnNode <$> dependsOnDecoder)
         <|> (AccessNode <$> accessDecoder)
@@ -71,7 +73,7 @@ serviceDecoder = KDL.nodeWith "service" $ do
 
   pure Service {serviceName, serviceInfo, serviceConnections, cidrSets, entityAccesses}
 
-dependsOnDecoder :: DecodeArrow NodeList () Connection
+dependsOnDecoder :: NodeListDecoder Connection
 dependsOnDecoder = KDL.nodeWith "depends-on" $ do
   connectionWith <- KDL.argWith serviceNameDecoder
   -- referenceName <- KDL.argWith serviceNameDecoder
@@ -83,7 +85,7 @@ dependsOnDecoder = KDL.nodeWith "depends-on" $ do
     pure (connectionPorts, connectionType)
   pure Connection {connectionWith, connectionType, connectionPorts}
 
-accessDecoder :: DecodeArrow NodeList () EntityAccess
+accessDecoder :: NodeListDecoder EntityAccess
 accessDecoder = KDL.nodeWith "access" $ do
   accessTarget <- KDL.argWith entityNameDecoder
   accessPorts <-
@@ -91,7 +93,7 @@ accessDecoder = KDL.nodeWith "access" $ do
       Set.fromList <$> KDL.many portDecoder
   pure EntityAccess {accessTarget, accessPorts}
 
-connectionTypeDecoder :: DecodeArrow Node () ConnectionType
+connectionTypeDecoder :: NodeDecoder ConnectionType
 connectionTypeDecoder = do
   connTypeText <- arg
   case connTypeText of
@@ -99,7 +101,7 @@ connectionTypeDecoder = do
     "function-call" -> pure FunctionCall
     _ -> KDL.fail $ "Found unkonwn connection type: " <> connTypeText
 
-cidrSetDecoder :: DecodeArrow NodeList () CIDRSet
+cidrSetDecoder :: NodeListDecoder CIDRSet
 cidrSetDecoder = KDL.nodeWith "cidr-set" $ do
   ports <- KDL.children $ KDL.many portDecoder
   items <-
@@ -110,14 +112,28 @@ cidrSetDecoder = KDL.nodeWith "cidr-set" $ do
         )
   pure $ CIDRSet items ports
 
-cidrDecoder :: DecodeArrow NodeList () CIDRSetItem
+cidrDecoder :: NodeListDecoder CIDRSetItem
 cidrDecoder = KDL.nodeWith "cidr" $ do
   cidr <- KDL.arg @Text
   name <- KDL.arg @Text
   pure $ CIDR cidr name
 
-exceptionDecoder :: DecodeArrow NodeList () CIDRSetItem
+exceptionDecoder :: NodeListDecoder CIDRSetItem
 exceptionDecoder = KDL.nodeWith "except" $ do
   cidr <- KDL.arg @Text
   reason <- KDL.arg @Text
   pure $ Except cidr reason
+
+fqdnDecoder :: NodeListDecoder (Either Var Text)
+fqdnDecoder =
+  KDL.nodeWith "fqdn" $ do
+    KDL.argWith' ["text", "var"] . KDL.withDecoder KDL.any $
+      ( \val -> do
+          s <- case val.data_ of
+            KDL.String s -> pure s
+            _ -> KDL.failM "Expected string"
+          case (.identifier.value) <$> val.ann of
+            Just "var" -> pure . Left $ Var (VariableName s)
+            -- Nothing or Just "text"
+            _ -> pure . Right $ s
+      )

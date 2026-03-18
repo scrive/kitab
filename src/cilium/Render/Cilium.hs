@@ -1,10 +1,10 @@
 module Render.Cilium where
 
 import Data.List qualified as List
-import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Data.Set (Set)
 import Data.Set qualified as Set
+import Data.Void
 import Prettyprinter
 import Prettyprinter.Render.Text (renderStrict)
 
@@ -22,9 +22,9 @@ renderCilium = renderStrict . layoutPretty defaultLayoutOptions . pretty
 
 -- | Convert a Kitab Service to a Cilium Policy
 toCiliumPolicy
-  :: Map ServiceName ServiceInfo
+  :: Map ServiceName (ServiceInfo Void)
   -> Map EntityName EntityInfo
-  -> Service
+  -> Service Void
   -> CiliumNetworkPolicy
 toCiliumPolicy serviceIndex entityIndex service =
   CiliumNetworkPolicy
@@ -62,7 +62,11 @@ dnsEgressRule =
         (Just DNSMatch {dnsMatchNAme = "*"})
     ]
 
-serviceEgressRule :: Maybe ContextName -> Map ServiceName ServiceInfo -> Connection -> EgressRule
+serviceEgressRule
+  :: Maybe ContextName
+  -> Map ServiceName (ServiceInfo Void)
+  -> Connection
+  -> EgressRule
 serviceEgressRule mContext services Connection {connectionWith, connectionPorts}
   | Just ServiceInfo {serviceContext} <- Map.lookup connectionWith services
   , isJust serviceContext
@@ -73,7 +77,7 @@ serviceEgressRule mContext services Connection {connectionWith, connectionPorts}
       EgressRule $
         maybe
           []
-          ( \hostname ->
+          ( \(Right hostname) ->
               pure $
                 ToFQDN
                   (FQDNMatch hostname)
@@ -86,7 +90,7 @@ serviceEgressRule mContext services Connection {connectionWith, connectionPorts}
 -- 1. If no ports are specified by the caller, we use the ones opened by the callee
 -- 2. If the caller specifies ports, we check if they are also defined by the callee
 -- 3. If not, we fallback to port 443 on TCP
-pickServicePorts :: Map ServiceName ServiceInfo -> ServiceName -> Set PortNode -> Set PortProtocol
+pickServicePorts :: Map ServiceName (ServiceInfo Void) -> ServiceName -> Set PortNode -> Set PortProtocol
 pickServicePorts services with ports
   | Set.null ports
   , Just ServiceInfo {servicePorts} <- Map.lookup with services =

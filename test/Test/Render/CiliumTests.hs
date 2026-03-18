@@ -2,18 +2,17 @@ module Test.Render.CiliumTests where
 
 import Data.ByteString.Lazy (LazyByteString)
 import Data.List qualified as List
-import Data.Text.Encoding qualified as T
 import Data.Text.Lazy qualified as T
 import Data.Text.Lazy.Encoding qualified as TL
-import Effectful.FileSystem.IO.ByteString qualified as FileSystem
-import KDL qualified
 import Test.Tasty
 import Test.Tasty.Golden
 import Validation
 
 import Core.Graph
+import Core.Model.Inventory.Aggregated
 import Core.Model.Service
 import Core.Validation
+import Driver.Variable
 import Parser
 import Parser.Types
 import Render.Cilium qualified as Cilium
@@ -37,9 +36,8 @@ test =
 
 renderService :: IO LazyByteString
 renderService = runTestEff $ do
-  fileContent <- T.decodeUtf8 <$> FileSystem.readFile "test/fixtures/multiple-service-definitions.kdl"
-  declarations <- assertRight "KDL file could not be parsed" $ KDL.decodeWith decodeServiceDocument fileContent
-  let serviceDefinitions =
+  declarations <- assertParseFile decodeServiceDocument "test/fixtures/multiple-service-definitions.kdl"
+  let serviceDefinitions' =
         mapMaybe
           ( \case
               ServiceDeclaration s -> Just s
@@ -55,6 +53,8 @@ renderService = runTestEff $ do
           )
           declarations
 
+  let aggregatedInventory = AggregatedInventory mempty mempty
+  serviceDefinitions <- traverse (resolveServiceVars aggregatedInventory) serviceDefinitions'
   let graph = buildGraph serviceDefinitions entities
   let serviceIndex = buildServiceIndex serviceDefinitions
   let entityIndex = buildEntityIndex entities
@@ -64,9 +64,8 @@ renderService = runTestEff $ do
 
 renderCIDRSetPolicy :: IO LazyByteString
 renderCIDRSetPolicy = runTestEff $ do
-  fileContent <- T.decodeUtf8 <$> FileSystem.readFile "test/fixtures/cidrset.kdl"
-  declarations <- assertRight "KDL file could not be parsed" $ KDL.decodeWith decodeServiceDocument fileContent
-  let serviceDefinitions =
+  declarations <- assertParseFile decodeServiceDocument "test/fixtures/cidrset.kdl"
+  let serviceDefinitions' =
         mapMaybe
           ( \case
               ServiceDeclaration s -> Just s
@@ -81,6 +80,8 @@ renderCIDRSetPolicy = runTestEff $ do
           )
           declarations
 
+  let aggregatedInventory = AggregatedInventory mempty mempty
+  serviceDefinitions <- traverse (resolveServiceVars aggregatedInventory) serviceDefinitions'
   let graph = buildGraph serviceDefinitions entities
   let serviceIndex = buildServiceIndex serviceDefinitions
   let entityIndex = buildEntityIndex entities

@@ -20,9 +20,13 @@ parseOptions =
   Options
     <$> switch (long "quiet" <> short 'q' <> help "Make the program less verbose")
     <*> option outputFormat (long "format" <> short 'f' <> metavar "FORMAT" <> help "Output format" <> completeWith supportedFormats)
-    <*> some (option pathParser (long "input" <> short 'i' <> metavar "FILE" <> help "input file, can be specified multiple times" <> action "file"))
     <*> option pathParser (long "output-dir" <> short 'o' <> metavar "DIRECTORY" <> help "Output directory" <> action "directory")
     <*> many (option contextFilterParser (long "context" <> metavar "CONTEXT" <> help "Only output services belonging to a specific context"))
+    <*> optional (option str (long "cloud" <> metavar "CLOUD"))
+    <*> optional (option str (long "region" <> metavar "REGION"))
+    <*> optional (option str (long "env" <> metavar "ENVIRONMENT"))
+    <*> optional (option pathParser (short 'i' <> long "inventory" <> metavar "DIRECTORY" <> help "Path to an inventory directory"))
+    <*> some (argument pathParser (metavar "FILES" <> help "input files, can be specified multiple times" <> action "file"))
 
 contextFilterParser :: ReadM ContextName
 contextFilterParser = str
@@ -30,10 +34,24 @@ contextFilterParser = str
 pathParser :: ReadM OsPath
 pathParser = maybeReader OsPath.encodeUtf
 
+banner :: Doc
+banner =
+  vsep
+    [ ""
+    , "  █████   ████  ███   █████              █████   "
+    , "  ░░███   ███░  ░░░   ░░███              ░░███    "
+    , "   ░███  ███    ████  ███████    ██████   ░███████  INFRASTRUCTURE"
+    , "   ░███████    ░░███ ░░░███░    ░░░░░███  ░███░░██       AND"
+    , "   ░███░░███    ░███   ░███      ███████  ░███ ░██  DOCUMENTATION"
+    , "   ░███ ░░███   ░███   ░███ ███ ███░░███  ░███ ░██"
+    , "   █████ ░░████ █████  ░░█████ ░░████████ ████████"
+    , "  ░░░░░   ░░░░ ░░░░░    ░░░░░   ░░░░░░░░ ░░░░░░░░ "
+    ]
+
 parserOptions :: ParserInfo Options
 parserOptions =
   info (parseOptions <**> simpleVersioner programVersion <**> helper) $
-    header "Kitab — Infrastructure Documentation"
+    headerDoc (Just banner)
       <> progDescDoc (Just programDescription)
       <> footerDoc (Just programFooter)
 
