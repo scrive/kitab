@@ -5,7 +5,8 @@ kitab — Documentation and Infrastructure for service-oriented architectures
 ## SYNOPSIS
 
 Usage: kitab [-q|--quiet] (-f|--format FORMAT) (-o|--output-dir DIRECTORY)
-             [--context CONTEXT] [-i|--inventory DIRECTORY] FILES
+             [--context CONTEXT] [--cloud CLOUD] [--region REGION]
+             [--env ENVIRONMENT] [-i|--inventory DIRECTORY] FILES
 
 ## DESCRIPTION
 
@@ -21,14 +22,23 @@ This graph can then be used to create network access policies and architecture d
   <dt>-f,--format=FORMAT</dt>
   <dd style="margin-left: 3rem"> Output format </dd>
 
-  <dt>-i,--inventory=FILE</dt>
-  <dd style="margin-left: 3rem"> Path to an inventory directory </dd>
-
   <dt>-o,--output-dir=DIRECTORY</dt>
   <dd style="margin-left: 3rem"> Output directory </dd>
 
   <dt>--context=CONTEXT</dt>
   <dd style="margin-left: 3rem"> Only output services belonging to a specific context </dd>
+
+  <dt>--cloud=CLOUD</dt>
+  <dd style="margin-left: 3rem"> Specify inventory values for a specific cloud provider </dd>
+
+  <dt>--region=REGION</dt>
+  <dd style="margin-left: 3rem"> Specify inventory values for a specific cloud region </dd>
+
+  <dt>--env=ENVIRONMENT</dt>
+  <dd style="margin-left: 3rem"> Specify inventory values for a specific deployment environment </dd>
+
+  <dt>-i,--inventory=DIRECTORY</dt>
+  <dd style="margin-left: 3rem"> Path to an inventory directory</dd>
 
   <dt>--version</dt>
   <dd style="margin-left: 3rem"> Show version information </dd>
