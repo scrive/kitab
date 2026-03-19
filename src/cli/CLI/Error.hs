@@ -16,7 +16,15 @@ data CLIErrorType
   | GraphValidationError
   | UnkownContextFilter
   | VariableNotFound
-  deriving stock (Eq, Show, Ord)
+  deriving stock (Eq, Show, Ord, Enum, Bounded)
+
+instance Display CLIErrorType where
+  displayBuilder = \case
+    ParseError -> "Parse error"
+    FileDoesNotExist -> "File does not exist"
+    GraphValidationError -> "Graph validation error"
+    UnkownContextFilter -> "Unknown context filter"
+    VariableNotFound -> "Variable not found"
 
 errorCodeFromType :: CLIErrorType -> ErrorCode
 errorCodeFromType = \case
