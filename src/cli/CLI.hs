@@ -6,11 +6,13 @@ import Data.List qualified as List
 import Data.Text qualified as T
 import Data.Version
 import Development.GitRev
+import Layoutz
 import Options.Applicative
 import Options.Applicative.Help.Pretty
 import System.OsPath
 import System.OsPath qualified as OsPath
 
+import CLI.Error
 import CLI.Types
 import Core.Model.ContextName
 import Paths_kitab (version)
@@ -50,7 +52,7 @@ banner =
 
 parserOptions :: ParserInfo Options
 parserOptions =
-  info (parseOptions <**> simpleVersioner programVersion <**> helper) $
+  info (parseOptions <**> simpleVersioner programVersion <**> helper <**> errorCodesOption) $
     headerDoc (Just banner)
       <> progDescDoc (Just programDescription)
       <> footerDoc (Just programFooter)
@@ -65,6 +67,20 @@ programDescription =
 
 programFooter :: Doc
 programFooter = "Git repository: https://github.com/scrive/kitab"
+
+errorCodesOption :: Parser (a -> a)
+errorCodesOption = do
+  let errorTypes :: [CLIErrorType] = [minBound .. maxBound]
+  let codes = fmap errorCodeFromType errorTypes
+  let descriptions = List.map display errorTypes
+  let tableElements =
+        zipWith (\code desc -> [textElement (display code), textElement desc]) codes descriptions
+  let descriptionTable = withBorder BorderRound $ table ["Code", "Description"] tableElements
+  infoOption (render descriptionTable) $
+    mconcat [long "error-codes", help "Print error codes"]
+
+textElement :: Text -> L
+textElement = text . T.unpack
 
 withInfo :: Parser a -> String -> ParserInfo a
 withInfo opts desc =

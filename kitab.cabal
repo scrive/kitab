@@ -92,6 +92,7 @@ library
     kitab:kitab-cilium,
     kitab:kitab-core,
     kitab-prelude,
+    layoutz,
     optics-core,
     optparse-applicative,
     text,
