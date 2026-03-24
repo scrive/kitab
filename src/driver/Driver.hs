@@ -1,17 +1,22 @@
 module Driver where
 
+import Data.ByteString.Char8 qualified as BS8
 import Data.List qualified as List
 import Data.List.NonEmpty (NonEmpty)
 import Data.List.NonEmpty qualified as NE
+import Data.Map.Strict qualified as Map
+import Data.Text qualified as T
 import Data.Text.Encoding qualified as T
 import Effectful
 import Effectful.Console.ByteString (Console)
+import Effectful.Console.ByteString qualified as Console
 import Effectful.Error.Static (Error)
 import Effectful.Error.Static qualified as Error
 import Effectful.FileSystem (FileSystem)
 import Effectful.FileSystem qualified as FileSystem
 import Effectful.FileSystem.IO.ByteString qualified as FileSystem
 import KDL qualified
+import Layoutz
 import Optics.Core
 import System.OsPath qualified as OsPath
 import Validation
@@ -91,6 +96,7 @@ runOptions options = do
       let graph = buildGraph serviceDefinitions entities
       let entitiesIndex = buildEntityIndex entities
       let serviceIndex = buildServiceIndex serviceDefinitions
+      printInventory aggregatedInventory
       case checkGraph graph of
         Failure errors -> Error.throwError $ fmap graphValidationError errors
         Success _ -> do
@@ -125,3 +131,19 @@ filterServicesByContext contextFilters contexts services = do
       unless (List.any (\c -> c.contextName == contextFilter) contexts) $ Error.throwError (NE.singleton (unknownContextFilter contextFilter))
       pure $
         List.filter (\s -> (s ^. #serviceInfo % #serviceContext :: Maybe ContextName) == Just contextFilter) services
+
+printInventory :: Console :> es => AggregatedInventory -> Eff es ()
+printInventory AggregatedInventory {aggregatedAttributes, aggregatedVars} = do
+  let tableElements = []
+  let getAttribute attr = T.unpack $ Map.findWithDefault "N/A" attr aggregatedAttributes
+  let inventoryTable =
+        layout
+          [ section
+              "Attributes"
+              [ layout
+                  [ kv [("Cloud", getAttribute "cloud"), ("Region", getAttribute "region"), ("Environment", getAttribute "env")]
+                  ]
+              ]
+          , withBorder BorderRound $ table ["Name", "Value"] tableElements
+          ]
+  Console.putStrLn (BS8.pack (render inventoryTable))

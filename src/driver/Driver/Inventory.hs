@@ -11,7 +11,7 @@ import Effectful.FileSystem (FileSystem)
 import Effectful.FileSystem qualified as FileSystem
 import Effectful.FileSystem.IO.ByteString qualified as FileSystem
 import KDL qualified
-import System.FilePath (takeFileName, (</>), takeExtension)
+import System.FilePath (takeExtension, (</>))
 import System.OsPath (OsPath)
 import System.OsPath qualified as OsPath
 
