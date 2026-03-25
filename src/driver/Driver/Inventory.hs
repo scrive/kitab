@@ -11,7 +11,7 @@ import Effectful.FileSystem (FileSystem)
 import Effectful.FileSystem qualified as FileSystem
 import Effectful.FileSystem.IO.ByteString qualified as FileSystem
 import KDL qualified
-import System.FilePath (takeFileName, (</>))
+import System.FilePath (takeFileName, (</>), takeExtension)
 import System.OsPath (OsPath)
 import System.OsPath qualified as OsPath
 
@@ -42,7 +42,7 @@ listInventoryFiles baseDir =
       (dirPaths, filePaths) <- partitionM FileSystem.doesDirectoryExist paths
       let inventories = filter isValidInventory filePaths
       foldM go (inventories <> state) dirPaths
-    isValidInventory name = takeFileName name == "inventory.kdl"
+    isValidInventory name = takeExtension name == ".kdl"
 
 parseInventories
   :: (Error (NonEmpty CLIError) :> es, FileSystem :> es)
