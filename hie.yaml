@@ -18,6 +18,9 @@ cradle:
     - path: "./src/cilium"
       config: { cradle: { cabal: { component: "kitab:lib:kitab-cilium" } } }
 
+    - path: "./src/gexf"
+      config: { cradle: { cabal: { component: "kitab:lib:kitab-gexf" } } }
+
     - path: "./app/Main.hs"
       config: { cradle: { cabal: { component: "kitab:exe:kitab" } } }
 

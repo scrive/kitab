@@ -1,4 +1,4 @@
-module Test.Render.C4Tests where
+module Test.Render.GEXFTests where
 
 import Algebra.Graph.Labelled qualified as Graph
 import Algebra.Graph.Labelled.AdjacencyMap qualified as AM
@@ -17,18 +17,17 @@ import Core.Validation
 import Driver.Variable
 import Parser
 import Parser.Types
-import Render.C4 qualified as C4
-import Render.C4.C4Service.Types
+import Render.GEXF qualified as GEXF
 import Test.Utils
 
 test :: TestTree
 test =
   testGroup
-    "C4 rendering golden tests"
+    "GEXF rendering golden tests"
     [ goldenVsStringDiff
         "Services"
         diffCmd
-        "test/golden/service.puml"
+        "test/golden/services.gexf"
         renderServices
     ]
 
@@ -62,9 +61,8 @@ renderServices = runTestEff $ do
   let graph = buildGraph serviceDefinitions entities
   let serviceIndex = buildServiceIndex serviceDefinitions
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)
-  let graphEdges =
+  let adjacencyMap =
         graph
           & Graph.edgeList
-          & fmap (\(es, a, b) -> (es, toC4Service serviceIndex a, toC4Service serviceIndex b))
-  let adjacencyMap = AM.edges graphEdges
-  (pure . TL.encodeUtf8) . T.fromStrict $ C4.renderC4 contexts adjacencyMap
+          & AM.edges
+  (pure . TL.encodeUtf8) . T.fromStrict $ GEXF.renderGEXF adjacencyMap serviceIndex

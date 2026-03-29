@@ -23,6 +23,11 @@ instance Pretty ConnectionType where
     HTTPS -> "HTTPS"
     FunctionCall -> "Function call"
 
+instance Display ConnectionType where
+  displayBuilder = \case
+    HTTPS -> "HTTPS"
+    FunctionCall -> "Function call"
+
 data Service (var :: Type) = Service
   { serviceName :: ServiceName
   , serviceInfo :: ServiceInfo var

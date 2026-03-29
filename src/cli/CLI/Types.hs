@@ -22,8 +22,11 @@ data Options = Options
 data OutputFormat
   = PumlFormat
   | CiliumFormat
+  | GexfFormat
   deriving stock (Eq, Ord, Show, Enum, Bounded)
 
 instance Display OutputFormat where
-  displayBuilder PumlFormat = "puml"
-  displayBuilder CiliumFormat = "cilium"
+  displayBuilder = \case
+    PumlFormat -> "puml"
+    CiliumFormat -> "cilium"
+    GexfFormat -> "gexf"

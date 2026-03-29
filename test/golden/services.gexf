@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gexf version="1.2" xmlns="http://www.gexf.net/1.2draft">
+    <graph defaultedgetype="directed" mode="static">
+        <attributes class="node">
+            <attribute
+              id="context"
+              title="context"
+              type="string"/>
+            <attribute
+              id="context_id"
+              title="Context ID"
+              type="int"/>
+        </attributes>
+        <nodes>
+            <node id="main-app" label="main-app">
+                <attvalues>
+                    <attvalue for="context" value="k8s"/>
+                    <attvalue for="context_id" value="100"/>
+                </attvalues>
+            </node>
+            <node id="media-proxy" label="media-proxy">
+                <attvalues>
+                    <attvalue for="context" value="k8s"/>
+                    <attvalue for="context_id" value="100"/>
+                </attvalues>
+            </node>
+            <node id="opensearch" label="opensearch"/>
+            <node id="otel-tracing" label="otel-tracing"/>
+            <node id="s3" label="s3"/>
+            <node id="user-registry" label="user-registry">
+                <attvalues>
+                    <attvalue for="context" value="k8s"/>
+                    <attvalue for="context_id" value="100"/>
+                </attvalues>
+            </node>
+            <node id="host" label="host"/>
+        </nodes>
+        <edges>
+            <edge
+              id="e0"
+              label="HTTPS"
+              source="main-app"
+              target="media-proxy"/>
+            <edge
+              id="e1"
+              label="HTTPS"
+              source="main-app"
+              target="otel-tracing"/>
+            <edge
+              id="e2"
+              label="HTTPS"
+              source="main-app"
+              target="s3"/>
+            <edge
+              id="e3"
+              label="Function call"
+              source="main-app"
+              target="user-registry"/>
+            <edge
+              id="e4"
+              label="HTTPS"
+              source="media-proxy"
+              target="opensearch"/>
+            <edge
+              id="e5"
+              label="HTTPS"
+              source="media-proxy"
+              target="otel-tracing"/>
+            <edge
+              id="e6"
+              label="HTTPS"
+              source="media-proxy"
+              target="host"/>
+        </edges>
+    </graph>
+</gexf>
