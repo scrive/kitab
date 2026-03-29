@@ -19,6 +19,7 @@ import Core.Model.Reference
 import Core.Model.Service
 import Core.Model.ServiceContext
 import Core.Model.ServiceName
+import Driver.Verbosity
 import Render.C4 qualified as C4
 import Render.C4.C4Service.Types qualified as C4
 
@@ -27,10 +28,10 @@ renderToPuml
   => Map ServiceName (ServiceInfo var)
   -> List ServiceContext
   -> OsPath
-  -> Bool
+  -> VerbositySetting
   -> Graph (List ConnectionType) Reference
   -> Eff es ()
-renderToPuml serviceIndex contexts outputDir quiet graph = do
+renderToPuml serviceIndex contexts outputDir verbosity graph = do
   let graphEdges =
         graph
           & Graph.edgeList
@@ -38,5 +39,5 @@ renderToPuml serviceIndex contexts outputDir quiet graph = do
   let adjacencyMap = AM.edges graphEdges
   let rendered = C4.renderC4 contexts adjacencyMap
   outputPath <- OsPath.decodeUtf (outputDir </> [osp|architecture.c4|])
-  unless quiet (Console.putStrLn $ "Writing file " <> BS8.pack outputPath)
+  when (isVerbose verbosity) (Console.putStrLn $ "Writing file " <> BS8.pack outputPath)
   FileSystem.writeFile outputPath (T.encodeUtf8 rendered)

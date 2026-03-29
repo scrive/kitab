@@ -5,6 +5,7 @@ import Data.List.NonEmpty
 import Data.Text.IO qualified as T
 import Effectful
 import Effectful.Console.ByteString (runConsole)
+import Effectful.Environment (runEnvironment)
 import Effectful.Error.Static
 import Effectful.FileSystem
 import Options.Applicative
@@ -25,6 +26,7 @@ main = do
       & runFileSystem
       & runErrorNoCallStack @_
       & runConsole
+      & runEnvironment
       & runEff
   case result of
     Right _ -> pure ()
