@@ -1,3 +1,4 @@
+{-# LANGUAGE MultilineStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module CLI where
@@ -66,7 +67,16 @@ programDescription =
   "Kitab aggregates service definition files and produces infrastructure configuration or documentation."
 
 programFooter :: Doc
-programFooter = "Git repository: https://github.com/scrive/kitab"
+programFooter =
+  """
+  Environment variables:
+    * NO_COLORS: Disable terminal styling
+    * DEBUG: Force verbosity. Takes priority over `--quiet`
+
+  Links:
+    * Git repository: https://github.com/scrive/kitab
+    * Issues: https://github.com/scrive/kitab/issues
+  """
 
 errorCodesOption :: Parser (a -> a)
 errorCodesOption = do

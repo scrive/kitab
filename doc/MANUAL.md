@@ -355,6 +355,9 @@ $ kitab -i ./inventory --cloud aws --region eu-west-1 --env prod
 
 ## ENVIRONMENT VARIABLES
 
+* `NO_COLORS`: Disable terminal styling.
+* `DEBUG`: Force verbosity. Takes priority over `--quiet`.
+
 ## BUGS
 
 To report bugs, please visit https://github.com/scrive/kitab/issues.

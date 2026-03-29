@@ -65,9 +65,12 @@ library
     CLI.Types
     Driver
     Driver.Cilium
+    Driver.Colours
+    Driver.Environment
     Driver.Inventory
     Driver.Puml
     Driver.Variable
+    Driver.Verbosity
     Parser
     Parser.Entity
     Parser.EntityName
@@ -85,6 +88,7 @@ library
     containers,
     deepseq,
     effectful,
+    envparse,
     filepath,
     gitrev,
     kdl-hs,
