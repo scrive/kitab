@@ -34,6 +34,7 @@ import Core.Validation
 import Driver.Cilium (renderToCilium)
 import Driver.Colours (TerminalColoursSettings (..), computeTerminalColoursSettings, stylise)
 import Driver.Environment (EnvVars (..), getEnvironment)
+import Driver.GEXF (renderGEXF)
 import Driver.Inventory
 import Driver.Puml (renderToPuml)
 import Driver.Variable
@@ -122,6 +123,12 @@ runOptions options = do
                 options.outputDir
                 verbosity
                 serviceDefinitions
+            GexfFormat ->
+              renderGEXF
+                serviceIndex
+                options.outputDir
+                verbosity
+                graph
 
 filterServicesByContext
   :: Error (NonEmpty CLIError) :> es

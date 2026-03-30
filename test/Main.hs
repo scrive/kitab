@@ -7,6 +7,7 @@ import Test.ModelTests qualified as ModelTests
 import Test.ParserTests qualified as ParserTests
 import Test.Render.C4Tests qualified as C4Tests
 import Test.Render.CiliumTests qualified as CiliumTests
+import Test.Render.GEXFTests qualified as GEXFTests
 
 main :: IO ()
 main =
@@ -19,4 +20,5 @@ tests =
   , C4Tests.test
   , CiliumTests.test
   , InventoryTests.test
+  , GEXFTests.test
   ]

@@ -106,6 +106,7 @@ outputFormat = eitherReader $
   \case
     "puml" -> Right PumlFormat
     "cilium" -> Right CiliumFormat
+    "gexf" -> Right GexfFormat
     _ -> Left $ "Kitab only supports the following formats: " <> mconcat (List.intersperse ", " supportedFormats)
 
 supportedFormats :: [String]

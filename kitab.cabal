@@ -67,6 +67,7 @@ library
     Driver.Cilium
     Driver.Colours
     Driver.Environment
+    Driver.GEXF
     Driver.Inventory
     Driver.Puml
     Driver.Variable
@@ -95,6 +96,7 @@ library
     kitab:kitab-c4,
     kitab:kitab-cilium,
     kitab:kitab-core,
+    kitab:kitab-gexf,
     kitab-prelude,
     layoutz,
     optics-core,
@@ -203,6 +205,32 @@ library kitab-cilium
     base hiding (Prelude),
     kitab-prelude (Prelude),
 
+library kitab-gexf
+  import: extensions
+  import: ghc-options
+  -- cabal-gild: discover src/gexf
+  exposed-modules:
+    Render.GEXF
+    Render.GEXF.Types
+
+  build-depends:
+    algebraic-graphs,
+    base ^>=4.21,
+    containers,
+    kitab:kitab-core,
+    kitab-prelude,
+    optics-core,
+    prettyprinter,
+    text,
+    text-display,
+    xml-conduit,
+    xml-conduit-writer,
+
+  hs-source-dirs: src/gexf
+  mixins:
+    base hiding (Prelude),
+    kitab-prelude (Prelude),
+
 executable kitab
   import: extensions
   import: ghc-options
@@ -237,6 +265,7 @@ test-suite kitab-test
     Test.ParserTests
     Test.Render.C4Tests
     Test.Render.CiliumTests
+    Test.Render.GEXFTests
     Test.Utils
 
   build-depends:
@@ -252,6 +281,7 @@ test-suite kitab-test
     kitab:kitab-c4,
     kitab:kitab-cilium,
     kitab:kitab-core,
+    kitab:kitab-gexf,
     kitab-prelude,
     pretty-simple ^>=4.1.4.0,
     tasty,
