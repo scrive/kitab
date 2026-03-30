@@ -47,7 +47,7 @@ jobs:
 
       - name: Install system dependencies
         run: |
-           sudo apt install -y libgmp-dev
+           sudo apt install -y libgmp-dev zlib1g-dev
 
       - name: Create freeze file
         run: cabal freeze --enable-tests --enable-benchmarks
