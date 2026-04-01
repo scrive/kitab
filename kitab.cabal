@@ -21,6 +21,7 @@ source-repository head
 common extensions
   default-extensions:
     DerivingVia
+    NoFieldSelectors
     OverloadedLabels
     OverloadedRecordDot
     OverloadedStrings
@@ -61,6 +62,7 @@ library
   -- cabal-gild: discover src/driver src/parser src/cli
   exposed-modules:
     CLI
+    CLI.Cmd.Generate
     CLI.Error
     CLI.Types
     Driver

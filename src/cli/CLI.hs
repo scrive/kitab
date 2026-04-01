@@ -13,23 +13,31 @@ import Options.Applicative.Help.Pretty
 import System.OsPath
 import System.OsPath qualified as OsPath
 
+import CLI.Cmd.Generate
 import CLI.Error
 import CLI.Types
 import Core.Model.ContextName
 import Paths_kitab (version)
 
-parseOptions :: Parser Options
-parseOptions =
-  Options
-    <$> switch (long "quiet" <> short 'q' <> help "Make the program less verbose")
-    <*> option outputFormat (long "format" <> short 'f' <> metavar "FORMAT" <> help "Output format" <> completeWith supportedFormats)
-    <*> option pathParser (long "output-dir" <> short 'o' <> metavar "DIRECTORY" <> help "Output directory" <> action "directory")
-    <*> many (option contextFilterParser (long "context" <> metavar "CONTEXT" <> help "Only output services belonging to a specific context"))
-    <*> optional (option str (long "cloud" <> metavar "CLOUD"))
-    <*> optional (option str (long "region" <> metavar "REGION"))
-    <*> optional (option str (long "env" <> metavar "ENVIRONMENT"))
-    <*> optional (option pathParser (short 'i' <> long "inventory" <> metavar "DIRECTORY" <> help "Path to an inventory directory"))
-    <*> some (argument pathParser (metavar "FILES" <> help "input files, can be specified multiple times" <> action "file"))
+parseCommand :: Parser Command
+parseCommand =
+  subparser $
+    command "generate" (parseGenerateOptions `withInfo` "")
+
+parseGenerateOptions :: Parser Command
+parseGenerateOptions =
+  CmdGenerate
+    <$> ( GenerateOptions
+            <$> switch (long "quiet" <> short 'q' <> help "Make the program less verbose")
+            <*> option outputFormat (long "format" <> short 'f' <> metavar "FORMAT" <> help "Output format" <> completeWith supportedFormats)
+            <*> option pathParser (long "output-dir" <> short 'o' <> metavar "DIRECTORY" <> help "Output directory" <> action "directory")
+            <*> many (option contextFilterParser (long "context" <> metavar "CONTEXT" <> help "Only output services belonging to a specific context"))
+            <*> optional (option str (long "cloud" <> metavar "CLOUD"))
+            <*> optional (option str (long "region" <> metavar "REGION"))
+            <*> optional (option str (long "env" <> metavar "ENVIRONMENT"))
+            <*> optional (option pathParser (short 'i' <> long "inventory" <> metavar "DIRECTORY" <> help "Path to an inventory directory"))
+            <*> some (argument pathParser (metavar "FILES" <> help "input files, can be specified multiple times" <> action "file"))
+        )
 
 contextFilterParser :: ReadM ContextName
 contextFilterParser = str
@@ -51,9 +59,9 @@ banner =
     , "  ░░░░░   ░░░░ ░░░░░    ░░░░░   ░░░░░░░░ ░░░░░░░░ "
     ]
 
-parserOptions :: ParserInfo Options
+parserOptions :: ParserInfo Command
 parserOptions =
-  info (parseOptions <**> simpleVersioner programVersion <**> helper <**> errorCodesOption) $
+  info (parseCommand <**> simpleVersioner programVersion <**> helper <**> errorCodesOption) $
     headerDoc (Just banner)
       <> progDescDoc (Just programDescription)
       <> footerDoc (Just programFooter)
@@ -87,7 +95,7 @@ errorCodesOption = do
         zipWith (\code desc -> [textElement (display code), textElement desc]) codes descriptions
   let descriptionTable = withBorder BorderRound $ table ["Code", "Description"] tableElements
   infoOption (render descriptionTable) $
-    mconcat [long "error-codes", help "Print error codes"]
+    mconcat [long "error-codes", help "Print error codes", hidden]
 
 textElement :: Text -> L
 textElement = text . T.unpack

@@ -4,8 +4,8 @@ import Control.Exception.Backtrace
 import Data.List.NonEmpty
 import Data.Text.IO qualified as T
 import Effectful
-import Effectful.Console.ByteString (runConsole)
-import Effectful.Environment (runEnvironment)
+import Effectful.Console.ByteString (Console, runConsole)
+import Effectful.Environment (Environment, runEnvironment)
 import Effectful.Error.Static
 import Effectful.FileSystem
 import Options.Applicative
@@ -13,8 +13,9 @@ import System.Exit qualified as System
 import System.IO
 
 import CLI
+import CLI.Cmd.Generate (runGenerate)
 import CLI.Error
-import Driver
+import CLI.Types
 
 main :: IO ()
 main = do
@@ -33,3 +34,9 @@ main = do
     Left errors -> do
       traverse_ @NonEmpty (T.putStrLn . display @CLIError) errors
       System.exitFailure
+
+runOptions
+  :: (Console :> es, FileSystem :> es, Error (NonEmpty CLIError) :> es, Environment :> es)
+  => Command
+  -> Eff es ()
+runOptions (CmdGenerate cmdOptions) = runGenerate cmdOptions
