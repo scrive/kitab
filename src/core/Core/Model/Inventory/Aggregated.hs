@@ -32,7 +32,7 @@ mergeInventories cloudSelector regionSelector environmentSelector inventories =
       aggregatedVars =
         inventories
           & List.filter (\inventory -> inventory.attributes `Map.isSubmapOf` selectorQuery)
-          & List.sortOn (Down . Map.size . attributes)
+          & List.sortOn (Down . Map.size . (.attributes))
           & List.foldl' (\acc inventory -> Map.union acc inventory.vars) Map.empty
   in AggregatedInventory
        { aggregatedAttributes = selectorQuery

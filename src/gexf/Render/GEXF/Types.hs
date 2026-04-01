@@ -1,6 +1,5 @@
 module Render.GEXF.Types where
 
-import Data.List qualified as List
 import Text.XML.Writer
 
 import Core.Model.ContextName

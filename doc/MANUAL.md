@@ -4,9 +4,10 @@ kitab — Documentation and Infrastructure for service-oriented architectures
 
 ## SYNOPSIS
 
-Usage: kitab [-q|--quiet] (-f|--format FORMAT) (-o|--output-dir DIRECTORY)
-             [--context CONTEXT] [--cloud CLOUD] [--region REGION]
-             [--env ENVIRONMENT] [-i|--inventory DIRECTORY] FILES
+Usage: kitab generate [-q|--quiet] (-f|--format FORMAT)
+                      (-o|--output-dir DIRECTORY) [--context CONTEXT]
+                      [--cloud CLOUD] [--region REGION] [--env ENVIRONMENT]
+                      [-i|--inventory DIRECTORY] FILES
 
 ## DESCRIPTION
 

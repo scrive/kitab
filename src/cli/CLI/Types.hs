@@ -1,32 +1,7 @@
-{-# LANGUAGE NoFieldSelectors #-}
-
 module CLI.Types where
 
-import System.OsPath
+import CLI.Cmd.Generate
 
-import Core.Model.ContextName
-
-data Options = Options
-  { quiet :: Bool
-  , format :: OutputFormat
-  , outputDir :: OsPath
-  , contextFilters :: List ContextName
-  , cloud :: Maybe Text
-  , region :: Maybe Text
-  , environment :: Maybe Text
-  , inventory :: Maybe OsPath
-  , inputs :: List OsPath
-  }
+data Command
+  = CmdGenerate GenerateOptions
   deriving stock (Eq, Ord, Show)
-
-data OutputFormat
-  = PumlFormat
-  | CiliumFormat
-  | GexfFormat
-  deriving stock (Eq, Ord, Show, Enum, Bounded)
-
-instance Display OutputFormat where
-  displayBuilder = \case
-    PumlFormat -> "puml"
-    CiliumFormat -> "cilium"
-    GexfFormat -> "gexf"
