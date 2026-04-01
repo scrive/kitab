@@ -127,9 +127,17 @@ runGenerate options = do
             )
           & traverse (resolveServiceVars aggregatedInventory)
 
+      let cidrDefinitions =
+            mapMaybe
+              ( \case
+                  CIDRSetDeclaration c -> Just c
+                  _ -> Nothing
+              )
+              declarations
       let graph = buildGraph serviceDefinitions entities
       let entitiesIndex = buildEntityIndex entities
       let serviceIndex = buildServiceIndex serviceDefinitions
+      let cidrIndex = buildCidrIndex cidrDefinitions
       when (isVerbose verbosity) $ printInventory coloursSettings aggregatedInventory
       case checkGraph graph of
         Failure errors -> Error.throwError $ fmap graphValidationError errors
@@ -146,6 +154,7 @@ runGenerate options = do
               renderToCilium
                 serviceIndex
                 entitiesIndex
+                cidrIndex
                 options.outputDir
                 verbosity
                 serviceDefinitions

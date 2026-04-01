@@ -1,18 +1,26 @@
+cidr-set "network" {
+	cidr "0.0.0.0/0" "Internet"
+	except "10.0.0.0/8" "Internal network"
+}
+
+cidr-set "mysql" {
+    cidr "10.147.128.0/24" "MySQL"
+	port 3306
+}
+
+cidr-set "integrations" {
+	cidr "10.23.32.0/24" "Integrations"
+	cidr "10.23.31.0/24" "Internal shenanigans"
+}
+
+cidr-set "ntp" {
+	cidr "10.42.42.0/24" "NTP"
+	port 123 "UDP"
+}
+
 service "my-app" {
-	cidr-set {
-		cidr "0.0.0.0/0" "Internet"
-		except "10.0.0.0/8" "Internal network"
-	}
-	cidr-set {
-	    cidr "10.147.128.0/24" "MySQL"
-		port 3306
-	}
-	cidr-set {
-		cidr "10.23.32.0/24" "Integrations"
-		cidr "10.23.31.0/24" "Internal shenanigans"
-	}
-	cidr-set {
-		cidr "10.42.42.0/24" "NTP"
-		port 123 "UDP"
-	}
+	connect "network"
+	connect "mysql"
+	connect "integrations"
+	connect "ntp"
 }

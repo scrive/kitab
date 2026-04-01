@@ -27,7 +27,14 @@ test =
 
 testParallelConnectionsDetection :: TestEff ()
 testParallelConnectionsDetection = do
-  let graph = buildGraph [Service "A" defaultServiceInfo [Connection (ServiceName "B") HTTPS [], Connection (ServiceName "B") FunctionCall []] [] []] []
+  let service =
+        emptyService
+          { serviceName = "A"
+          , serviceInfo = defaultServiceInfo
+          , serviceConnections =
+              [Connection (ServiceName "B") HTTPS [], Connection (ServiceName "B") FunctionCall []]
+          }
+  let graph = buildGraph [service] []
   validationError <- assertLeft "Graph is not validated" $ validationToEither (checkGraph graph)
   assertEqual
     "Parallel edges"
@@ -36,7 +43,14 @@ testParallelConnectionsDetection = do
 
 testSelfReferentialConnections :: TestEff ()
 testSelfReferentialConnections = do
-  let graph = buildGraph [Service "A" defaultServiceInfo [Connection (ServiceName "A") HTTPS []] [] []] []
+  let service =
+        emptyService
+          { serviceName = "A"
+          , serviceInfo = defaultServiceInfo
+          , serviceConnections =
+              [Connection (ServiceName "A") HTTPS []]
+          }
+  let graph = buildGraph [service] []
   validationError <- assertLeft "Graph is not validated" $ validationToEither (checkGraph graph)
   assertEqual
     "Self-Referential edges"
@@ -45,7 +59,21 @@ testSelfReferentialConnections = do
 
 testMismatchedConnections :: TestEff ()
 testMismatchedConnections = do
-  let graph = buildGraph [Service "A" defaultServiceInfo [Connection (ServiceName "B") HTTPS []] [] [], Service "B" defaultServiceInfo [Connection (ServiceName "A") FunctionCall []] [] []] []
+  let serviceA =
+        emptyService
+          { serviceName = "A"
+          , serviceInfo = defaultServiceInfo
+          , serviceConnections =
+              [Connection (ServiceName "B") HTTPS []]
+          }
+      serviceB =
+        emptyService
+          { serviceName = "B"
+          , serviceInfo = defaultServiceInfo
+          , serviceConnections =
+              [Connection (ServiceName "A") FunctionCall []]
+          }
+  let graph = buildGraph [serviceA, serviceB] []
   validationError <- assertLeft "Graph is not validated" $ validationToEither (checkGraph graph)
   assertEqual
     "Mismatched connections"

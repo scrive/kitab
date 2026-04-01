@@ -127,7 +127,7 @@ testInventoryMergeFromFileSystem = do
     AggregatedInventory {aggregatedAttributes = Map.fromList [("cloud", "aws"), ("env", "dev")], aggregatedVars = Map.fromList [("my-var", InventoryVariable {name = "my-var", value = "aws-base-inventory", description = Just "Base value for the AWS environment"})]}
     aggregatedInventory
 
-  let service = Service {serviceName = "app", serviceInfo = ServiceInfo {serviceFqdn = Just (Left (Var "my-var")), serviceContext = Nothing, servicePorts = Set.fromList []}, serviceConnections = [], cidrSets = [], entityAccesses = []}
+  let service = emptyService {serviceName = "app", serviceInfo = ServiceInfo {serviceFqdn = Just (Left (Var "my-var")), serviceContext = Nothing, servicePorts = Set.fromList []}}
 
   resolvedService <- resolveServiceVars aggregatedInventory service
 

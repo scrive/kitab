@@ -39,8 +39,8 @@
                 ]
             }
         , serviceConnections = []
-        , cidrSets = []
         , entityAccesses = []
+        , cidrConnections = []
         }
     )
 , ServiceDeclaration
@@ -58,8 +58,8 @@
                 ]
             }
         , serviceConnections = []
-        , cidrSets = []
         , entityAccesses = []
+        , cidrConnections = []
         }
     )
 , ServiceDeclaration
@@ -77,8 +77,8 @@
                 ]
             }
         , serviceConnections = []
-        , cidrSets = []
         , entityAccesses = []
+        , cidrConnections = []
         }
     )
 , ServiceDeclaration
@@ -101,13 +101,13 @@
                 , connectionPorts = fromList []
                 }
             ]
-        , cidrSets = []
         , entityAccesses =
             [ EntityAccess
                 { accessTarget = "host"
                 , accessPorts = fromList []
                 }
             ]
+        , cidrConnections = []
         }
     )
 , ServiceDeclaration
@@ -119,8 +119,8 @@
             , servicePorts = fromList []
             }
         , serviceConnections = []
-        , cidrSets = []
         , entityAccesses = []
+        , cidrConnections = []
         }
     )
 , ServiceDeclaration
@@ -158,8 +158,8 @@
                     ]
                 }
             ]
-        , cidrSets = []
         , entityAccesses = []
+        , cidrConnections = []
         }
     )
 ]

@@ -44,7 +44,6 @@ renderService = runTestEff $ do
               _ -> Nothing
           )
           declarations
-
   let entities =
         mapMaybe
           ( \case
@@ -52,15 +51,22 @@ renderService = runTestEff $ do
               _ -> Nothing
           )
           declarations
-
+  let cidrDefinitions =
+        mapMaybe
+          ( \case
+              CIDRSetDeclaration c -> Just c
+              _ -> Nothing
+          )
+          declarations
   let aggregatedInventory = AggregatedInventory mempty mempty
   serviceDefinitions <- traverse (resolveServiceVars aggregatedInventory) serviceDefinitions'
   let graph = buildGraph serviceDefinitions entities
   let serviceIndex = buildServiceIndex serviceDefinitions
   let entityIndex = buildEntityIndex entities
+  let cidrIndex = buildCidrIndex cidrDefinitions
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)
   mediaProxyService <- assertJust "" $ List.find (\s -> s.serviceName == "media-proxy") serviceDefinitions
-  ((pure . TL.encodeUtf8) . T.fromStrict) . Cilium.renderCilium $ Cilium.toCiliumPolicy serviceIndex entityIndex mediaProxyService
+  ((pure . TL.encodeUtf8) . T.fromStrict) . Cilium.renderCilium $ Cilium.toCiliumPolicy serviceIndex entityIndex cidrIndex mediaProxyService
 
 renderCIDRSetPolicy :: IO LazyByteString
 renderCIDRSetPolicy = runTestEff $ do
@@ -79,12 +85,19 @@ renderCIDRSetPolicy = runTestEff $ do
               _ -> Nothing
           )
           declarations
-
+  let cidrDefinitions =
+        mapMaybe
+          ( \case
+              CIDRSetDeclaration c -> Just c
+              _ -> Nothing
+          )
+          declarations
   let aggregatedInventory = AggregatedInventory mempty mempty
   serviceDefinitions <- traverse (resolveServiceVars aggregatedInventory) serviceDefinitions'
   let graph = buildGraph serviceDefinitions entities
   let serviceIndex = buildServiceIndex serviceDefinitions
   let entityIndex = buildEntityIndex entities
+  let cidrIndex = buildCidrIndex cidrDefinitions
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)
   myAppService <- assertJust "" $ List.find (\s -> s.serviceName == "my-app") serviceDefinitions
-  ((pure . TL.encodeUtf8) . T.fromStrict) . Cilium.renderCilium $ Cilium.toCiliumPolicy serviceIndex entityIndex myAppService
+  ((pure . TL.encodeUtf8) . T.fromStrict) . Cilium.renderCilium $ Cilium.toCiliumPolicy serviceIndex entityIndex cidrIndex myAppService

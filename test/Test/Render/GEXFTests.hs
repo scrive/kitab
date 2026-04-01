@@ -42,13 +42,6 @@ renderServices = runTestEff $ do
               _ -> Nothing
           )
           declarations
-  let contexts =
-        mapMaybe
-          ( \case
-              ContextDeclaration c -> Just c
-              _ -> Nothing
-          )
-          declarations
   let entities =
         mapMaybe
           ( \case

@@ -2,6 +2,7 @@ module Core.Graph
   ( buildGraph
   , buildServiceIndex
   , buildEntityIndex
+  , buildCidrIndex
   ) where
 
 import Algebra.Graph.Labelled (Graph)
@@ -10,6 +11,7 @@ import Data.List qualified as List
 import Data.Map.Strict qualified as Map
 import Data.Void
 
+import Core.Model.CIDRSet
 import Core.Model.Entity
 import Core.Model.EntityName
 import Core.Model.Reference
@@ -29,6 +31,14 @@ buildEntityIndex =
   foldr
     ( \Entity {entityName, entityInfo} ->
         Map.insert entityName entityInfo
+    )
+    Map.empty
+
+buildCidrIndex :: List CIDRSet -> Map Text CIDRSet
+buildCidrIndex =
+  foldr
+    ( \cidrSet@CIDRSet {setName} ->
+        Map.insert setName cidrSet
     )
     Map.empty
 
