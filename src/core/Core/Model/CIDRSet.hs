@@ -4,14 +4,14 @@ import GHC.Generics
 
 import Core.Model.PortNode
 
-data CIDRSet = CIDRSet
+data CIDRSet (var :: Type) = CIDRSet
   { setName :: Text
-  , items :: List CIDRSetItem
+  , items :: List (CIDRSetItem var)
   , ports :: List PortNode
   }
   deriving stock (Eq, Ord, Show)
 
-data CIDRSetItem
-  = CIDR Text Text
-  | Except Text Text
+data CIDRSetItem (var :: Type)
+  = CIDR (Either var (Text, Text))
+  | Except (Either var (Text, Text))
   deriving stock (Eq, Ord, Show, Generic)

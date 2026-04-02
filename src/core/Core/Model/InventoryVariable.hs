@@ -16,3 +16,11 @@ instance Eq InventoryVariable where
   v1 == v2 = v1.name == v2.name
 instance Ord InventoryVariable where
   compare v1 v2 = compare v1.name v2.name
+
+emptyInventoryVariabe :: InventoryVariable
+emptyInventoryVariabe =
+  InventoryVariable
+    { name = ""
+    , value = ""
+    , description = Nothing
+    }

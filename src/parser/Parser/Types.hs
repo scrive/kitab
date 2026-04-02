@@ -9,5 +9,5 @@ data Declaration (var :: Type)
   = ServiceDeclaration (Service var)
   | ContextDeclaration ServiceContext
   | EntityDeclaration Entity
-  | CIDRSetDeclaration CIDRSet
+  | CIDRSetDeclaration (CIDRSet var)
   deriving stock (Eq, Ord, Show)

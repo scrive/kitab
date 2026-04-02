@@ -100,10 +100,11 @@ testGraphToDot = runTestEff $ do
 testInventoryDecoding :: TestEff ()
 testInventoryDecoding = do
   let expectedResult =
-        Inventory
+        emptyInventory
           { attributes = Map.fromList [("cloud", "aws"), ("env", "prod"), ("region", "eu-west-1")]
           , vars =
-              [ ("opensearch-fqdn", InventoryVariable {name = "opensearch-fqdn", value = "opensearch.aws.internal.network", description = Just "OpenSearch instance in AWS"})
+              [ ("mysql-cluster-cidr", InventoryVariable {name = "mysql-cluster-cidr", value = "10.147.128.0/24", description = Just "MySQL cluster"})
+              , ("opensearch-fqdn", InventoryVariable {name = "opensearch-fqdn", value = "opensearch.aws.internal.network", description = Just "OpenSearch instance in AWS"})
               , ("otel-tracing-fqdn", InventoryVariable {name = "otel-tracing-fqdn", value = "otel.aws.internal.network", description = Just "OpenTelemetry ingestion in AWS"})
               ]
           }

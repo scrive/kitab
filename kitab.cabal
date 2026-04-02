@@ -43,6 +43,7 @@ common ghc-options
     -Wno-unticked-promoted-constructors
     -funbox-small-strict-fields
     -Winvalid-haddock
+    -Wmissing-deriving-strategies
 
 common rts-options
   ghc-options:
@@ -65,7 +66,6 @@ library
     CLI.Cmd.Generate
     CLI.Error
     CLI.Types
-    Driver
     Driver.Cilium
     Driver.Colours
     Driver.Environment

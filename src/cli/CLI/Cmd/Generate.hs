@@ -127,13 +127,14 @@ runGenerate options = do
             )
           & traverse (resolveServiceVars aggregatedInventory)
 
-      let cidrDefinitions =
-            mapMaybe
-              ( \case
-                  CIDRSetDeclaration c -> Just c
-                  _ -> Nothing
-              )
-              declarations
+      cidrDefinitions <-
+        mapMaybe
+          ( \case
+              CIDRSetDeclaration c -> Just c
+              _ -> Nothing
+          )
+          declarations
+          & traverse (resolveCIDRVars aggregatedInventory)
       let graph = buildGraph serviceDefinitions entities
       let entitiesIndex = buildEntityIndex entities
       let serviceIndex = buildServiceIndex serviceDefinitions
