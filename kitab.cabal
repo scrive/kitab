@@ -75,6 +75,7 @@ library
     Driver.Variable
     Driver.Verbosity
     Parser
+    Parser.CIDRSet
     Parser.Entity
     Parser.EntityName
     Parser.Inventory

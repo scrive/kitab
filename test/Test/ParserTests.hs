@@ -56,7 +56,14 @@ test =
 
 testServiceDecoding :: TestEff ()
 testServiceDecoding = do
-  let expectedResult = Service {serviceName = "media-proxy", serviceInfo = defaultServiceInfo, entityAccesses = [], serviceConnections = [Connection {connectionWith = ServiceName "main-app", connectionType = HTTPS, connectionPorts = [PortNode 3833 "TCP"]}], cidrSets = []}
+  let expectedResult =
+        emptyService
+          { serviceName = "media-proxy"
+          , serviceInfo = defaultServiceInfo
+          , serviceConnections =
+              [ Connection {connectionWith = ServiceName "main-app", connectionType = HTTPS, connectionPorts = [PortNode 3833 "TCP"]}
+              ]
+          }
   result <- assertParseFile (KDL.document serviceDecoder) "test/fixtures/service-definition.kdl"
   assertEqual
     "Expected service definition"
@@ -109,12 +116,11 @@ testInventoryDecoding = do
 testParsingServiceWithVar :: TestEff ()
 testParsingServiceWithVar = do
   let expectedResult =
-        Service
+        emptyService
           { serviceName = "opensearch"
-          , serviceInfo = ServiceInfo {serviceFqdn = Just (Left (Var "opensearch-fqdn")), serviceContext = Nothing, servicePorts = []}
-          , serviceConnections = []
-          , cidrSets = []
-          , entityAccesses = []
+          , serviceInfo = defaultServiceInfo {serviceFqdn = Just (Left (Var "opensearch-fqdn"))}
+          , serviceConnections =
+              []
           }
   result <- assertParseFile (KDL.document serviceDecoder) "test/fixtures/service-with-var.kdl"
   assertEqual

@@ -2,6 +2,7 @@ module Render.Cilium where
 
 import Data.List qualified as List
 import Data.Map.Strict qualified as Map
+import Data.Maybe qualified as Maybe
 import Data.Set (Set)
 import Data.Set qualified as Set
 import Data.Void
@@ -24,9 +25,10 @@ renderCilium = renderStrict . layoutPretty defaultLayoutOptions . pretty
 toCiliumPolicy
   :: Map ServiceName (ServiceInfo Void)
   -> Map EntityName EntityInfo
+  -> Map Text CIDRSet
   -> Service Void
   -> CiliumNetworkPolicy
-toCiliumPolicy serviceIndex entityIndex service =
+toCiliumPolicy serviceIndex entityIndex cidrIndex service =
   CiliumNetworkPolicy
     { apiVersion = "\"cilium.io/v2\""
     , kind = "CiliumNetworkPolicy"
@@ -39,7 +41,7 @@ toCiliumPolicy serviceIndex entityIndex service =
           , egress =
               [dnsEgressRule] -- The implicit DNS requirement
                 <> List.map (serviceEgressRule service.serviceInfo.serviceContext serviceIndex) service.serviceConnections
-                <> List.map cidrEgressRule service.cidrSets
+                <> Maybe.mapMaybe (cidrEgressRule cidrIndex) service.cidrConnections
                 <> List.map (entityEgressRule entityIndex) service.entityAccesses
           }
     }
@@ -121,5 +123,9 @@ entityEgressRule entitiesIndex access =
   let ports = pickEntityPorts entitiesIndex access.accessTarget access.accessPorts
   in EgressRule . List.singleton $ ToEntity access.accessTarget (PortRule $ Set.toList ports)
 
-cidrEgressRule :: CIDRSet -> EgressRule
-cidrEgressRule = EgressRule . List.singleton . ToCIDRSet
+cidrEgressRule :: Map Text CIDRSet -> CIDRConnection -> Maybe EgressRule
+cidrEgressRule cidrIndex connection =
+  let mCidrSet = Map.lookup connection.connectTarget cidrIndex
+  in case mCidrSet of
+       Just cidrSet -> Just (EgressRule . List.singleton $ ToCIDRSet cidrSet)
+       Nothing -> Nothing

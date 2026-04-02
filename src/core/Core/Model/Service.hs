@@ -7,7 +7,6 @@ import Data.Set qualified as Set
 import GHC.Generics
 import Prettyprinter
 
-import Core.Model.CIDRSet
 import Core.Model.ContextName
 import Core.Model.EntityName
 import Core.Model.PortNode
@@ -32,13 +31,23 @@ data Service (var :: Type) = Service
   { serviceName :: ServiceName
   , serviceInfo :: ServiceInfo var
   , serviceConnections :: List Connection
-  , cidrSets :: List CIDRSet
   , entityAccesses :: List EntityAccess
+  , cidrConnections :: List CIDRConnection
   }
   deriving stock (Eq, Show, Ord, Generic)
   deriving
     (Display)
     via (ShowInstance (Service var))
+
+emptyService :: Service var
+emptyService =
+  Service
+    { serviceName = ""
+    , serviceInfo = defaultServiceInfo
+    , serviceConnections = []
+    , entityAccesses = []
+    , cidrConnections = []
+    }
 
 data ServiceInfo (var :: Type) = ServiceInfo
   { serviceFqdn :: Maybe (Either var Text)
@@ -66,5 +75,10 @@ data Connection = Connection
 data EntityAccess = EntityAccess
   { accessTarget :: EntityName
   , accessPorts :: Set PortNode
+  }
+  deriving stock (Eq, Show, Ord)
+
+data CIDRConnection = CIDRConnection
+  { connectTarget :: Text
   }
   deriving stock (Eq, Show, Ord)

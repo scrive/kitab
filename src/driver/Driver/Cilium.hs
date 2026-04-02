@@ -15,6 +15,7 @@ import Effectful.FileSystem.IO.ByteString qualified as FileSystem
 import System.OsPath (osp, (</>))
 import System.OsPath qualified as OsPath
 
+import Core.Model.CIDRSet
 import Core.Model.Entity
 import Core.Model.EntityName
 import Core.Model.Service
@@ -26,13 +27,14 @@ renderToCilium
   :: (Console :> es, FileSystem :> es)
   => Map ServiceName (ServiceInfo Void)
   -> Map EntityName EntityInfo
+  -> Map Text CIDRSet
   -> OsPath.OsPath
   -> VerbositySetting
   -> List (Service Void)
   -> Eff es ()
-renderToCilium serviceIndex entitiesIndex outputDir verbosity serviceDefinitions = do
+renderToCilium serviceIndex entitiesIndex cidrIndex outputDir verbosity serviceDefinitions = do
   outputs <- forM serviceDefinitions $ \service -> do
-    let rendered = Cilium.renderCilium (Cilium.toCiliumPolicy serviceIndex entitiesIndex service)
+    let rendered = Cilium.renderCilium (Cilium.toCiliumPolicy serviceIndex entitiesIndex cidrIndex service)
     outputFile <- OsPath.encodeUtf . T.unpack $ display service.serviceName
     outputPath <- OsPath.decodeUtf (outputDir </> outputFile <> [osp|-network-policy.yaml|])
     pure (outputPath, rendered)

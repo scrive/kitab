@@ -5,7 +5,8 @@ import GHC.Generics
 import Core.Model.PortNode
 
 data CIDRSet = CIDRSet
-  { items :: List CIDRSetItem
+  { setName :: Text
+  , items :: List CIDRSetItem
   , ports :: List PortNode
   }
   deriving stock (Eq, Ord, Show)

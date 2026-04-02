@@ -123,7 +123,6 @@ This node can contain the following children
 * [`port`](#port);
 * [`context`](#context);
 * [`depends-on`](#depends-on);
-* [`cidr-set`](#cidr-set);
 
 | Argument | Type |
 |----------|------|
@@ -230,6 +229,11 @@ It has no child nodes.
 #### Example
 
 ```kdl
+cidr-set {
+	cidr "10.42.42.0/24" "NTP"
+	port 123 "UDP"
+}
+
 service "some-service" {
   port 4317
   port 4318
@@ -240,15 +244,11 @@ depends-on "some-service" {
   port 4317
 }
 
-cidr-set {
-	cidr "10.42.42.0/24" "NTP"
-	port 123 "UDP"
-}
 ```
 
 ### <a name="cidr-set"></a> `cidr-set`
 
-Declare a set of ([CIDR]) IP addresses or ranges, used for broad coverage of a third-party network.
+Top-level declaration of a set of ([CIDR]) IP addresses or ranges, used for broad coverage of a third-party network.
 This is mainly used by the Cilium renderer. See https://docs.cilium.io/en/stable/security/policy/language/#ip-cidr-based
 
 This node can contain the following children:
@@ -260,16 +260,19 @@ This node can contain the following children:
 #### Examples
 
 ```kdl
-service "my-app" {
-  cidr-set {
-    cidr "0.0.0.0/0" "Internet"
-    except "10.0.0.0/8" "Internal network, to be refined further down"
-  }
+cidr-set "network" {
+  cidr "0.0.0.0/0" "Internet"
+  except "10.0.0.0/8" "Internal network, to be refined further down"
+}
 
-  cidr-set {
-    cidr "10.147.128.0/24" "MySQL"
-    port 3306
-  }
+cidr-set "mysql" {
+  cidr "10.147.128.0/24" "MySQL"
+  port 3306
+}
+
+service "my-app" {
+  connect "network"
+  connect "mysql"
 }
 ```
 
@@ -287,7 +290,7 @@ It has no child nodes.
 #### Examples
 
 ```kdl
-cidr-set {
+cidr-set "mysql" {
   cidr "10.147.128.0/24" "MySQL"
 }
 ```
@@ -306,9 +309,19 @@ It has no child nodes.
 #### Examples
 
 ```kdl
-cidr-set {
+cidr-set "network" {
   cidr "0.0.0.0/0" "Internet"
   except "10.0.0.0/8" "Internal network, to be refined further down"
+}
+```
+
+### <a name="connect"></a> `connect`
+
+Declare a connection to a [CIDR Set](#cidr-set).
+
+```kdl
+service "my-app" {
+  connect "network"
 }
 ```
 

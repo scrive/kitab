@@ -101,7 +101,7 @@ instance Pretty EgressRuleItem where
           [ pretty portRules
           , keyBlock "rules" . keyBlock "dns" $ "-" <+> pretty dnsMatch
           ]
-    (ToCIDRSet (CIDRSet cidrs ports)) ->
+    (ToCIDRSet (CIDRSet _setNname cidrs ports)) ->
       vsep
         [ (keyBlock "toCIDRSets" . indent 2) . vsep $
             List.map
