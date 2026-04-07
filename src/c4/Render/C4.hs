@@ -49,7 +49,6 @@ prettyEdge (connTypes, from, to) =
     <> tupled
       [ pretty from.alias
       , pretty to.alias
-      , dquotes (pretty (connTypeLabel $ head connTypes))
       , dquotes (pretty $ head connTypes)
       ]
 
@@ -75,8 +74,3 @@ prettyContext serviceContext services =
     , indent 2 $ vsep (map prettyNode services)
     , "}"
     ]
-
-connTypeLabel :: ConnectionType -> Text
-connTypeLabel = \case
-  HTTPS -> "Connects via"
-  FunctionCall -> "using"

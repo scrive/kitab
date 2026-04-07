@@ -12,6 +12,7 @@
               type="int"/>
         </attributes>
         <nodes>
+            <node id="mailgun" label="mailgun"/>
             <node id="main-app" label="main-app">
                 <attvalues>
                     <attvalue for="context" value="k8s"/>
@@ -38,36 +39,46 @@
         <edges>
             <edge
               id="e0"
-              label="HTTPS"
+              label="SMTPS"
               source="main-app"
-              target="media-proxy"/>
+              target="mailgun"/>
             <edge
               id="e1"
               label="HTTPS"
               source="main-app"
-              target="otel-tracing"/>
+              target="media-proxy"/>
             <edge
               id="e2"
               label="HTTPS"
               source="main-app"
-              target="s3"/>
+              target="otel-tracing"/>
             <edge
               id="e3"
+              label="HTTPS"
+              source="main-app"
+              target="s3"/>
+            <edge
+              id="e4"
               label="Function call"
               source="main-app"
               target="user-registry"/>
             <edge
-              id="e4"
+              id="e5"
+              label="SMTPS"
+              source="media-proxy"
+              target="mailgun"/>
+            <edge
+              id="e6"
               label="HTTPS"
               source="media-proxy"
               target="opensearch"/>
             <edge
-              id="e5"
+              id="e7"
               label="HTTPS"
               source="media-proxy"
               target="otel-tracing"/>
             <edge
-              id="e6"
+              id="e8"
               label="HTTPS"
               source="media-proxy"
               target="host"/>

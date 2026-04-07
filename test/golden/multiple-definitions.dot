@@ -1,5 +1,6 @@
 digraph 
 {
+  "mailgun"
   "main-app"
   "media-proxy"
   "opensearch"
@@ -7,10 +8,12 @@ digraph
   "s3"
   "user-registry"
   "host"
+  "main-app" -> "mailgun"
   "main-app" -> "media-proxy"
   "main-app" -> "otel-tracing"
   "main-app" -> "s3"
   "main-app" -> "user-registry"
+  "media-proxy" -> "mailgun"
   "media-proxy" -> "opensearch"
   "media-proxy" -> "otel-tracing"
   "media-proxy" -> "host"

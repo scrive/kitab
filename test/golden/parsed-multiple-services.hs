@@ -100,6 +100,11 @@
                 , connectionType = HTTPS
                 , connectionPorts = fromList []
                 }
+            , Connection
+                { connectionWith = "mailgun"
+                , connectionType = SMTPS
+                , connectionPorts = fromList []
+                }
             ]
         , entityAccesses =
             [ EntityAccess
@@ -107,6 +112,25 @@
                 , accessPorts = fromList []
                 }
             ]
+        , cidrConnections = []
+        }
+    )
+, ServiceDeclaration
+    ( Service
+        { serviceName = "mailgun"
+        , serviceInfo = ServiceInfo
+            { serviceFqdn = Just
+                ( Right "smtp.eu.mailgun.org" )
+            , serviceContext = Nothing
+            , servicePorts = fromList
+                [ PortNode
+                    { port = 465
+                    , protocol = "TCP"
+                    }
+                ]
+            }
+        , serviceConnections = []
+        , entityAccesses = []
         , cidrConnections = []
         }
     )
@@ -156,6 +180,11 @@
                         , protocol = "TCP"
                         }
                     ]
+                }
+            , Connection
+                { connectionWith = "mailgun"
+                , connectionType = SMTPS
+                , connectionPorts = fromList []
                 }
             ]
         , entityAccesses = []

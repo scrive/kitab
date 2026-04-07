@@ -14,17 +14,17 @@ import Core.Model.ServiceName
 
 data ConnectionType
   = HTTPS
+  | SMTPS
   | FunctionCall
   deriving stock (Eq, Show, Ord)
 
 instance Pretty ConnectionType where
-  pretty = \case
-    HTTPS -> "HTTPS"
-    FunctionCall -> "Function call"
+  pretty = pretty . display
 
 instance Display ConnectionType where
   displayBuilder = \case
     HTTPS -> "HTTPS"
+    SMTPS -> "SMTPS"
     FunctionCall -> "Function call"
 
 data Service (var :: Type) = Service

@@ -34,6 +34,15 @@ service "media-proxy" {
 	} 
 
 	access "host"
+
+	depends-on "mailgun" {
+		via "smtps"
+	}
+}
+
+service "mailgun" {
+	fqdn "smtp.eu.mailgun.org"
+	port 465
 }
 
 service "user-registry" {
@@ -58,5 +67,9 @@ service "main-app" {
 	depends-on "otel-tracing" {
 		via "https"
 		port 4317
+	}
+
+	depends-on "mailgun" {
+		via "smtps"
 	}
 }
