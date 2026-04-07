@@ -4,6 +4,7 @@ module Render.Cilium.Types where
 
 import Data.List qualified as List
 import Data.Map.Strict qualified as Map
+import Data.Void
 import Prettyprinter
 
 import Core.Model.CIDRSet
@@ -17,7 +18,7 @@ data CiliumNetworkPolicy = CiliumNetworkPolicy
   , metadata :: Metadata
   , spec :: PolicySpec
   }
-  deriving (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord)
 
 instance Pretty CiliumNetworkPolicy where
   pretty CiliumNetworkPolicy {..} =
@@ -41,7 +42,7 @@ data PolicySpec = PolicySpec
   { endpointSelector :: EndpointSelector
   , egress :: [EgressRule]
   }
-  deriving (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord)
 
 instance Pretty PolicySpec where
   pretty PolicySpec {..} =
@@ -54,7 +55,7 @@ instance Pretty PolicySpec where
 newtype EndpointSelector = EndpointSelector
   { matchLabels :: Map Text Text
   }
-  deriving (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord)
 
 instance Pretty EndpointSelector where
   pretty (EndpointSelector labels) =
@@ -66,7 +67,7 @@ instance Pretty EndpointSelector where
 newtype EgressRule = EgressRule
   { egressRuleItems :: List EgressRuleItem
   }
-  deriving (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord)
 
 instance Pretty EgressRule where
   pretty EgressRule {..} = align . vsep $ List.map pretty egressRuleItems
@@ -80,11 +81,11 @@ data EgressRuleItem
   | -- | For allowed ports/protocols
     ToPort PortRule (Maybe DNSMatch)
   | -- |  For allowed IP ranges
-    ToCIDRSet CIDRSet
+    ToCIDRSet (CIDRSet Void)
   | -- | For Cilium Entities like "host", "world", etc.
     -- See https://docs.cilium.io/en/stable/security/policy/language/#entities-based
     ToEntity EntityName PortRule
-  deriving (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord)
 
 instance Pretty EgressRuleItem where
   pretty = \case
@@ -101,17 +102,17 @@ instance Pretty EgressRuleItem where
           [ pretty portRules
           , keyBlock "rules" . keyBlock "dns" $ "-" <+> pretty dnsMatch
           ]
-    (ToCIDRSet (CIDRSet _setNname cidrs ports)) ->
+    (ToCIDRSet (CIDRSet _setNname items ports)) ->
       vsep
         [ (keyBlock "toCIDRSets" . indent 2) . vsep $
             List.map
               ( \case
-                  CIDR cidr name ->
+                  CIDR (Right (cidr, name)) ->
                     keyValue "cidr" (pretty cidr <> " # " <> pretty name)
-                  Except cidr reason ->
+                  Except (Right (cidr, reason)) ->
                     keyValue "except" (pretty cidr <> " # " <> pretty reason)
               )
-              cidrs
+              items
         , if List.null ports
             then mempty
             else
@@ -159,7 +160,7 @@ instance Pretty EgressRuleItem where
 newtype FQDNMatch = FQDNMatch
   { matchName :: Text
   }
-  deriving (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord)
 
 instance Pretty FQDNMatch where
   pretty (FQDNMatch name) = keyValue "matchName" (dquotes $ pretty name)
@@ -167,7 +168,7 @@ instance Pretty FQDNMatch where
 newtype DNSMatch = DNSMatch
   { dnsMatchNAme :: Text
   }
-  deriving (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord)
 
 instance Pretty DNSMatch where
   pretty (DNSMatch name) = keyValue "matchPattern" (dquotes $ pretty name)
@@ -176,7 +177,7 @@ instance Pretty DNSMatch where
 newtype PortRule = PortRule
   { ports :: [PortProtocol]
   }
-  deriving (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord)
 
 instance Pretty PortRule where
   pretty (PortRule ports) =
@@ -187,7 +188,7 @@ data PortProtocol = PortProtocol
   { port :: Text -- Text is used because ports can sometimes be named
   , protocol :: Text -- "TCP", "UDP"
   }
-  deriving (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord)
 
 instance Pretty PortProtocol where
   pretty (PortProtocol p proto) =

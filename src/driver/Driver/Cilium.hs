@@ -27,7 +27,7 @@ renderToCilium
   :: (Console :> es, FileSystem :> es)
   => Map ServiceName (ServiceInfo Void)
   -> Map EntityName EntityInfo
-  -> Map Text CIDRSet
+  -> Map Text (CIDRSet Void)
   -> OsPath.OsPath
   -> VerbositySetting
   -> List (Service Void)

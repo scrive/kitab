@@ -25,7 +25,7 @@ renderCilium = renderStrict . layoutPretty defaultLayoutOptions . pretty
 toCiliumPolicy
   :: Map ServiceName (ServiceInfo Void)
   -> Map EntityName EntityInfo
-  -> Map Text CIDRSet
+  -> Map Text (CIDRSet Void)
   -> Service Void
   -> CiliumNetworkPolicy
 toCiliumPolicy serviceIndex entityIndex cidrIndex service =
@@ -123,7 +123,7 @@ entityEgressRule entitiesIndex access =
   let ports = pickEntityPorts entitiesIndex access.accessTarget access.accessPorts
   in EgressRule . List.singleton $ ToEntity access.accessTarget (PortRule $ Set.toList ports)
 
-cidrEgressRule :: Map Text CIDRSet -> CIDRConnection -> Maybe EgressRule
+cidrEgressRule :: Map Text (CIDRSet Void) -> CIDRConnection -> Maybe EgressRule
 cidrEgressRule cidrIndex connection =
   let mCidrSet = Map.lookup connection.connectTarget cidrIndex
   in case mCidrSet of

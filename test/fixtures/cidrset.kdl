@@ -4,7 +4,7 @@ cidr-set "network" {
 }
 
 cidr-set "mysql" {
-    cidr "10.147.128.0/24" "MySQL"
+    cidr (var)mysql-cluster-cidr
 	port 3306
 }
 

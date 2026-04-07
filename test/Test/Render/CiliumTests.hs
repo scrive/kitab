@@ -2,6 +2,7 @@ module Test.Render.CiliumTests where
 
 import Data.ByteString.Lazy (LazyByteString)
 import Data.List qualified as List
+import Data.Map.Strict qualified as Map
 import Data.Text.Lazy qualified as T
 import Data.Text.Lazy.Encoding qualified as TL
 import Test.Tasty
@@ -10,6 +11,7 @@ import Validation
 
 import Core.Graph
 import Core.Model.Inventory.Aggregated
+import Core.Model.InventoryVariable
 import Core.Model.Service
 import Core.Validation
 import Driver.Variable
@@ -36,14 +38,16 @@ test =
 
 renderService :: IO LazyByteString
 renderService = runTestEff $ do
+  let aggregatedInventory = AggregatedInventory mempty mempty
   declarations <- assertParseFile decodeServiceDocument "test/fixtures/multiple-service-definitions.kdl"
-  let serviceDefinitions' =
-        mapMaybe
-          ( \case
-              ServiceDeclaration s -> Just s
-              _ -> Nothing
-          )
-          declarations
+  serviceDefinitions <-
+    mapMaybe
+      ( \case
+          ServiceDeclaration s -> Just s
+          _ -> Nothing
+      )
+      declarations
+      & traverse (resolveServiceVars aggregatedInventory)
   let entities =
         mapMaybe
           ( \case
@@ -51,15 +55,14 @@ renderService = runTestEff $ do
               _ -> Nothing
           )
           declarations
-  let cidrDefinitions =
-        mapMaybe
-          ( \case
-              CIDRSetDeclaration c -> Just c
-              _ -> Nothing
-          )
-          declarations
-  let aggregatedInventory = AggregatedInventory mempty mempty
-  serviceDefinitions <- traverse (resolveServiceVars aggregatedInventory) serviceDefinitions'
+  cidrDefinitions <-
+    mapMaybe
+      ( \case
+          CIDRSetDeclaration c -> Just c
+          _ -> Nothing
+      )
+      declarations
+      & traverse (resolveCIDRVars aggregatedInventory)
   let graph = buildGraph serviceDefinitions entities
   let serviceIndex = buildServiceIndex serviceDefinitions
   let entityIndex = buildEntityIndex entities
@@ -70,14 +73,26 @@ renderService = runTestEff $ do
 
 renderCIDRSetPolicy :: IO LazyByteString
 renderCIDRSetPolicy = runTestEff $ do
+  let mysqlFqdn =
+        InventoryVariable
+          { name = "mysql-cluster-cidr"
+          , value = "10.147.128.0/24"
+          , description = Just "MySQL"
+          }
+  let aggregatedInventory =
+        AggregatedInventory
+          { aggregatedAttributes = Map.fromList [("cloud", "aws"), ("env", "dev")]
+          , aggregatedVars = Map.fromList [("mysql-cluster-cidr", mysqlFqdn)]
+          }
   declarations <- assertParseFile decodeServiceDocument "test/fixtures/cidrset.kdl"
-  let serviceDefinitions' =
-        mapMaybe
-          ( \case
-              ServiceDeclaration s -> Just s
-              _ -> Nothing
-          )
-          declarations
+  serviceDefinitions <-
+    mapMaybe
+      ( \case
+          ServiceDeclaration s -> Just s
+          _ -> Nothing
+      )
+      declarations
+      & traverse (resolveServiceVars aggregatedInventory)
   let entities =
         mapMaybe
           ( \case
@@ -85,15 +100,14 @@ renderCIDRSetPolicy = runTestEff $ do
               _ -> Nothing
           )
           declarations
-  let cidrDefinitions =
-        mapMaybe
-          ( \case
-              CIDRSetDeclaration c -> Just c
-              _ -> Nothing
-          )
-          declarations
-  let aggregatedInventory = AggregatedInventory mempty mempty
-  serviceDefinitions <- traverse (resolveServiceVars aggregatedInventory) serviceDefinitions'
+  cidrDefinitions <-
+    mapMaybe
+      ( \case
+          CIDRSetDeclaration c -> Just c
+          _ -> Nothing
+      )
+      declarations
+      & traverse (resolveCIDRVars aggregatedInventory)
   let graph = buildGraph serviceDefinitions entities
   let serviceIndex = buildServiceIndex serviceDefinitions
   let entityIndex = buildEntityIndex entities

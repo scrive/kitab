@@ -59,8 +59,5 @@ buildSelectedAttributesMap cloudSelector regionSelector environmentSelector =
 lookup
   :: AggregatedInventory
   -> VariableName
-  -> Maybe Text
-lookup AggregatedInventory {aggregatedVars} var = do
-  aggregatedVars
-    & Map.lookup var
-    & fmap (.value)
+  -> Maybe InventoryVariable
+lookup AggregatedInventory {aggregatedVars} var = Map.lookup var aggregatedVars

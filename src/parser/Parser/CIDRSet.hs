@@ -3,9 +3,11 @@ module Parser.CIDRSet where
 import KDL
 
 import Core.Model.CIDRSet
+import Core.Model.InventoryVariable
+import Core.Variable
 import Parser.PortNode
 
-cidrSetDecoder :: NodeListDecoder CIDRSet
+cidrSetDecoder :: NodeListDecoder (CIDRSet Var)
 cidrSetDecoder = KDL.nodeWith "cidr-set" $ do
   setName <- KDL.argWith KDL.text
   ports <- KDL.children $ KDL.many portDecoder
@@ -17,14 +19,40 @@ cidrSetDecoder = KDL.nodeWith "cidr-set" $ do
         )
   pure $ CIDRSet setName items ports
 
-cidrDecoder :: NodeListDecoder CIDRSetItem
+cidrDecoder :: NodeListDecoder (CIDRSetItem Var)
 cidrDecoder = KDL.nodeWith "cidr" $ do
-  cidr <- KDL.arg @Text
-  name <- KDL.arg @Text
-  pure $ CIDR cidr name
+  cidrOrVar <-
+    KDL.argWith' ["text", "var"] . KDL.withDecoder KDL.any $
+      ( \val -> do
+          s <- case val.data_ of
+            KDL.String s -> pure s
+            _ -> KDL.failM "Expected string"
+          case (.identifier.value) <$> val.ann of
+            Just "var" -> pure . Left $ Var (VariableName s)
+            -- Nothing or Just "text"
+            _ -> pure . Right $ s
+      )
+  case cidrOrVar of
+    Left var -> pure $ CIDR (Left var)
+    Right cidr -> do
+      name <- KDL.argWith KDL.text
+      pure $ CIDR (Right (cidr, name))
 
-exceptionDecoder :: NodeListDecoder CIDRSetItem
+exceptionDecoder :: NodeListDecoder (CIDRSetItem Var)
 exceptionDecoder = KDL.nodeWith "except" $ do
-  cidr <- KDL.arg @Text
-  reason <- KDL.arg @Text
-  pure $ Except cidr reason
+  cidrOrVar <-
+    KDL.argWith' ["text", "var"] . KDL.withDecoder KDL.any $
+      ( \val -> do
+          s <- case val.data_ of
+            KDL.String s -> pure s
+            _ -> KDL.failM "Expected string"
+          case (.identifier.value) <$> val.ann of
+            Just "var" -> pure . Left $ Var (VariableName s)
+            -- Nothing or Just "text"
+            _ -> pure . Right $ s
+      )
+  case cidrOrVar of
+    Left var -> pure $ Except (Left var)
+    Right cidr -> do
+      reason <- KDL.argWith KDL.text
+      pure $ Except (Right (cidr, reason))

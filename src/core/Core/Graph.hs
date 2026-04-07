@@ -34,7 +34,7 @@ buildEntityIndex =
     )
     Map.empty
 
-buildCidrIndex :: List CIDRSet -> Map Text CIDRSet
+buildCidrIndex :: List (CIDRSet Void) -> Map Text (CIDRSet Void)
 buildCidrIndex =
   foldr
     ( \cidrSet@CIDRSet {setName} ->

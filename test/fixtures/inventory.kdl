@@ -8,4 +8,9 @@ inventory cloud=aws region=eu-west-1 env=prod {
 		value "otel.aws.internal.network"
 		description "OpenTelemetry ingestion in AWS"
 	}
+
+	var "mysql-cluster-cidr" {
+		value "10.147.128.0/24"
+		description "MySQL cluster"
+	}
 }

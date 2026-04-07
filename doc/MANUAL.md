@@ -352,12 +352,20 @@ and attributes that will allow you to select the node: cloud, env, region.
 Inventories are combined by order of specificity. If you have two inventories, one with only a `cloud` property, and another with both `cloud` and `env`,
 then the second one, more specific, will overwrite the variables defined in the first one, but will leave the ones it does not replace.
 
-### Example 1
+### Example 1: FQDN
 
 ```kdl
 inventory cloud=aws region=eu-west-1 env=prod {
-  …
+	var "opensearch-fqdn" {
+		value "opensearch.aws.internal.network"
+		description "OpenSearch instance in AWS"
+	}
 }
+
+service "opensearch" {
+	fqdn (var)opensearch-fqdn
+}
+
 ```
 
 To pick the values from such an inventory, call `kitab` like this:
@@ -366,6 +374,32 @@ To pick the values from such an inventory, call `kitab` like this:
 $ kitab -i ./inventory --cloud aws --region eu-west-1 --env prod
 ```
 
+### Example 2: CIDR
+
+```kdl
+inventory cloud=aws region=eu-west-1 env=prod {
+	var "mysql-cluster-cidr" {
+		value "10.147.128.0/24"
+		description "MySQL cluster"
+	}
+}
+
+cidr-set "mysql" {
+  cidr (var)mysql-cluster-cidr
+	port 3306
+}
+```
+
+When using the Cilium renderer, this gives us:
+
+```yaml
+- toCIDRSets:
+      cidr: 10.147.128.0/24 # MySQL cluster
+  toPorts:
+      - ports:
+          - port: 3306
+            protocol: TCP
+```
 
 ## ENVIRONMENT VARIABLES
 
