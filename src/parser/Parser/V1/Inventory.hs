@@ -1,4 +1,4 @@
-module Parser.Inventory where
+module Parser.V1.Inventory where
 
 import Data.Map.Strict qualified as Map
 import KDL

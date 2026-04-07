@@ -1,11 +1,11 @@
-module Parser.CIDRSet where
+module Parser.V1.CIDRSet where
 
 import KDL
 
 import Core.Model.CIDRSet
 import Core.Model.InventoryVariable
 import Core.Variable
-import Parser.PortNode
+import Parser.V1.PortNode
 
 cidrSetDecoder :: NodeListDecoder (CIDRSet Var)
 cidrSetDecoder = KDL.nodeWith "cidr-set" $ do

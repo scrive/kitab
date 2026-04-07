@@ -1,4 +1,4 @@
-module Parser.Types where
+module Parser.V1.Types where
 
 import Core.Model.CIDRSet
 import Core.Model.Entity

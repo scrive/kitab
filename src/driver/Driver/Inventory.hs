@@ -17,7 +17,7 @@ import System.OsPath qualified as OsPath
 
 import CLI.Error (CLIError, kdlParseError)
 import Core.Model.Inventory
-import Parser.Inventory
+import Parser.V1.Inventory
 
 getInventories
   :: (FileSystem :> es, Error (NonEmpty CLIError) :> es)

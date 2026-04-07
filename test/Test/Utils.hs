@@ -13,14 +13,17 @@ module Test.Utils
   , assertLeft
   , diffCmd
   , assertParse
-  , assertParseFile
+  , assertParseDocument
+  , assertParseError
   ) where
 
 import Data.List.NonEmpty (NonEmpty)
 import Data.Text qualified as T
+import Data.Text.Encoding qualified as T
 import Effectful
 import Effectful.Error.Static (Error, runErrorWith)
 import Effectful.FileSystem
+import Effectful.FileSystem.IO.ByteString qualified as Filesystem
 import GHC.Stack
 import KDL
 import Test.Tasty (TestTree)
@@ -28,6 +31,9 @@ import Test.Tasty.HUnit qualified as HUnit
 import Test.Tasty.HUnit qualified as Test
 
 import CLI.Error
+import Core.Variable
+import Parser (parseKitabDocument)
+import Parser.V1.Types
 
 type TestEff a =
   Eff
@@ -87,16 +93,27 @@ assertNothing _ Nothing = pure ()
 
 assertRight :: (HasCallStack, Show a) => String -> Either a b -> TestEff b
 assertRight _ (Right b) = pure b
-assertRight message (Left a) = liftIO . Test.assertFailure $ (message <> ". Found " <> show a)
+assertRight message (Left a) = liftIO . Test.assertFailure $ message <> ". Found " <> show a
 
-assertParse :: HasCallStack => DocumentDecoder a -> Text -> TestEff a
-assertParse decoder input =
-  case KDL.decodeWith decoder input of
+assertParseDocument :: HasCallStack => FilePath -> TestEff (List (Declaration Var))
+assertParseDocument filePath = do
+  content <- Filesystem.readFile filePath
+  case parseKitabDocument filePath (T.decodeUtf8 content) of
     Left decodeError -> assertFailure (T.unpack $ renderDecodeError decodeError)
     Right result -> pure result
 
-assertParseFile :: HasCallStack => DocumentDecoder a -> FilePath -> TestEff a
-assertParseFile decoder filePath =
+assertParseError :: HasCallStack => FilePath -> [Text] -> TestEff ()
+assertParseError filePath expectedError = do
+  content <- Filesystem.readFile filePath
+  let prettyError = T.intercalate "\n" expectedError
+  case parseKitabDocument filePath (T.decodeUtf8 content) of
+    Left decodeError
+      | KDL.renderDecodeError decodeError == prettyError -> pure ()
+    Left actual -> assertFailure (T.unpack ("Expected " <> T.show (T.lines prettyError) <> " but got " <> T.show (T.lines $ KDL.renderDecodeError actual)))
+    Right actual -> assertFailure (T.unpack ("Expected " <> prettyError <> " but got " <> T.pack (show actual)))
+
+assertParse :: HasCallStack => DocumentDecoder a -> FilePath -> TestEff a
+assertParse decoder filePath =
   liftIO (KDL.decodeFileWith decoder filePath) >>= \case
     Left decodeError -> assertFailure (T.unpack $ renderDecodeError decodeError)
     Right result -> pure result

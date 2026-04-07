@@ -1,4 +1,4 @@
-module Parser.Entity where
+module Parser.V1.Entity where
 
 import Data.Maybe qualified as Maybe
 import Data.Set qualified as Set
@@ -7,9 +7,9 @@ import KDL
 import Core.Model.ContextName
 import Core.Model.Entity
 import Core.Model.PortNode
-import Parser.EntityName
-import Parser.PortNode
-import Parser.ServiceContext
+import Parser.V1.EntityName
+import Parser.V1.PortNode
+import Parser.V1.ServiceContext
 
 data EntityChild
   = EntityPort PortNode

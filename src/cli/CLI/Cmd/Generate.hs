@@ -15,7 +15,6 @@ import Effectful.Error.Static qualified as Error
 import Effectful.FileSystem
 import Effectful.FileSystem qualified as FileSystem
 import Effectful.FileSystem.IO.ByteString qualified as FileSystem
-import KDL qualified
 import Layoutz
 import Optics.Core
 import System.OsPath
@@ -40,8 +39,8 @@ import Driver.Inventory
 import Driver.Puml
 import Driver.Variable
 import Driver.Verbosity (computeVerbosity, isVerbose)
-import Parser (decodeServiceDocument)
-import Parser.Types
+import Parser (parseKitabDocument)
+import Parser.V1.Types
 
 data GenerateOptions = GenerateOptions
   { quiet :: Bool
@@ -89,8 +88,9 @@ runGenerate options = do
       Error.throwError (fmap noFileAtProvidedLocation errors)
     Nothing -> do
       declarations <- concatForM options.inputs $ \inputPath -> do
-        fileContent <- FileSystem.readFile =<< OsPath.decodeUtf inputPath
-        let result = KDL.decodeWith decodeServiceDocument $ T.decodeUtf8 fileContent
+        filePath <- OsPath.decodeUtf inputPath
+        fileContent <- FileSystem.readFile filePath
+        let result = parseKitabDocument filePath (T.decodeUtf8 fileContent)
         case result of
           Right a -> pure a
           Left err -> Error.throwError . NE.singleton $ kdlParseError inputPath err

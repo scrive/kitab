@@ -339,7 +339,20 @@ Declare an access to an [`entity`](#entity).
 service "media-proxy" {
 	access "host"
 }
+```
 
+### <a name="version"></a> `version`
+
+Top-level declaration for the version of the configuration language that `kitab` should parse.
+
+| Argument    | Type |
+|-------------|------|
+| Version number | number |
+
+#### Examples
+
+```kdl
+version 1
 ```
 
 ## INVENTORY
