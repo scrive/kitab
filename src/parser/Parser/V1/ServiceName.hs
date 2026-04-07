@@ -1,4 +1,4 @@
-module Parser.ServiceName where
+module Parser.V1.ServiceName where
 
 import KDL
 

@@ -3,10 +3,8 @@ module Test.Render.GEXFTests where
 import Algebra.Graph.Labelled qualified as Graph
 import Algebra.Graph.Labelled.AdjacencyMap qualified as AM
 import Data.ByteString.Lazy (LazyByteString)
-import Data.Text.Encoding qualified as T
 import Data.Text.Lazy qualified as T
 import Data.Text.Lazy.Encoding qualified as TL
-import Effectful.FileSystem.IO.ByteString qualified as FileSystem
 import Test.Tasty
 import Test.Tasty.Golden
 import Validation
@@ -15,8 +13,7 @@ import Core.Graph
 import Core.Model.Inventory.Aggregated
 import Core.Validation
 import Driver.Variable
-import Parser
-import Parser.Types
+import Parser.V1.Types
 import Render.GEXF qualified as GEXF
 import Test.Utils
 
@@ -33,8 +30,7 @@ test =
 
 renderServices :: IO LazyByteString
 renderServices = runTestEff $ do
-  fileContent <- T.decodeUtf8 <$> FileSystem.readFile "test/fixtures/multiple-service-definitions.kdl"
-  declarations <- assertParse decodeServiceDocument fileContent
+  declarations <- assertParseDocument "test/fixtures/multiple-service-definitions.kdl"
   let serviceDefinitions' =
         mapMaybe
           ( \case

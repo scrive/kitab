@@ -15,8 +15,7 @@ import Core.Model.InventoryVariable
 import Core.Model.Service
 import Core.Validation
 import Driver.Variable
-import Parser
-import Parser.Types
+import Parser.V1.Types
 import Render.Cilium qualified as Cilium
 import Test.Utils
 
@@ -39,7 +38,7 @@ test =
 renderService :: IO LazyByteString
 renderService = runTestEff $ do
   let aggregatedInventory = AggregatedInventory mempty mempty
-  declarations <- assertParseFile decodeServiceDocument "test/fixtures/multiple-service-definitions.kdl"
+  declarations <- assertParseDocument "test/fixtures/multiple-service-definitions.kdl"
   serviceDefinitions <-
     mapMaybe
       ( \case
@@ -84,7 +83,7 @@ renderCIDRSetPolicy = runTestEff $ do
           { aggregatedAttributes = Map.fromList [("cloud", "aws"), ("env", "dev")]
           , aggregatedVars = Map.fromList [("mysql-cluster-cidr", mysqlFqdn)]
           }
-  declarations <- assertParseFile decodeServiceDocument "test/fixtures/cidrset.kdl"
+  declarations <- assertParseDocument "test/fixtures/cidrset.kdl"
   serviceDefinitions <-
     mapMaybe
       ( \case

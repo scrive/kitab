@@ -18,7 +18,7 @@ import Core.Model.Service
 import Core.Variable
 import Driver.Inventory
 import Driver.Variable
-import Parser.Service
+import Parser.V1.Service
 import Test.Utils
 
 test :: TestTree
@@ -105,7 +105,7 @@ testResolvingVariableFromInventory = do
           , aggregatedVars = Map.fromList [("opensearch-fqdn", opensearchFqdn)]
           }
 
-  service <- assertParseFile (KDL.document serviceDecoder) "test/fixtures/service-with-var.kdl"
+  service <- assertParse (KDL.document serviceDecoder) "test/fixtures/service-with-var.kdl"
   assertEqual
     "OpenSearch FQDN is not yet resolved"
     (Just (Left (Var "opensearch-fqdn")))

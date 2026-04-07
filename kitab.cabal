@@ -75,15 +75,16 @@ library
     Driver.Variable
     Driver.Verbosity
     Parser
-    Parser.CIDRSet
-    Parser.Entity
-    Parser.EntityName
-    Parser.Inventory
-    Parser.PortNode
-    Parser.Service
-    Parser.ServiceContext
-    Parser.ServiceName
-    Parser.Types
+    Parser.V1
+    Parser.V1.CIDRSet
+    Parser.V1.Entity
+    Parser.V1.EntityName
+    Parser.V1.Inventory
+    Parser.V1.PortNode
+    Parser.V1.Service
+    Parser.V1.ServiceContext
+    Parser.V1.ServiceName
+    Parser.V1.Types
 
   build-depends:
     algebraic-graphs,

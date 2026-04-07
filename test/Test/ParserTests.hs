@@ -7,7 +7,7 @@ import Data.ByteString.Lazy (LazyByteString)
 import Data.Map.Strict qualified as Map
 import Data.Text.Lazy qualified as TL
 import Data.Text.Lazy.Encoding qualified as TL
-import KDL qualified
+import KDL
 import Test.Tasty
 import Test.Tasty.Golden
 import Text.Pretty.Simple
@@ -19,10 +19,9 @@ import Core.Model.PortNode
 import Core.Model.Service
 import Core.Model.ServiceName
 import Core.Variable
-import Parser
-import Parser.Inventory (inventoryDecoder)
-import Parser.Service
-import Parser.Types
+import Parser.V1.Inventory (inventoryDecoder)
+import Parser.V1.Service
+import Parser.V1.Types
 import Test.Utils
 
 test :: TestTree
@@ -30,6 +29,11 @@ test =
   testGroup
     "Parser"
     [ testThat "Decode single service definition" testServiceDecoding
+    , testGroup
+        "Version"
+        [ testThat "Unknown version number is handled" testUnkonwnVersionHandling
+        , testThat "Invalid version value is handled" testInvalidVersionHandling
+        ]
     , testGroup
         "Golden"
         [ goldenVsStringDiff
@@ -64,20 +68,34 @@ testServiceDecoding = do
               [ Connection {connectionWith = ServiceName "main-app", connectionType = HTTPS, connectionPorts = [PortNode 3833 "TCP"]}
               ]
           }
-  result <- assertParseFile (KDL.document serviceDecoder) "test/fixtures/service-definition.kdl"
+  result <- assertParse (KDL.document serviceDecoder) "test/fixtures/service-definition.kdl"
   assertEqual
     "Expected service definition"
     expectedResult
     result
 
+testUnkonwnVersionHandling :: TestEff ()
+testUnkonwnVersionHandling = do
+  assertParseError
+    "./test/fixtures/unknown-version.kdl"
+    [ "At: <root>"
+    , "  This kitab can only parse configuration format version 1. Found 3.0"
+    ]
+
+testInvalidVersionHandling :: TestEff ()
+testInvalidVersionHandling = do
+  assertParseError
+    "./test/fixtures/invalid-version.kdl"
+    ["At: <root>", "  Expected number, got: lol"]
+
 testServiceDefinitionsParsing :: IO LazyByteString
 testServiceDefinitionsParsing = runTestEff $ do
-  declarations <- assertParseFile decodeServiceDocument "test/fixtures/multiple-service-definitions.kdl"
+  declarations <- assertParseDocument "test/fixtures/multiple-service-definitions.kdl"
   pure . TL.encodeUtf8 $ pShowNoColor declarations
 
 testGraphToDot :: IO LazyByteString
 testGraphToDot = runTestEff $ do
-  declarations <- assertParseFile decodeServiceDocument "test/fixtures/multiple-service-definitions.kdl"
+  declarations <- assertParseDocument "test/fixtures/multiple-service-definitions.kdl"
   let entities =
         mapMaybe
           ( \case
@@ -108,7 +126,7 @@ testInventoryDecoding = do
               , ("otel-tracing-fqdn", InventoryVariable {name = "otel-tracing-fqdn", value = "otel.aws.internal.network", description = Just "OpenTelemetry ingestion in AWS"})
               ]
           }
-  result <- assertParseFile (KDL.document inventoryDecoder) "test/fixtures/inventory.kdl"
+  result <- assertParse (KDL.document inventoryDecoder) "test/fixtures/inventory.kdl"
   assertEqual
     "Expected inventory definition"
     expectedResult
@@ -123,7 +141,7 @@ testParsingServiceWithVar = do
           , serviceConnections =
               []
           }
-  result <- assertParseFile (KDL.document serviceDecoder) "test/fixtures/service-with-var.kdl"
+  result <- assertParse (KDL.document serviceDecoder) "test/fixtures/service-with-var.kdl"
   assertEqual
     "Expected service definition"
     expectedResult

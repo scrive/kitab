@@ -1,4 +1,4 @@
-module Parser.Service
+module Parser.V1.Service
   ( serviceDecoder
   , ServiceMetadata (..)
   ) where
@@ -12,10 +12,10 @@ import Core.Model.InventoryVariable (VariableName (..))
 import Core.Model.PortNode
 import Core.Model.Service
 import Core.Variable
-import Parser.EntityName
-import Parser.PortNode
-import Parser.ServiceContext
-import Parser.ServiceName
+import Parser.V1.EntityName
+import Parser.V1.PortNode
+import Parser.V1.ServiceContext
+import Parser.V1.ServiceName
 
 data ServiceMetadata (var :: Type)
   = FQDNNode (Either var Text)

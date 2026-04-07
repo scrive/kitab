@@ -1,4 +1,4 @@
-module Parser.EntityName where
+module Parser.V1.EntityName where
 
 import KDL
 
