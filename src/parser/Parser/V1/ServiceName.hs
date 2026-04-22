@@ -5,4 +5,4 @@ import KDL
 import Core.Model.ServiceName
 
 serviceNameDecoder :: ValueDecoder ServiceName
-serviceNameDecoder = ServiceName <$> KDL.text
+serviceNameDecoder = ServiceName <$> KDL.string

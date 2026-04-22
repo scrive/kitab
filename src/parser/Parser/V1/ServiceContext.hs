@@ -7,10 +7,10 @@ import Core.Model.ServiceContext
 
 contextDecoder :: NodeListDecoder ServiceContext
 contextDecoder = KDL.nodeWith "context" $ do
-  contextName <- KDL.argWith (ContextName <$> KDL.text)
+  contextName <- KDL.argWith (ContextName <$> KDL.string)
   pure ServiceContext {contextName}
 
 contextReferenceDecoder :: NodeListDecoder ContextName
 contextReferenceDecoder =
   KDL.nodeWith "in-context" $
-    ContextName <$> KDL.argWith KDL.text
+    ContextName <$> KDL.argWith KDL.string

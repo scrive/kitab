@@ -76,7 +76,7 @@ dependsOnDecoder :: NodeListDecoder Connection
 dependsOnDecoder = KDL.nodeWith "depends-on" $ do
   connectionWith <- KDL.argWith serviceNameDecoder
   -- referenceName <- KDL.argWith serviceNameDecoder
-  -- referenceContext <- KDL.optional $ KDL.propWith "context" (ContextName <$> KDL.text)
+  -- referenceContext <- KDL.optional $ KDL.propWith "context" (ContextName <$> KDL.string)
   -- pure referenceName
   (connectionPorts, connectionType) <- KDL.children $ do
     connectionPorts <- Set.fromList <$> KDL.many portDecoder
@@ -94,7 +94,7 @@ accessDecoder = KDL.nodeWith "access" $ do
 
 connectDecoder :: NodeListDecoder CIDRConnection
 connectDecoder = KDL.nodeWith "connect" $ do
-  connectTarget <- KDL.argWith KDL.text
+  connectTarget <- KDL.argWith KDL.string
   pure CIDRConnection {connectTarget}
 
 connectionTypeDecoder :: NodeDecoder ConnectionType

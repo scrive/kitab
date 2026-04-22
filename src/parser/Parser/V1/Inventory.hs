@@ -8,7 +8,7 @@ import Core.Model.InventoryVariable
 
 inventoryDecoder :: NodeListDecoder Inventory
 inventoryDecoder = KDL.nodeWith "inventory" $ do
-  attributes <- remainingPropsWith KDL.text
+  attributes <- remainingPropsWith KDL.string
   vars <- do
     results <- KDL.children (KDL.many varDecoder)
     pure $ Map.fromList (fmap (\r -> (r.name, r)) results)
@@ -23,4 +23,4 @@ varDecoder = KDL.nodeWith "var" $ do
 
 variableNameDecoder :: ValueDecoder VariableName
 variableNameDecoder =
-  VariableName <$> KDL.text
+  VariableName <$> KDL.string

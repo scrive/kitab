@@ -209,4 +209,4 @@ printInventory coloursSettings AggregatedInventory {aggregatedAttributes, aggreg
           , text "╰───────────────────────────────────────────────────"
           ]
 
-  Console.putStrLn (T.encodeUtf8 (T.pack (render inventoryTable)))
+  Console.putStrLn (T.encodeUtf8 (renderText inventoryTable))

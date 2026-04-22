@@ -9,7 +9,7 @@ import Parser.V1.PortNode
 
 cidrSetDecoder :: NodeListDecoder (CIDRSet Var)
 cidrSetDecoder = KDL.nodeWith "cidr-set" $ do
-  setName <- KDL.argWith KDL.text
+  setName <- KDL.argWith KDL.string
   ports <- KDL.children $ KDL.many portDecoder
   items <-
     KDL.children $
@@ -35,7 +35,7 @@ cidrDecoder = KDL.nodeWith "cidr" $ do
   case cidrOrVar of
     Left var -> pure $ CIDR (Left var)
     Right cidr -> do
-      name <- KDL.argWith KDL.text
+      name <- KDL.argWith KDL.string
       pure $ CIDR (Right (cidr, name))
 
 exceptionDecoder :: NodeListDecoder (CIDRSetItem Var)
@@ -54,5 +54,5 @@ exceptionDecoder = KDL.nodeWith "except" $ do
   case cidrOrVar of
     Left var -> pure $ Except (Left var)
     Right cidr -> do
-      reason <- KDL.argWith KDL.text
+      reason <- KDL.argWith KDL.string
       pure $ Except (Right (cidr, reason))
