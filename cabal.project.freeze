@@ -165,5 +165,5 @@ constraints: any.Cabal ==3.14.1.0,
              any.xml-conduit-writer ==0.1.1.6,
              any.xml-types ==0.3.8,
              any.zlib ==0.7.1.1,
-             zlib -bundled-c-zlib +non-blocking-ffi +pkg-config
+             zlib -bundled-c-zlib +non-blocking-ffi -pkg-config
 index-state: hackage.haskell.org 2026-04-22T19:36:56Z
