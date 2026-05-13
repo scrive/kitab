@@ -101,7 +101,7 @@ connectionTypeDecoder :: NodeDecoder ConnectionType
 connectionTypeDecoder = do
   connTypeText <- arg
   case connTypeText of
-    "https" -> pure HTTPS
+    "network" -> pure Network
     "function-call" -> pure FunctionCall
     _ -> KDL.fail $ "Found unkonwn connection type: " <> connTypeText
 

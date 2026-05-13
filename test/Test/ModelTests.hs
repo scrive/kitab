@@ -32,13 +32,13 @@ testParallelConnectionsDetection = do
           { serviceName = "A"
           , serviceInfo = defaultServiceInfo
           , serviceConnections =
-              [Connection (ServiceName "B") HTTPS [], Connection (ServiceName "B") FunctionCall []]
+              [Connection (ServiceName "B") Network [], Connection (ServiceName "B") FunctionCall []]
           }
   let graph = buildGraph [service] []
   validationError <- assertLeft "Graph is not validated" $ validationToEither (checkGraph graph)
   assertEqual
     "Parallel edges"
-    (NE.singleton (Parallel (ServiceRef $ ServiceName "A") (ServiceRef $ ServiceName "B") [HTTPS, FunctionCall]))
+    (NE.singleton (Parallel (ServiceRef $ ServiceName "A") (ServiceRef $ ServiceName "B") [Network, FunctionCall]))
     validationError
 
 testSelfReferentialConnections :: TestEff ()
@@ -48,7 +48,7 @@ testSelfReferentialConnections = do
           { serviceName = "A"
           , serviceInfo = defaultServiceInfo
           , serviceConnections =
-              [Connection (ServiceName "A") HTTPS []]
+              [Connection (ServiceName "A") Network []]
           }
   let graph = buildGraph [service] []
   validationError <- assertLeft "Graph is not validated" $ validationToEither (checkGraph graph)
@@ -64,7 +64,7 @@ testMismatchedConnections = do
           { serviceName = "A"
           , serviceInfo = defaultServiceInfo
           , serviceConnections =
-              [Connection (ServiceName "B") HTTPS []]
+              [Connection (ServiceName "B") Network []]
           }
       serviceB =
         emptyService
@@ -77,5 +77,5 @@ testMismatchedConnections = do
   validationError <- assertLeft "Graph is not validated" $ validationToEither (checkGraph graph)
   assertEqual
     "Mismatched connections"
-    (NE.singleton (Mismatched ((ServiceRef (ServiceName "A"), ServiceRef (ServiceName "B"), HTTPS), (ServiceRef (ServiceName "B"), ServiceRef (ServiceName "A"), FunctionCall))))
+    (NE.singleton (Mismatched ((ServiceRef (ServiceName "A"), ServiceRef (ServiceName "B"), Network), (ServiceRef (ServiceName "B"), ServiceRef (ServiceName "A"), FunctionCall))))
     validationError

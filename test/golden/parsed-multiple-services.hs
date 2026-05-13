@@ -92,12 +92,12 @@
         , serviceConnections =
             [ Connection
                 { connectionWith = "opensearch"
-                , connectionType = HTTPS
+                , connectionType = Network
                 , connectionPorts = fromList []
                 }
             , Connection
                 { connectionWith = "otel-tracing"
-                , connectionType = HTTPS
+                , connectionType = Network
                 , connectionPorts = fromList []
                 }
             ]
@@ -134,12 +134,12 @@
         , serviceConnections =
             [ Connection
                 { connectionWith = "s3"
-                , connectionType = HTTPS
+                , connectionType = Network
                 , connectionPorts = fromList []
                 }
             , Connection
                 { connectionWith = "media-proxy"
-                , connectionType = HTTPS
+                , connectionType = Network
                 , connectionPorts = fromList []
                 }
             , Connection
@@ -149,7 +149,7 @@
                 }
             , Connection
                 { connectionWith = "otel-tracing"
-                , connectionType = HTTPS
+                , connectionType = Network
                 , connectionPorts = fromList
                     [ PortNode
                         { port = 4317

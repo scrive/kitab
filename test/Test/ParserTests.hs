@@ -65,7 +65,7 @@ testServiceDecoding = do
           { serviceName = "media-proxy"
           , serviceInfo = defaultServiceInfo
           , serviceConnections =
-              [ Connection {connectionWith = ServiceName "main-app", connectionType = HTTPS, connectionPorts = [PortNode 3833 "TCP"]}
+              [ Connection {connectionWith = ServiceName "main-app", connectionType = Network, connectionPorts = [PortNode 3833 "TCP"]}
               ]
           }
   result <- assertParse (KDL.document serviceDecoder) "test/fixtures/service-definition.kdl"

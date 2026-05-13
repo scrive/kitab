@@ -13,18 +13,18 @@ import Core.Model.PortNode
 import Core.Model.ServiceName
 
 data ConnectionType
-  = HTTPS
+  = Network
   | FunctionCall
   deriving stock (Eq, Show, Ord)
 
 instance Pretty ConnectionType where
   pretty = \case
-    HTTPS -> "HTTPS"
+    Network -> "Network"
     FunctionCall -> "Function call"
 
 instance Display ConnectionType where
   displayBuilder = \case
-    HTTPS -> "HTTPS"
+    Network -> "Network"
     FunctionCall -> "Function call"
 
 data Service (var :: Type) = Service

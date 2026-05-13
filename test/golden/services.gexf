@@ -38,17 +38,17 @@
         <edges>
             <edge
               id="e0"
-              label="HTTPS"
+              label="Network"
               source="main-app"
               target="media-proxy"/>
             <edge
               id="e1"
-              label="HTTPS"
+              label="Network"
               source="main-app"
               target="otel-tracing"/>
             <edge
               id="e2"
-              label="HTTPS"
+              label="Network"
               source="main-app"
               target="s3"/>
             <edge
@@ -58,17 +58,17 @@
               target="user-registry"/>
             <edge
               id="e4"
-              label="HTTPS"
+              label="Network"
               source="media-proxy"
               target="opensearch"/>
             <edge
               id="e5"
-              label="HTTPS"
+              label="Network"
               source="media-proxy"
               target="otel-tracing"/>
             <edge
               id="e6"
-              label="HTTPS"
+              label="Network"
               source="media-proxy"
               target="host"/>
         </edges>

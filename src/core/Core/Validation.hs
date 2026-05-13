@@ -30,8 +30,8 @@ checkGraph graph =
     , checkMismatched graph
     ]
 
--- >>> checkParallelEdges (build [Service "A" [(Connection "B" HTTPS), (Connection "B" FunctionCall)]])
--- Failure (Parallel "A" "B" [HTTPS,FunctionCall] :| [])
+-- >>> checkParallelEdges (build [Service "A" [(Connection "B" Network), (Connection "B" FunctionCall)]])
+-- Failure (Parallel "A" "B" [Network,FunctionCall] :| [])
 checkParallelEdges
   :: Graph (List ConnectionType) Reference
   -> Validation (NonEmpty ValidationError) ()
@@ -42,7 +42,7 @@ checkParallelEdges graph =
           & filter (\(connTypes, _, _) -> length connTypes > 1)
   in for_ parallelGraphEdges (\(graphEdges, source, destination) -> failure (Parallel source destination graphEdges))
 
--- >>> checkSelfReferential (build [Service "A" [(Connection "A" HTTPS)]])
+-- >>> checkSelfReferential (build [Service "A" [(Connection "A" Network)]])
 -- Failure (SelfReferential "A" :| [])
 checkSelfReferential
   :: Graph (List ConnectionType) Reference
@@ -54,8 +54,8 @@ checkSelfReferential graph =
           & filter (\(_, source, destination) -> source == destination)
   in for_ selfReferentialEdges (\(_, source, _) -> failure (SelfReferential source))
 
--- >>> checkMismatched (build [Service "A" [(Connection "B" HTTPS)], Service "B" [Connection "A" FunctionCall]])
--- Failure (Mismatched (("A","B",HTTPS),("B","A",FunctionCall)) :| [])
+-- >>> checkMismatched (build [Service "A" [(Connection "B" Network)], Service "B" [Connection "A" FunctionCall]])
+-- Failure (Mismatched (("A","B",Network),("B","A",FunctionCall)) :| [])
 checkMismatched
   :: Graph (List ConnectionType) Reference
   -> Validation (NonEmpty ValidationError) ()

@@ -78,5 +78,5 @@ prettyContext serviceContext services =
 
 connTypeLabel :: ConnectionType -> Text
 connTypeLabel = \case
-  HTTPS -> "Connects via"
+  Network -> "Connects via"
   FunctionCall -> "using"
