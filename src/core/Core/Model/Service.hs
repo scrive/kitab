@@ -14,8 +14,11 @@ import Core.Model.ServiceName
 
 data ConnectionType
   = HTTPS
-  | SMTPS
+  | -- | Emails
+    SMTPS
   | FunctionCall
+  | -- | Redis
+    RESP
   deriving stock (Eq, Show, Ord)
 
 instance Pretty ConnectionType where
@@ -26,6 +29,7 @@ instance Display ConnectionType where
     HTTPS -> "HTTPS"
     SMTPS -> "SMTPS"
     FunctionCall -> "Function call"
+    RESP -> "RESP"
 
 data Service (var :: Type) = Service
   { serviceName :: ServiceName

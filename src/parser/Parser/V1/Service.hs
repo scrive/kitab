@@ -104,6 +104,7 @@ connectionTypeDecoder = do
     "https" -> pure HTTPS
     "function-call" -> pure FunctionCall
     "smtps" -> pure SMTPS
+    "resp" -> pure RESP
     _ -> KDL.fail $ "Found unknown connection type: " <> connTypeText
 
 fqdnDecoder :: NodeListDecoder (Either Var Text)
