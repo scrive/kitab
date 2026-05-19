@@ -13,8 +13,14 @@ decodeServiceDocument :: KDL.DocumentDecoder [Declaration Var]
 decodeServiceDocument =
   KDL.document . KDL.many $
     oneOf
-      [ EntityDeclaration <$> entityDecoder
+      [ VersionDeclration <$> versionDecoder
+      , EntityDeclaration <$> entityDecoder
       , CIDRSetDeclaration <$> cidrSetDecoder
       , ContextDeclaration <$> contextDecoder
+      , ToolDeclaration <$> toolDeclarationDecoder
       , ServiceDeclaration <$> serviceDecoder
       ]
+
+versionDecoder :: NodeListDecoder Word
+versionDecoder = KDL.nodeWith "version" $ do
+  KDL.arg @Word

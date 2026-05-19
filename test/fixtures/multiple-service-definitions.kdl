@@ -1,5 +1,7 @@
 context "k8s"
 
+tool "pngquant"
+
 entity "host"  {
 	in-context "k8s"
 	port 123 "UDP"
@@ -23,6 +25,8 @@ service "s3" {
 }
 
 service "media-proxy" {
+	call "pngquant"
+
 	in-context "k8s"
 
 	depends-on "opensearch" {

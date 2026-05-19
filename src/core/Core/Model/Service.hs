@@ -14,22 +14,26 @@ import Core.Model.ServiceName
 
 data ConnectionType
   = HTTPS
-  | -- | Emails
-    SMTPS
+  | SMTPS
   | FunctionCall
-  | -- | Redis
-    RESP
-  deriving stock (Eq, Show, Ord)
+  | Redis
+  | Postgres
+  | Domain
+  | ExternalTool
+  deriving stock (Eq, Show, Ord, Enum, Bounded)
 
 instance Pretty ConnectionType where
   pretty = pretty . display
 
 instance Display ConnectionType where
   displayBuilder = \case
-    HTTPS -> "HTTPS"
-    SMTPS -> "SMTPS"
-    FunctionCall -> "Function call"
-    RESP -> "RESP"
+    HTTPS -> "https"
+    SMTPS -> "smtps"
+    FunctionCall -> "function-call"
+    Redis -> "redis"
+    Postgres -> "postgres"
+    Domain -> "domain"
+    ExternalTool -> "external-tool"
 
 data Service (var :: Type) = Service
   { serviceName :: ServiceName
@@ -37,6 +41,7 @@ data Service (var :: Type) = Service
   , serviceConnections :: List Connection
   , entityAccesses :: List EntityAccess
   , cidrConnections :: List CIDRConnection
+  , toolCalls :: List Text
   }
   deriving stock (Eq, Show, Ord, Generic)
   deriving
@@ -51,6 +56,7 @@ emptyService =
     , serviceConnections = []
     , entityAccesses = []
     , cidrConnections = []
+    , toolCalls = []
     }
 
 data ServiceInfo (var :: Type) = ServiceInfo

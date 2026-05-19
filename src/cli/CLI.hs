@@ -68,7 +68,7 @@ parserOptions =
 
 programVersion :: String
 programVersion =
-  "kitab " <> showVersion version <> " commit " <> $(gitHash) <> ")"
+  "kitab " <> showVersion version <> " (commit " <> $(gitHash) <> ")"
 
 programDescription :: Doc
 programDescription =
