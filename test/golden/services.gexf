@@ -35,53 +35,59 @@
                 </attvalues>
             </node>
             <node id="host" label="host"/>
+            <node id="pngquant" label="pngquant"/>
         </nodes>
         <edges>
             <edge
               id="e0"
-              label="SMTPS"
+              label="smtps"
               source="main-app"
               target="mailgun"/>
             <edge
               id="e1"
-              label="HTTPS"
+              label="https"
               source="main-app"
               target="media-proxy"/>
             <edge
               id="e2"
-              label="HTTPS"
+              label="https"
               source="main-app"
               target="otel-tracing"/>
             <edge
               id="e3"
-              label="HTTPS"
+              label="https"
               source="main-app"
               target="s3"/>
             <edge
               id="e4"
-              label="Function call"
+              label="function-call"
               source="main-app"
               target="user-registry"/>
             <edge
               id="e5"
-              label="SMTPS"
+              label="smtps"
               source="media-proxy"
               target="mailgun"/>
             <edge
               id="e6"
-              label="HTTPS"
+              label="https"
               source="media-proxy"
               target="opensearch"/>
             <edge
               id="e7"
-              label="HTTPS"
+              label="https"
               source="media-proxy"
               target="otel-tracing"/>
             <edge
               id="e8"
-              label="HTTPS"
+              label="https"
               source="media-proxy"
               target="host"/>
+            <edge
+              id="e9"
+              label="external-tool"
+              source="media-proxy"
+              target="pngquant"/>
         </edges>
     </graph>
 </gexf>

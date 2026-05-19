@@ -10,4 +10,6 @@ data Declaration (var :: Type)
   | ContextDeclaration ServiceContext
   | EntityDeclaration Entity
   | CIDRSetDeclaration (CIDRSet var)
+  | VersionDeclration Word
+  | ToolDeclaration Text
   deriving stock (Eq, Ord, Show)

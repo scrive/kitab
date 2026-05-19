@@ -20,6 +20,7 @@
     ( ServiceContext
         { contextName = "k8s" }
     )
+, ToolDeclaration "pngquant"
 , ServiceDeclaration
     ( Service
         { serviceName = "otel-tracing"
@@ -41,6 +42,7 @@
         , serviceConnections = []
         , entityAccesses = []
         , cidrConnections = []
+        , toolCalls = []
         }
     )
 , ServiceDeclaration
@@ -60,6 +62,7 @@
         , serviceConnections = []
         , entityAccesses = []
         , cidrConnections = []
+        , toolCalls = []
         }
     )
 , ServiceDeclaration
@@ -79,6 +82,7 @@
         , serviceConnections = []
         , entityAccesses = []
         , cidrConnections = []
+        , toolCalls = []
         }
     )
 , ServiceDeclaration
@@ -113,6 +117,7 @@
                 }
             ]
         , cidrConnections = []
+        , toolCalls = [ "pngquant" ]
         }
     )
 , ServiceDeclaration
@@ -132,6 +137,7 @@
         , serviceConnections = []
         , entityAccesses = []
         , cidrConnections = []
+        , toolCalls = []
         }
     )
 , ServiceDeclaration
@@ -145,6 +151,7 @@
         , serviceConnections = []
         , entityAccesses = []
         , cidrConnections = []
+        , toolCalls = []
         }
     )
 , ServiceDeclaration
@@ -189,6 +196,7 @@
             ]
         , entityAccesses = []
         , cidrConnections = []
+        , toolCalls = []
         }
     )
 ]

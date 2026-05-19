@@ -8,6 +8,7 @@ digraph
   "s3"
   "user-registry"
   "host"
+  "pngquant"
   "main-app" -> "mailgun"
   "main-app" -> "media-proxy"
   "main-app" -> "otel-tracing"
@@ -17,4 +18,5 @@ digraph
   "media-proxy" -> "opensearch"
   "media-proxy" -> "otel-tracing"
   "media-proxy" -> "host"
+  "media-proxy" -> "pngquant"
 }

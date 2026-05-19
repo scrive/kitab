@@ -53,6 +53,13 @@ renderServices = runTestEff $ do
               _ -> Nothing
           )
           declarations
+  let tools =
+        mapMaybe
+          ( \case
+              ToolDeclaration t -> Just t
+              _ -> Nothing
+          )
+          declarations
   let aggregatedInventory = AggregatedInventory mempty mempty
   serviceDefinitions <- traverse (resolveServiceVars aggregatedInventory) serviceDefinitions'
   let graph = buildGraph serviceDefinitions entities

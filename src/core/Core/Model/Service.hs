@@ -19,19 +19,21 @@ data ConnectionType
   | Redis
   | Postgres
   | Domain
-  deriving stock (Eq, Show, Ord)
+  | ExternalTool
+  deriving stock (Eq, Show, Ord, Enum, Bounded)
 
 instance Pretty ConnectionType where
   pretty = pretty . display
 
 instance Display ConnectionType where
   displayBuilder = \case
-    HTTPS -> "HTTPS"
-    SMTPS -> "SMTPS"
-    FunctionCall -> "Function call"
-    Redis -> "Redis"
-    Postgres -> "Postgres"
-    Domain -> "Domain"
+    HTTPS -> "https"
+    SMTPS -> "smtps"
+    FunctionCall -> "function-call"
+    Redis -> "redis"
+    Postgres -> "postgres"
+    Domain -> "domain"
+    ExternalTool -> "external-tool"
 
 data Service (var :: Type) = Service
   { serviceName :: ServiceName
@@ -39,6 +41,7 @@ data Service (var :: Type) = Service
   , serviceConnections :: List Connection
   , entityAccesses :: List EntityAccess
   , cidrConnections :: List CIDRConnection
+  , toolCalls :: List Text
   }
   deriving stock (Eq, Show, Ord, Generic)
   deriving
@@ -53,6 +56,7 @@ emptyService =
     , serviceConnections = []
     , entityAccesses = []
     , cidrConnections = []
+    , toolCalls = []
     }
 
 data ServiceInfo (var :: Type) = ServiceInfo

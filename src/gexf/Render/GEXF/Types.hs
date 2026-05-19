@@ -148,6 +148,14 @@ serviceToGexfNode serviceName mContextName =
             ]
     }
 
+toolRefToNode :: Text -> Node
+toolRefToNode name =
+  Node
+    { nodeId = NodeId (display name)
+    , nodeLabel = Label (display name)
+    , nodeAttrs = []
+    }
+
 entityRefToNode :: EntityName -> Node
 entityRefToNode entityName =
   Node

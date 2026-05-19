@@ -1,8 +1,10 @@
 module Parser.V1.Service
   ( serviceDecoder
+  , toolDeclarationDecoder
   , ServiceMetadata (..)
   ) where
 
+import Data.List qualified as List
 import Data.Maybe qualified as Maybe
 import Data.Set qualified as Set
 import KDL
@@ -24,6 +26,7 @@ data ServiceMetadata (var :: Type)
   | ServicePortNode PortNode
   | AccessNode EntityAccess
   | ConnectNode CIDRConnection
+  | CallTool Text
   deriving stock (Eq, Ord, Show)
 
 getFQDN :: ServiceMetadata var -> Maybe (Either var Text)
@@ -50,6 +53,10 @@ getCidrConnection :: ServiceMetadata var -> Maybe CIDRConnection
 getCidrConnection (ConnectNode a) = Just a
 getCidrConnection _ = Nothing
 
+getToolCall :: ServiceMetadata var -> Maybe Text
+getToolCall (CallTool t) = Just t
+getToolCall _ = Nothing
+
 serviceDecoder :: NodeListDecoder (Service Var)
 serviceDecoder = KDL.nodeWith "service" $ do
   serviceName <- KDL.argWith serviceNameDecoder
@@ -61,6 +68,7 @@ serviceDecoder = KDL.nodeWith "service" $ do
         <|> (AccessNode <$> accessDecoder)
         <|> (ConnectNode <$> connectDecoder)
         <|> (ServiceContextNode <$> contextReferenceDecoder)
+        <|> (CallTool <$> toolCallDecoder)
 
   let serviceFqdn = Maybe.listToMaybe $ mapMaybe getFQDN mixedChildren
   let servicePorts = Set.fromList $ mapMaybe getPort mixedChildren
@@ -69,8 +77,9 @@ serviceDecoder = KDL.nodeWith "service" $ do
   let serviceConnections = mapMaybe getConnection mixedChildren
   let entityAccesses = mapMaybe getEntityAccess mixedChildren
   let cidrConnections = mapMaybe getCidrConnection mixedChildren
+  let toolCalls = mapMaybe getToolCall mixedChildren
 
-  pure Service {serviceName, serviceInfo, serviceConnections, entityAccesses, cidrConnections}
+  pure Service {serviceName, serviceInfo, serviceConnections, entityAccesses, cidrConnections, toolCalls}
 
 dependsOnDecoder :: NodeListDecoder Connection
 dependsOnDecoder = KDL.nodeWith "depends-on" $ do
@@ -107,7 +116,11 @@ connectionTypeDecoder = do
     "redis" -> pure Redis
     "postgres" -> pure Postgres
     "domain" -> pure Domain
-    _ -> KDL.fail $ "Found unknown connection type: " <> connTypeText
+    "external-tool" -> pure ExternalTool
+    _ -> KDL.fail $ "Found unknown connection type: " <> connTypeText <> ". Supported connection types are " <> mconcat (List.intersperse ", " supportedConnectionTypes)
+
+supportedConnectionTypes :: List Text
+supportedConnectionTypes = display <$> ([minBound .. maxBound] :: [ConnectionType])
 
 fqdnDecoder :: NodeListDecoder (Either Var Text)
 fqdnDecoder =
@@ -122,3 +135,11 @@ fqdnDecoder =
             -- Nothing or Just "text"
             _ -> pure . Right $ s
       )
+
+toolCallDecoder :: NodeListDecoder Text
+toolCallDecoder = KDL.nodeWith "call" $ do
+  KDL.argWith KDL.string
+
+toolDeclarationDecoder :: NodeListDecoder Text
+toolDeclarationDecoder = KDL.nodeWith "tool" $ do
+  KDL.argWith KDL.string
