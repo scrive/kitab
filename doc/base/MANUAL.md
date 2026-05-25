@@ -246,7 +246,7 @@ It has no child nodes.
 -- cabal: build-depends: kitab, kitab:kitab-core, text-display, kitab-prelude, text
 -- cabal: packages: ../../, ../../kitab-prelude
 -- cabal: default-extensions: PackageImports, NoImplicitPrelude
--- cabal: ghc-options: -Wno-unused-packages
+-- cabal: ghc-options: -Wno-unused-packages -j -Wno-x-partial
 import Core.Model.Service
 import Data.Text.Display
 import "kitab-prelude" Prelude
