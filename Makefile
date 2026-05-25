@@ -4,6 +4,9 @@ build: ## Build the project in fast mode
 install: build ## Install kitab in ~/.local/bin/
 	cp -f $(EXECUTABLE) ~/.local/bin/kitab
 
+manual: ## Generate doc/MANUAL.md from doc/base/MANUAL.md
+	@ghcup --offline run --ghc 9.12.2 -- scripths --code-style remove --output-style raw -o doc/MANUAL.md doc/base/MANUAL.md
+
 clean: ## Remove compilation artifacts
 	@cabal clean
 

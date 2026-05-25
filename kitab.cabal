@@ -130,6 +130,7 @@ library
 library kitab-core
   import: extensions
   import: ghc-options
+  visibility: public
   -- cabal-gild: discover src/core
   exposed-modules:
     Core.Graph
