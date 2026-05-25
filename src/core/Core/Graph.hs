@@ -53,7 +53,7 @@ buildGraph services entities =
                   entityConnectionsGraph =
                     Graph.edges [(List.singleton HTTPS, incomingService, EntityRef access.accessTarget) | access <- service.entityAccesses]
                   toolConnectionsGraph =
-                    Graph.edges [(List.singleton ExternalTool, incomingService, ToolRef call) | call <- service.toolCalls]
+                    Graph.edges [(List.singleton ExternalTool, incomingService, ToolRef service.serviceName call) | call <- service.toolCalls]
               in Graph.overlays [serviceConnectionsGraph, entityConnectionsGraph, toolConnectionsGraph, acc]
           )
           Graph.empty

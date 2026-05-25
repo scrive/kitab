@@ -44,6 +44,9 @@ common ghc-options
     -funbox-small-strict-fields
     -Winvalid-haddock
     -Wmissing-deriving-strategies
+    -Werror=default
+    -Wwarn=x-partial
+    -Wwarn=inconsistent-flags
 
 common rts-options
   ghc-options:
