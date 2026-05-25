@@ -3,18 +3,21 @@ module Render.C4 where
 import Algebra.Graph.Labelled.AdjacencyMap (AdjacencyMap)
 import Algebra.Graph.Labelled.AdjacencyMap qualified as AM
 import Data.List qualified as List
+import Data.Map.Strict qualified as Map
 import Prettyprinter
 import Prettyprinter.Render.Text (renderStrict)
 
 import Core.Model.Service
 import Core.Model.ServiceContext
+import Core.Model.ServiceName
 import Render.C4.C4Service.Types
 
 renderC4
   :: List ServiceContext
   -> AdjacencyMap [ConnectionType] C4Service
+  -> Map ServiceName (List Text)
   -> Text
-renderC4 contexts graph = renderStrict . layoutPretty defaultLayoutOptions $ pumlDoc
+renderC4 contexts graph tools = renderStrict . layoutPretty defaultLayoutOptions $ pumlDoc
   where
     pumlDoc :: Doc ann
     pumlDoc =
@@ -27,6 +30,9 @@ renderC4 contexts graph = renderStrict . layoutPretty defaultLayoutOptions $ pum
         , "' --- Contexts ---"
         , prettyContexts contexts (AM.vertexList graph)
         , ""
+        , "' --- External Binaries ---"
+        , prettyToolsContainers tools
+        , ""
         , "' --- Outer Systems ---"
         , prettyOutOfContext (AM.vertexList graph)
         , ""
@@ -35,11 +41,19 @@ renderC4 contexts graph = renderStrict . layoutPretty defaultLayoutOptions $ pum
         , "@enduml"
         ]
 
-prettyNode :: C4Service -> Doc ann
-prettyNode C4Service {alias, name} =
+prettySystemNode :: C4Service -> Doc ann
+prettySystemNode C4Service {alias, name} =
   "System"
     <> tupled
       [ pretty alias
+      , dquotes (pretty name)
+      ]
+
+prettyContainerNode :: Text -> Doc ann
+prettyContainerNode name =
+  "Container"
+    <> tupled
+      [ pretty name
       , dquotes (pretty name)
       ]
 
@@ -57,20 +71,35 @@ prettyOutOfContext services =
   let docs =
         services
           & List.filter (\s -> isNothing s.systemBoundary)
-          & List.map prettyNode
+          & List.map prettySystemNode
   in vsep docs
 
 prettyContexts :: List ServiceContext -> List C4Service -> Doc ann
 prettyContexts contexts services =
   let docs = flip List.map contexts $ \context ->
         let contextServices = List.filter (\s -> s.systemBoundary == Just context.contextName) services
-        in prettyContext context contextServices
+        in prettyServiceContext context contextServices
   in vsep docs
 
-prettyContext :: ServiceContext -> List C4Service -> Doc ann
-prettyContext serviceContext services =
+prettyServiceContext :: ServiceContext -> List C4Service -> Doc ann
+prettyServiceContext serviceContext services =
   vsep
     [ "System_Boundary(c1," <> pretty serviceContext.contextName <> ") {"
-    , indent 2 $ vsep (map prettyNode services)
+    , indent 2 $ vsep (map prettySystemNode services)
+    , "}"
+    ]
+
+prettyToolsContainers :: Map ServiceName (List Text) -> Doc ann
+prettyToolsContainers tools =
+  tools
+    & Map.toList
+    & List.map prettyToolContainer
+    & vsep
+
+prettyToolContainer :: (ServiceName, List Text) -> Doc ann
+prettyToolContainer (service, tools) =
+  vsep
+    [ "Container_Boundary(" <> pretty service.serviceName <> ", " <> pretty service.serviceName <> ") {"
+    , indent 2 $ vsep (map prettyContainerNode tools)
     , "}"
     ]

@@ -41,7 +41,7 @@ toC4Service serviceIndex = \case
     let alias = mkC4ServiceAlias name
         systemBoundary = Nothing
     in C4Service {alias, name, systemBoundary}
-  ToolRef name ->
+  ToolRef (ServiceName serviceName) name ->
     let alias = mkC4ServiceAlias name
-        systemBoundary = Nothing
+        systemBoundary = Just (ContextName (serviceName <> ":tools"))
     in C4Service {alias, name, systemBoundary}

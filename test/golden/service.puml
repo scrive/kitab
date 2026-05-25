@@ -10,12 +10,14 @@ System_Boundary(c1,k8s) {
   System(user_registry, "user-registry")
 }
 
+' --- External Binaries ---
+
+
 ' --- Outer Systems ---
 System(host, "host")
 System(mailgun, "mailgun")
 System(opensearch, "opensearch")
 System(otel_tracing, "otel-tracing")
-System(pngquant, "pngquant")
 System(s3, "s3")
 
 ' --- Relationships ---

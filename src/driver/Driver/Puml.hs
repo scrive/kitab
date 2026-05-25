@@ -6,6 +6,7 @@ import Algebra.Graph.Labelled (Graph)
 import Algebra.Graph.Labelled qualified as Graph
 import Algebra.Graph.Labelled.AdjacencyMap qualified as AM
 import Data.ByteString.Char8 qualified as BS8
+import Data.Map.Strict qualified as Map
 import Data.Text.Encoding qualified as T
 import Effectful
 import Effectful.Console.ByteString (Console)
@@ -37,7 +38,14 @@ renderToPuml serviceIndex contexts outputDir verbosity graph = do
           & Graph.edgeList
           & fmap (\(es, a, b) -> (es, C4.toC4Service serviceIndex a, C4.toC4Service serviceIndex b))
   let adjacencyMap = AM.edges graphEdges
-  let rendered = C4.renderC4 contexts adjacencyMap
+  let _toolCalls =
+        graph
+          & Graph.vertexList
+          <&> \case
+            ToolRef caller toolName -> Map.singleton caller [toolName]
+            _ -> Map.empty
+          & Map.unionsWith (++)
+  let rendered = C4.renderC4 contexts adjacencyMap Map.empty
   outputPath <- OsPath.decodeUtf (outputDir </> [osp|architecture.c4|])
   when (isVerbose verbosity) (Console.putStrLn $ "Writing file " <> BS8.pack outputPath)
   FileSystem.writeFile outputPath (T.encodeUtf8 rendered)

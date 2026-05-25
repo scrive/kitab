@@ -35,7 +35,12 @@
                 </attvalues>
             </node>
             <node id="host" label="host"/>
-            <node id="pngquant" label="pngquant"/>
+            <node id="pngquant" label="pngquant">
+                <attvalues>
+                    <attvalue for="context" value="media-proxy"/>
+                    <attvalue for="context_id" value="100"/>
+                </attvalues>
+            </node>
         </nodes>
         <edges>
             <edge

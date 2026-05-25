@@ -1,6 +1,9 @@
 build: ## Build the project in fast mode
 	@cabal build
 
+install: build ## Install kitab in ~/.local/bin/
+	cp -f $(EXECUTABLE) ~/.local/bin/kitab
+
 clean: ## Remove compilation artifacts
 	@cabal clean
 
@@ -28,6 +31,8 @@ help: ## Display this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.* ?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 PROCS := $(shell nproc)
+
+EXECUTABLE := $(shell cabal list-bin kitab)
 
 .PHONY: all $(MAKECMDGOALS)
 

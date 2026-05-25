@@ -10,6 +10,7 @@ import Text.XML (def, renderText)
 import Text.XML.Stream.Render.Internal (RenderSettings (..))
 import Text.XML.Writer
 
+import Core.Model.ContextName
 import Core.Model.Reference
 import Core.Model.Service
 import Core.Model.ServiceContext ()
@@ -45,7 +46,8 @@ renderGEXF graph serviceIndex =
             systemBoundary = mServiceInfo ^? _Just % #serviceContext % _Just
         in toXML $ serviceToGexfNode serviceName systemBoundary
       EntityRef entityRef -> toXML $ entityRefToNode entityRef
-      ToolRef name -> toXML $ toolRefToNode name
+      ToolRef (ServiceName contextName) toolName ->
+        toXML $ serviceToGexfNode (ServiceName toolName) (Just (ContextName contextName))
 
     renderEdge :: (Word, (List ConnectionType, Reference, Reference)) -> XML
     renderEdge (i, (e, u, v)) =
