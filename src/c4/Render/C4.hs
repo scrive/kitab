@@ -7,6 +7,7 @@ import Data.Map.Strict qualified as Map
 import Prettyprinter
 import Prettyprinter.Render.Text (renderStrict)
 
+import Core.Model.ContextName
 import Core.Model.Service
 import Core.Model.ServiceContext
 import Core.Model.ServiceName
@@ -29,9 +30,6 @@ renderC4 contexts graph tools = renderStrict . layoutPretty defaultLayoutOptions
         , ""
         , "' --- Contexts ---"
         , prettyContexts contexts (AM.vertexList graph)
-        , ""
-        , "' --- External Binaries ---"
-        , prettyToolsContainers tools
         , ""
         , "' --- Outer Systems ---"
         , prettyOutOfContext (AM.vertexList graph)
@@ -70,18 +68,23 @@ prettyOutOfContext :: List C4Service -> Doc ann
 prettyOutOfContext services =
   let docs =
         services
-          & List.filter (\s -> isNothing s.systemBoundary)
+          & List.filter (\s -> null s.boundaryHierarchy)
           & List.map prettySystemNode
   in vsep docs
 
 prettyContexts :: List ServiceContext -> List C4Service -> Doc ann
 prettyContexts contexts services =
   let docs = flip List.map contexts $ \context ->
-        let contextServices = List.filter (\s -> s.systemBoundary == Just context.contextName) services
+        let contextServices =
+              services
+                & List.filter (\s -> s.boundaryHierarchy == [context.contextName])
         in prettyServiceContext context contextServices
   in vsep docs
 
-prettyServiceContext :: ServiceContext -> List C4Service -> Doc ann
+prettyServiceContext
+  :: ServiceContext
+  -> List C4Service
+  -> Doc ann
 prettyServiceContext serviceContext services =
   vsep
     [ "System_Boundary(c1," <> pretty serviceContext.contextName <> ") {"
@@ -89,17 +92,14 @@ prettyServiceContext serviceContext services =
     , "}"
     ]
 
-prettyToolsContainers :: Map ServiceName (List Text) -> Doc ann
-prettyToolsContainers tools =
-  tools
-    & Map.toList
-    & List.map prettyToolContainer
-    & vsep
-
-prettyToolContainer :: (ServiceName, List Text) -> Doc ann
-prettyToolContainer (service, tools) =
+prettyServiceContextWithTools
+  :: ServiceContext
+  -> List C4Service
+  -> List Text
+  -> Doc ann
+prettyServiceContextWithTools serviceContext services serviceTools =
   vsep
-    [ "Container_Boundary(" <> pretty service.serviceName <> ", " <> pretty service.serviceName <> ") {"
-    , indent 2 $ vsep (map prettyContainerNode tools)
+    [ "Container_Boundary(" <> pretty serviceContext.contextName <> ", " <> pretty serviceContext.contextName <> ") {"
+    , indent 2 $ vsep (map prettyContainerNode serviceTools)
     , "}"
     ]

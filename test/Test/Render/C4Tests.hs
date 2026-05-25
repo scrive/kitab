@@ -64,7 +64,7 @@ renderServices = runTestEff $ do
         graph
           & Graph.vertexList
           <&> \case
-            ToolRef caller toolName -> Map.singleton caller [toolName]
+            ToolRef _ caller toolName -> Map.singleton caller [toolName]
             _ -> Map.empty
           & Map.unionsWith (++)
   let graphEdges =

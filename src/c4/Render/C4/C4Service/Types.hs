@@ -26,7 +26,7 @@ mkC4ServiceAlias input =
 data C4Service = C4Service
   { alias :: C4ServiceAlias
   , name :: Text
-  , systemBoundary :: Maybe ContextName
+  , boundaryHierarchy :: List ContextName
   }
   deriving stock (Eq, Show, Ord)
 
@@ -35,13 +35,13 @@ toC4Service serviceIndex = \case
   ServiceRef (ServiceName name) ->
     let alias = mkC4ServiceAlias name
         mServiceInfo = Map.lookup (ServiceName name) serviceIndex
-        systemBoundary = mServiceInfo ^? _Just % #serviceContext % _Just
-    in C4Service {alias, name, systemBoundary}
+        boundaryHierarchy = maybeToList $ mServiceInfo ^? _Just % #serviceContext % _Just
+    in C4Service {alias, name, boundaryHierarchy}
   EntityRef (EntityName name) ->
     let alias = mkC4ServiceAlias name
-        systemBoundary = Nothing
-    in C4Service {alias, name, systemBoundary}
-  ToolRef (ServiceName serviceName) name ->
+        boundaryHierarchy = []
+    in C4Service {alias, name, boundaryHierarchy}
+  ToolRef serviceContext (ServiceName serviceName) name ->
     let alias = mkC4ServiceAlias name
-        systemBoundary = Just (ContextName (serviceName <> ":tools"))
-    in C4Service {alias, name, systemBoundary}
+        boundaryHierarchy = maybeToList serviceContext <> [ContextName serviceName]
+    in C4Service {alias, name, boundaryHierarchy}

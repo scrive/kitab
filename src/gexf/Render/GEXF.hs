@@ -46,7 +46,7 @@ renderGEXF graph serviceIndex =
             systemBoundary = mServiceInfo ^? _Just % #serviceContext % _Just
         in toXML $ serviceToGexfNode serviceName systemBoundary
       EntityRef entityRef -> toXML $ entityRefToNode entityRef
-      ToolRef (ServiceName contextName) toolName ->
+      ToolRef _ (ServiceName contextName) toolName ->
         toXML $ serviceToGexfNode (ServiceName toolName) (Just (ContextName contextName))
 
     renderEdge :: (Word, (List ConnectionType, Reference, Reference)) -> XML
