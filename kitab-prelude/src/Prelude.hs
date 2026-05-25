@@ -8,6 +8,7 @@ module Prelude
   , module Data.Foldable
   , module Data.Text.Display
   , module Control.Monad.Extra
+  , module GHC.Tuple
   , module Data.Functor
   , module Data.Maybe
   , module P
@@ -42,6 +43,7 @@ import Data.Ord
 import Data.Text (Text)
 import Data.Text.Display
 import Data.Vector (Vector)
+import GHC.Tuple
 import Text.Show
 
 import "base" Prelude hiding (id, unzip)

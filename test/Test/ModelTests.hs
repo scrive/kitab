@@ -25,7 +25,7 @@ test =
         ]
     ]
 
-testParallelConnectionsDetection :: TestEff ()
+testParallelConnectionsDetection :: TestEff Unit
 testParallelConnectionsDetection = do
   let service =
         emptyService
@@ -41,7 +41,7 @@ testParallelConnectionsDetection = do
     (NE.singleton (Parallel (ServiceRef $ ServiceName "A") (ServiceRef $ ServiceName "B") [HTTPS, FunctionCall]))
     validationError
 
-testSelfReferentialConnections :: TestEff ()
+testSelfReferentialConnections :: TestEff Unit
 testSelfReferentialConnections = do
   let service =
         emptyService
@@ -57,7 +57,7 @@ testSelfReferentialConnections = do
     (NE.singleton (SelfReferential (ServiceRef $ ServiceName "A")))
     validationError
 
-testMismatchedConnections :: TestEff ()
+testMismatchedConnections :: TestEff Unit
 testMismatchedConnections = do
   let serviceA =
         emptyService

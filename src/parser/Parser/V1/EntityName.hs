@@ -4,5 +4,5 @@ import KDL
 
 import Core.Model.EntityName
 
-entityNameDecoder :: ValueDecodeArrow () EntityName
+entityNameDecoder :: ValueDecodeArrow Unit EntityName
 entityNameDecoder = EntityName <$> KDL.string

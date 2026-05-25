@@ -22,6 +22,7 @@ common extensions
   default-extensions:
     DerivingVia
     NoFieldSelectors
+    NoListTuplePuns
     OverloadedLabels
     OverloadedRecordDot
     OverloadedStrings

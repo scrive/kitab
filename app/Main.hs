@@ -17,7 +17,7 @@ import CLI.Cmd.Generate (runGenerate)
 import CLI.Error
 import CLI.Types
 
-main :: IO ()
+main :: IO Unit
 main = do
   hSetBuffering stdout LineBuffering
   setBacktraceMechanismState IPEBacktrace True
@@ -38,5 +38,5 @@ main = do
 runOptions
   :: (Console :> es, FileSystem :> es, Error (NonEmpty CLIError) :> es, Environment :> es)
   => Command
-  -> Eff es ()
+  -> Eff es Unit
 runOptions (CmdGenerate cmdOptions) = runGenerate cmdOptions

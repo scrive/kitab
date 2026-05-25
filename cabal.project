@@ -6,7 +6,7 @@ with-compiler: ghc-9.12.2
 
 test-show-details: direct
 
-documentation: True
+documentation: False
 
 profiling: True
 

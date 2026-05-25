@@ -3,11 +3,13 @@ module Render.C4 where
 import Algebra.Graph.Labelled.AdjacencyMap (AdjacencyMap)
 import Algebra.Graph.Labelled.AdjacencyMap qualified as AM
 import Data.List qualified as List
+import Data.Map.Internal.Debug (showTree)
 import Data.Map.Strict qualified as Map
+import Data.Tree
+import Debug.Trace
 import Prettyprinter
 import Prettyprinter.Render.Text (renderStrict)
 
-import Core.Model.ContextName
 import Core.Model.Service
 import Core.Model.ServiceContext
 import Core.Model.ServiceName
@@ -15,7 +17,7 @@ import Render.C4.C4Service.Types
 
 renderC4
   :: List ServiceContext
-  -> AdjacencyMap [ConnectionType] C4Service
+  -> AdjacencyMap (List ConnectionType) C4Service
   -> Map ServiceName (List Text)
   -> Text
 renderC4 contexts graph tools = renderStrict . layoutPretty defaultLayoutOptions $ pumlDoc
@@ -55,7 +57,7 @@ prettyContainerNode name =
       , dquotes (pretty name)
       ]
 
-prettyEdge :: (List ConnectionType, C4Service, C4Service) -> Doc ann
+prettyEdge :: Tuple3 (List ConnectionType) C4Service C4Service -> Doc ann
 prettyEdge (connTypes, from, to) =
   "Rel"
     <> tupled
@@ -68,18 +70,14 @@ prettyOutOfContext :: List C4Service -> Doc ann
 prettyOutOfContext services =
   let docs =
         services
-          & List.filter (\s -> null s.boundaryHierarchy)
+          & List.filter (\s -> null s.hierarchy)
           & List.map prettySystemNode
   in vsep docs
 
 prettyContexts :: List ServiceContext -> List C4Service -> Doc ann
 prettyContexts contexts services =
-  let docs = flip List.map contexts $ \context ->
-        let contextServices =
-              services
-                & List.filter (\s -> s.boundaryHierarchy == [context.contextName])
-        in prettyServiceContext context contextServices
-  in vsep docs
+  let serviceTree = show (trace ("Services: " <> show services) services)
+  in pretty $ show serviceTree
 
 prettyServiceContext
   :: ServiceContext
@@ -92,14 +90,17 @@ prettyServiceContext serviceContext services =
     , "}"
     ]
 
-prettyServiceContextWithTools
-  :: ServiceContext
-  -> List C4Service
-  -> List Text
-  -> Doc ann
-prettyServiceContextWithTools serviceContext services serviceTools =
+prettyToolsContainers :: Map ServiceName (List Text) -> Doc ann
+prettyToolsContainers tools =
+  tools
+    & Map.toList
+    & List.map prettyToolContainer
+    & vsep
+
+prettyToolContainer :: Tuple2 ServiceName (List Text) -> Doc ann
+prettyToolContainer (serviceName, tools) =
   vsep
-    [ "Container_Boundary(" <> pretty serviceContext.contextName <> ", " <> pretty serviceContext.contextName <> ") {"
-    , indent 2 $ vsep (map prettyContainerNode serviceTools)
+    [ "Container_Boundary(" <> pretty serviceName <> ", " <> pretty serviceName <> ") {"
+    , indent 2 $ vsep (map prettyContainerNode tools)
     , "}"
     ]

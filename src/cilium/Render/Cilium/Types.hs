@@ -40,7 +40,7 @@ instance Pretty Metadata where
 -- | The Policy Specification
 data PolicySpec = PolicySpec
   { endpointSelector :: EndpointSelector
-  , egress :: [EgressRule]
+  , egress :: List EgressRule
   }
   deriving stock (Show, Eq, Ord)
 
@@ -175,7 +175,7 @@ instance Pretty DNSMatch where
 
 -- | Grouping of ports
 newtype PortRule = PortRule
-  { ports :: [PortProtocol]
+  { ports :: List PortProtocol
   }
   deriving stock (Show, Eq, Ord)
 

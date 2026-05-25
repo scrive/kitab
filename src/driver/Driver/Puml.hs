@@ -31,7 +31,7 @@ renderToPuml
   -> OsPath
   -> VerbositySetting
   -> Graph (List ConnectionType) Reference
-  -> Eff es ()
+  -> Eff es Unit
 renderToPuml serviceIndex contexts outputDir verbosity graph = do
   let graphEdges =
         graph

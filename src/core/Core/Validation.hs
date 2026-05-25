@@ -13,7 +13,11 @@ import Core.Model.Service
 data ValidationError
   = Asymmetric Reference Reference
   | -- | Two services declare different ways of reaching each-other.
-    Mismatched ((Reference, Reference, ConnectionType), (Reference, Reference, ConnectionType))
+    Mismatched
+      ( Tuple2
+          (Tuple3 Reference Reference ConnectionType)
+          (Tuple3 Reference Reference ConnectionType)
+      )
   | -- | A service declares two different ways to reach another service.
     Parallel Reference Reference (List ConnectionType)
   | -- | A service declares a connection to itself.
@@ -22,7 +26,7 @@ data ValidationError
 
 checkGraph
   :: Graph (List ConnectionType) Reference
-  -> Validation (NonEmpty ValidationError) ()
+  -> Validation (NonEmpty ValidationError) Unit
 checkGraph graph =
   sequenceA_
     [ checkParallelEdges graph
@@ -34,7 +38,7 @@ checkGraph graph =
 -- Failure (Parallel "A" "B" [HTTPS,FunctionCall] :| [])
 checkParallelEdges
   :: Graph (List ConnectionType) Reference
-  -> Validation (NonEmpty ValidationError) ()
+  -> Validation (NonEmpty ValidationError) Unit
 checkParallelEdges graph =
   let parallelGraphEdges =
         graph
@@ -46,7 +50,7 @@ checkParallelEdges graph =
 -- Failure (SelfReferential "A" :| [])
 checkSelfReferential
   :: Graph (List ConnectionType) Reference
-  -> Validation (NonEmpty ValidationError) ()
+  -> Validation (NonEmpty ValidationError) Unit
 checkSelfReferential graph =
   let selfReferentialEdges =
         graph
@@ -58,7 +62,7 @@ checkSelfReferential graph =
 -- Failure (Mismatched (("A","B",HTTPS),("B","A",FunctionCall)) :| [])
 checkMismatched
   :: Graph (List ConnectionType) Reference
-  -> Validation (NonEmpty ValidationError) ()
+  -> Validation (NonEmpty ValidationError) Unit
 checkMismatched graph =
   let am =
         graph
