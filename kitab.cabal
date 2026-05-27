@@ -178,6 +178,7 @@ library kitab-c4
     algebraic-graphs,
     base ^>=4.21,
     containers,
+    effectful-core,
     kitab:kitab-core,
     kitab-prelude,
     optics-core,

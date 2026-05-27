@@ -3,9 +3,7 @@ module Render.C4 where
 import Algebra.Graph.Labelled.AdjacencyMap (AdjacencyMap)
 import Algebra.Graph.Labelled.AdjacencyMap qualified as AM
 import Data.List qualified as List
-import Data.Map.Internal.Debug (showTree)
 import Data.Map.Strict qualified as Map
-import Data.Tree
 import Debug.Trace
 import Prettyprinter
 import Prettyprinter.Render.Text (renderStrict)
@@ -18,9 +16,8 @@ import Render.C4.C4Service.Types
 renderC4
   :: List ServiceContext
   -> AdjacencyMap (List ConnectionType) C4Service
-  -> Map ServiceName (List Text)
   -> Text
-renderC4 contexts graph tools = renderStrict . layoutPretty defaultLayoutOptions $ pumlDoc
+renderC4 contexts graph = renderStrict . layoutPretty defaultLayoutOptions $ pumlDoc
   where
     pumlDoc :: Doc ann
     pumlDoc =
