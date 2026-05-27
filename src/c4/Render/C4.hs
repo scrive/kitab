@@ -58,9 +58,9 @@ serviceTreeToPuml serviceTree =
     )
 
 subTreeToPuml :: Tuple2 ContextName ServiceTree -> Doc ann
-subTreeToPuml (name, tree) =
+subTreeToPuml (ContextName name, tree) =
   vsep
-    [ "Container_Boundary(" <> pretty name <> ", " <> pretty name <> ") {"
+    [ "Container_Boundary(" <> pretty (mkC4ContainerAlias name) <> ", " <> pretty name <> ") {"
     , indent
         2
         ( vsep
