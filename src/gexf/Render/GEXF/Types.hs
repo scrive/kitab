@@ -37,7 +37,7 @@ data Meta = Meta
 data Graph = Graph
   { edgeType :: EdgeType
   , mode :: Mode
-  , attributes :: [Attributes]
+  , attributes :: List Attributes
   , nodes :: List Node
   , edges :: List Edge
   }

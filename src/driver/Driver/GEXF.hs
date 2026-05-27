@@ -28,7 +28,7 @@ renderGEXF
   -> OsPath
   -> VerbositySetting
   -> Graph (List ConnectionType) Reference
-  -> Eff es ()
+  -> Eff es Unit
 renderGEXF serviceIndex outputDir verbosity graph = do
   let adjacencyMap =
         graph

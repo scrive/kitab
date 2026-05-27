@@ -2,7 +2,7 @@
 
 module Driver.Cilium where
 
-import Control.DeepSeq
+import Control.DeepSeq (force)
 import Data.ByteString.Char8 qualified as BS8
 import Data.Text qualified as T
 import Data.Text.Encoding qualified as T
@@ -31,7 +31,7 @@ renderToCilium
   -> OsPath.OsPath
   -> VerbositySetting
   -> List (Service Void)
-  -> Eff es ()
+  -> Eff es Unit
 renderToCilium serviceIndex entitiesIndex cidrIndex outputDir verbosity serviceDefinitions = do
   outputs <- forM serviceDefinitions $ \service -> do
     let rendered = Cilium.renderCilium (Cilium.toCiliumPolicy serviceIndex entitiesIndex cidrIndex service)

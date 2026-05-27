@@ -88,7 +88,7 @@ programFooter =
 
 errorCodesOption :: Parser (a -> a)
 errorCodesOption = do
-  let errorTypes :: [CLIErrorType] = [minBound .. maxBound]
+  let errorTypes :: List CLIErrorType = [minBound .. maxBound]
   let codes = fmap errorCodeFromType errorTypes
   let descriptions = List.map display errorTypes
   let tableElements =
@@ -117,5 +117,5 @@ outputFormat = eitherReader $
     "gexf" -> Right GexfFormat
     _ -> Left $ "Kitab only supports the following formats: " <> mconcat (List.intersperse ", " supportedFormats)
 
-supportedFormats :: [String]
-supportedFormats = T.unpack . display <$> ([minBound .. maxBound] :: [OutputFormat])
+supportedFormats :: List String
+supportedFormats = T.unpack . display <$> ([minBound .. maxBound] :: List OutputFormat)

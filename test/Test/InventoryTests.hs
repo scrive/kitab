@@ -37,7 +37,7 @@ test =
         testInventoryMergeFromFileSystem
     ]
 
-testInventoryMerge :: TestEff ()
+testInventoryMerge :: TestEff Unit
 testInventoryMerge = do
   let baseOpenSearchFQDN =
         InventoryVariable
@@ -81,7 +81,7 @@ testInventoryMerge = do
     expectedAggregatedInventory
     (mergeInventories (Selector (Just "aws")) (Selector Nothing) (Selector (Just "dev")) [i1, i2])
 
-testCollectingInventoriesFromFileSystem :: TestEff ()
+testCollectingInventoriesFromFileSystem :: TestEff Unit
 testCollectingInventoriesFromFileSystem = do
   inventories <-
     listInventoryFiles [osp|./test/fixtures/inventory|]
@@ -91,7 +91,7 @@ testCollectingInventoriesFromFileSystem = do
     (Set.fromList ["./test/fixtures/inventory/aws/staging/inventory.kdl", "./test/fixtures/inventory/aws/prod/inventory.kdl", "./test/fixtures/inventory/aws/dev/inventory.kdl", "./test/fixtures/inventory/aws/inventory.kdl"])
     (Set.fromList inventories)
 
-testResolvingVariableFromInventory :: HasCallStack => TestEff ()
+testResolvingVariableFromInventory :: HasCallStack => TestEff Unit
 testResolvingVariableFromInventory = do
   let opensearchFqdn =
         InventoryVariable
@@ -117,7 +117,7 @@ testResolvingVariableFromInventory = do
     (Just (Right "opensearch.aws.2423423f.internal.network"))
     resolvedService.serviceInfo.serviceFqdn
 
-testInventoryMergeFromFileSystem :: TestEff ()
+testInventoryMergeFromFileSystem :: TestEff Unit
 testInventoryMergeFromFileSystem = do
   inventories <- getInventories [osp|./test/fixtures/inventory|]
   let aggregatedInventory = mergeInventories (Selector (Just "aws")) (Selector Nothing) (Selector (Just "dev")) inventories

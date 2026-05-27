@@ -37,10 +37,10 @@ import Parser.V1.Types
 
 type TestEff a =
   Eff
-    '[ FileSystem
-     , Error (NonEmpty CLIError)
-     , IOE
-     ]
+    [ FileSystem
+    , Error (NonEmpty CLIError)
+    , IOE
+    ]
     a
 
 runTestEff :: HasCallStack => TestEff a -> IO a
@@ -60,7 +60,7 @@ runTestEff action =
               <> "\t"
               <> prettyCS
       liftIO $ HUnit.assertFailure ("Test failure.\n\t" <> message)
-    formatFunCall :: (String, SrcLoc) -> String
+    formatFunCall :: Tuple2 String SrcLoc -> String
     formatFunCall (fun, SrcLoc {..}) =
       fun
         ++ " at "
@@ -70,14 +70,14 @@ runTestEff action =
         ++ ":"
         ++ show srcLocStartCol
 
-testThat :: HasCallStack => String -> TestEff () -> TestTree
+testThat :: HasCallStack => String -> TestEff Unit -> TestTree
 testThat name assertion =
   Test.testCase name $ runTestEff assertion
 
-assertEqual :: (Eq a, HasCallStack, Show a) => String -> a -> a -> TestEff ()
+assertEqual :: (Eq a, HasCallStack, Show a) => String -> a -> a -> TestEff Unit
 assertEqual message expected actual = liftIO $ Test.assertEqual message expected actual
 
-assertBool :: HasCallStack => String -> Bool -> TestEff ()
+assertBool :: HasCallStack => String -> Bool -> TestEff Unit
 assertBool message assertion = liftIO $ Test.assertBool message assertion
 
 assertFailure :: HasCallStack => String -> TestEff a
@@ -87,7 +87,7 @@ assertJust :: HasCallStack => String -> Maybe a -> TestEff a
 assertJust _ (Just a) = pure a
 assertJust message Nothing = liftIO $ Test.assertFailure message
 
-assertNothing :: HasCallStack => String -> Maybe a -> TestEff ()
+assertNothing :: HasCallStack => String -> Maybe a -> TestEff Unit
 assertNothing message (Just _) = liftIO $ Test.assertFailure message
 assertNothing _ Nothing = pure ()
 
@@ -102,7 +102,7 @@ assertParseDocument filePath = do
     Left decodeError -> assertFailure (T.unpack $ renderDecodeError decodeError)
     Right result -> pure result
 
-assertParseError :: HasCallStack => FilePath -> [Text] -> TestEff ()
+assertParseError :: HasCallStack => FilePath -> List Text -> TestEff Unit
 assertParseError filePath expectedError = do
   content <- Filesystem.readFile filePath
   let prettyError = T.intercalate "\n" expectedError
@@ -122,5 +122,5 @@ assertLeft :: HasCallStack => String -> Either a b -> TestEff a
 assertLeft description (Right _b) = liftIO $ Test.assertFailure description
 assertLeft _ (Left a) = pure a
 
-diffCmd :: String -> String -> [String]
+diffCmd :: String -> String -> List String
 diffCmd ref new = ["diff", "-u", ref, new]

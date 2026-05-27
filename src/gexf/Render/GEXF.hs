@@ -43,13 +43,13 @@ renderGEXF graph serviceIndex =
     renderNode = \case
       ServiceRef serviceName ->
         let mServiceInfo = Map.lookup serviceName serviceIndex
-            systemBoundary = mServiceInfo ^? _Just % #serviceContext % _Just
-        in toXML $ serviceToGexfNode serviceName systemBoundary
+            hierarchy = mServiceInfo ^? _Just % #serviceContext % _Just
+        in toXML $ serviceToGexfNode serviceName hierarchy
       EntityRef entityRef -> toXML $ entityRefToNode entityRef
-      ToolRef (ServiceName contextName) toolName ->
+      ToolRef _ (ServiceName contextName) toolName ->
         toXML $ serviceToGexfNode (ServiceName toolName) (Just (ContextName contextName))
 
-    renderEdge :: (Word, (List ConnectionType, Reference, Reference)) -> XML
+    renderEdge :: Tuple2 Word (Tuple3 (List ConnectionType) Reference Reference) -> XML
     renderEdge (i, (e, u, v)) =
       toXML
         Edge

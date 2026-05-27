@@ -23,6 +23,46 @@
 , ToolDeclaration "pngquant"
 , ServiceDeclaration
     ( Service
+        { serviceName = "media-proxy"
+        , serviceInfo = ServiceInfo
+            { serviceFqdn = Nothing
+            , serviceContext = Just "k8s"
+            , servicePorts = fromList []
+            }
+        , serviceConnections =
+            [ Connection
+                { connectionWith = "opensearch"
+                , connectionType = HTTPS
+                , connectionPorts = fromList []
+                }
+            , Connection
+                { connectionWith = "otel-tracing"
+                , connectionType = HTTPS
+                , connectionPorts = fromList
+                    [ PortNode
+                        { port = 4317
+                        , protocol = "TCP"
+                        }
+                    ]
+                }
+            , Connection
+                { connectionWith = "mailgun"
+                , connectionType = SMTPS
+                , connectionPorts = fromList []
+                }
+            ]
+        , entityAccesses =
+            [ EntityAccess
+                { accessTarget = "host"
+                , accessPorts = fromList []
+                }
+            ]
+        , cidrConnections = []
+        , toolCalls = [ "pngquant" ]
+        }
+    )
+, ServiceDeclaration
+    ( Service
         { serviceName = "otel-tracing"
         , serviceInfo = ServiceInfo
             { serviceFqdn = Just
@@ -87,41 +127,6 @@
     )
 , ServiceDeclaration
     ( Service
-        { serviceName = "media-proxy"
-        , serviceInfo = ServiceInfo
-            { serviceFqdn = Nothing
-            , serviceContext = Just "k8s"
-            , servicePorts = fromList []
-            }
-        , serviceConnections =
-            [ Connection
-                { connectionWith = "opensearch"
-                , connectionType = HTTPS
-                , connectionPorts = fromList []
-                }
-            , Connection
-                { connectionWith = "otel-tracing"
-                , connectionType = HTTPS
-                , connectionPorts = fromList []
-                }
-            , Connection
-                { connectionWith = "mailgun"
-                , connectionType = SMTPS
-                , connectionPorts = fromList []
-                }
-            ]
-        , entityAccesses =
-            [ EntityAccess
-                { accessTarget = "host"
-                , accessPorts = fromList []
-                }
-            ]
-        , cidrConnections = []
-        , toolCalls = [ "pngquant" ]
-        }
-    )
-, ServiceDeclaration
-    ( Service
         { serviceName = "mailgun"
         , serviceInfo = ServiceInfo
             { serviceFqdn = Just
@@ -164,6 +169,11 @@
             }
         , serviceConnections =
             [ Connection
+                { connectionWith = "user-registry"
+                , connectionType = FunctionCall
+                , connectionPorts = fromList []
+                }
+            , Connection
                 { connectionWith = "s3"
                 , connectionType = HTTPS
                 , connectionPorts = fromList []
@@ -171,11 +181,6 @@
             , Connection
                 { connectionWith = "media-proxy"
                 , connectionType = HTTPS
-                , connectionPorts = fromList []
-                }
-            , Connection
-                { connectionWith = "user-registry"
-                , connectionType = FunctionCall
                 , connectionPorts = fromList []
                 }
             , Connection

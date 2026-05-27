@@ -120,7 +120,7 @@ connectionTypeDecoder = do
     _ -> KDL.fail $ "Found unknown connection type: " <> connTypeText <> ". Supported connection types are " <> mconcat (List.intersperse ", " supportedConnectionTypes)
 
 supportedConnectionTypes :: List Text
-supportedConnectionTypes = display <$> ([minBound .. maxBound] :: [ConnectionType])
+supportedConnectionTypes = display <$> ([minBound .. maxBound] :: (List ConnectionType))
 
 fqdnDecoder :: NodeListDecoder (Either Var Text)
 fqdnDecoder =

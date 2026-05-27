@@ -12,6 +12,6 @@ data CIDRSet (var :: Type) = CIDRSet
   deriving stock (Eq, Ord, Show)
 
 data CIDRSetItem (var :: Type)
-  = CIDR (Either var (Text, Text))
-  | Except (Either var (Text, Text))
+  = CIDR (Either var (Tuple2 Text Text))
+  | Except (Either var (Tuple2 Text Text))
   deriving stock (Eq, Ord, Show, Generic)

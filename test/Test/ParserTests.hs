@@ -58,7 +58,7 @@ test =
         ]
     ]
 
-testServiceDecoding :: TestEff ()
+testServiceDecoding :: TestEff Unit
 testServiceDecoding = do
   let expectedResult =
         emptyService
@@ -74,7 +74,7 @@ testServiceDecoding = do
     expectedResult
     result
 
-testUnkonwnVersionHandling :: TestEff ()
+testUnkonwnVersionHandling :: TestEff Unit
 testUnkonwnVersionHandling = do
   assertParseError
     "./test/fixtures/unknown-version.kdl"
@@ -82,7 +82,7 @@ testUnkonwnVersionHandling = do
     , "  This kitab can only parse configuration format version 1. Found 3.0"
     ]
 
-testInvalidVersionHandling :: TestEff ()
+testInvalidVersionHandling :: TestEff Unit
 testInvalidVersionHandling = do
   assertParseError
     "./test/fixtures/invalid-version.kdl"
@@ -115,7 +115,7 @@ testGraphToDot = runTestEff $ do
 
   pure . TL.encodeUtf8 $ TL.fromStrict (export (defaultStyle display) graph)
 
-testInventoryDecoding :: TestEff ()
+testInventoryDecoding :: TestEff Unit
 testInventoryDecoding = do
   let expectedResult =
         emptyInventory
@@ -132,7 +132,7 @@ testInventoryDecoding = do
     expectedResult
     result
 
-testParsingServiceWithVar :: TestEff ()
+testParsingServiceWithVar :: TestEff Unit
 testParsingServiceWithVar = do
   let expectedResult =
         emptyService

@@ -9,11 +9,11 @@ import Test.Render.C4Tests qualified as C4Tests
 import Test.Render.CiliumTests qualified as CiliumTests
 import Test.Render.GEXFTests qualified as GEXFTests
 
-main :: IO ()
+main :: IO Unit
 main =
   defaultMain $ testGroup "Kitab Tests" tests
 
-tests :: [TestTree]
+tests :: List TestTree
 tests =
   [ ModelTests.test
   , ParserTests.test

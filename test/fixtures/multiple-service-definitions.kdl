@@ -1,13 +1,39 @@
+// A context represents a system boundary, like a Kubernetes cluster.
+// When generating Cilium policies, services within the cluster
+// will be mentioned by their name ("my-app", "media-proxy")
+// whereas outside services will be referred to by their FQDN.
 context "k8s"
 
-tool "pngquant"
-
-entity "host"  {
+// Services that live inside the cluster are labelled with "k8s"
+// and declare their dependencies to other services.
+service "media-proxy" {
 	in-context "k8s"
-	port 123 "UDP"
-	port 30928 "TCP"	
+
+	call "pngquant"
+
+  
+  // This creates a relation between `media-proxy` and `opensearch`.
+	depends-on "opensearch" {
+    // And we label this edge with the connection method.
+		via "https"
+	}
+
+	depends-on "otel-tracing" {
+		via "https"
+    // Ports are optional, and there can be many of them.
+    // If no ports are specified by the caller, the callee's ports are used.
+    port 4317
+	} 
+
+	access "host"
+
+	depends-on "mailgun" {
+		via "smtps"
+	}
 }
 
+// Services that we run outside of the cluster are not labelled
+// with a context, and get a Fully Qualified Domain Name (FQDN) instead.
 service "otel-tracing" {
 	fqdn "tracing.internal.network"
 	port 4317
@@ -23,27 +49,6 @@ service "s3" {
 	fqdn "s3.amazonaws.com"
 	port 443
 }
-
-service "media-proxy" {
-	call "pngquant"
-
-	in-context "k8s"
-
-	depends-on "opensearch" {
-		via "https"
-	}
-
-	depends-on "otel-tracing" {
-		via "https"
-	} 
-
-	access "host"
-
-	depends-on "mailgun" {
-		via "smtps"
-	}
-}
-
 service "mailgun" {
 	fqdn "smtp.eu.mailgun.org"
 	port 465
@@ -56,16 +61,18 @@ service "user-registry" {
 service "main-app" {
 	in-context "k8s"
 
+	depends-on "user-registry" {
+  // This is a sub-system of the `main-app` service,
+  // which is accessed by function calls.
+		via "function-call"
+	}
+
 	depends-on "s3"  {
 		via "https"
 	}
 
 	depends-on "media-proxy" {
 		via "https"
-	}
-
-	depends-on "user-registry" {
-		via "function-call"
 	}
 
 	depends-on "otel-tracing" {
@@ -77,3 +84,12 @@ service "main-app" {
 		via "smtps"
 	}
 }
+
+tool "pngquant"
+
+entity "host"  {
+	in-context "k8s"
+	port 123 "UDP"
+	port 30928 "TCP"	
+}
+

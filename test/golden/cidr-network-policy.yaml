@@ -1,3 +1,4 @@
+---
 apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
 metadata:
@@ -25,9 +26,9 @@ spec:
     - toCIDRSets:
           cidr: 10.147.128.0/24 # MySQL
       toPorts:
-          - ports:
-              - port: 3306
-                protocol: TCP
+        - ports:
+          - port: 3306
+            protocol: TCP
     - toCIDRSets:
           cidr: 10.23.32.0/24 # Integrations
           cidr: 10.23.31.0/24 # Internal shenanigans
@@ -35,6 +36,6 @@ spec:
     - toCIDRSets:
           cidr: 10.42.42.0/24 # NTP
       toPorts:
-          - ports:
-              - port: 123
-                protocol: UDP
+        - ports:
+          - port: 123
+            protocol: UDP

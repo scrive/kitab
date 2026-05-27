@@ -1,5 +1,7 @@
 {-# LANGUAGE RecordWildCards #-}
 
+{- HLINT ignore "Redundant $" -}
+
 module Render.Cilium.Types where
 
 import Data.List qualified as List
@@ -23,10 +25,11 @@ data CiliumNetworkPolicy = CiliumNetworkPolicy
 instance Pretty CiliumNetworkPolicy where
   pretty CiliumNetworkPolicy {..} =
     vsep
-      [ keyValue "apiVersion" (pretty apiVersion)
+      [ "---"
+      , keyValue "apiVersion" (pretty apiVersion)
       , keyValue "kind" (pretty kind)
-      , keyBlock "metadata" (pretty metadata)
-      , keyBlock "spec" (pretty spec)
+      , keyBlock "metadata" (indent 2 $ pretty metadata)
+      , keyBlock "spec" (indent 2 $ pretty spec)
       ]
 
 newtype Metadata = Metadata
@@ -40,15 +43,15 @@ instance Pretty Metadata where
 -- | The Policy Specification
 data PolicySpec = PolicySpec
   { endpointSelector :: EndpointSelector
-  , egress :: [EgressRule]
+  , egress :: List EgressRule
   }
   deriving stock (Show, Eq, Ord)
 
 instance Pretty PolicySpec where
   pretty PolicySpec {..} =
     vsep
-      [ keyBlock "endpointSelector" (pretty endpointSelector)
-      , keyBlock "egress" (vsep $ List.map (("-" <+>) . align . pretty) egress)
+      [ keyBlock "endpointSelector" (indent 2 $ pretty endpointSelector)
+      , keyBlock "egress" (indent 2 $ vsep $ List.map (("-" <+>) . align . pretty) egress)
       ]
 
 -- | Selectors (used for finding the source Pods or destination Endpoints)
@@ -59,7 +62,7 @@ newtype EndpointSelector = EndpointSelector
 
 instance Pretty EndpointSelector where
   pretty (EndpointSelector labels) =
-    keyBlock "matchLabels" (vsep $ List.map renderLabel (Map.toList labels))
+    keyBlock "matchLabels" (indent 2 $ vsep $ List.map renderLabel (Map.toList labels))
     where
       renderLabel (k, v) = keyValue k (dquotes $ pretty v)
 
@@ -89,57 +92,47 @@ data EgressRuleItem
 
 instance Pretty EgressRuleItem where
   pretty = \case
-    (ToFQDN fqdn ports) ->
+    (ToFQDN fqdn portRule) ->
       keyBlock "toFQDNs" $
-        vsep
-          [ "-" <+> align (pretty fqdn)
-          , keyBlock "toPorts" (indent 2 $ pretty ports)
-          ]
-    (ToEndpoint ep) -> keyBlock "toEndpoints" $ "-" <+> align (pretty ep)
+        indent 2 $
+          vsep
+            [ "-" <+> align (pretty fqdn)
+            , indent 2 $
+                keyBlock
+                  "toPorts"
+                  (indent 2 $ prettyPortRule portRule)
+            ]
+    (ToEndpoint ep) -> keyBlock "toEndpoints" $ indent 2 $ "-" <+> align (pretty ep)
     (ToPort portRules dnsMatch) ->
-      keyBlock "toPorts" . nest 2 $
-        vsep
-          [ pretty portRules
-          , keyBlock "rules" . keyBlock "dns" $ "-" <+> pretty dnsMatch
-          ]
+      keyBlock "toPorts" $
+        indent 2 $
+          vsep
+            [ prettyPortRule portRules
+            , indent 2 $ keyBlock "rules" $ indent 2 $ keyBlock "dns" $ indent 2 $ "-" <+> pretty dnsMatch
+            ]
     (ToCIDRSet (CIDRSet _setNname items ports)) ->
       vsep
-        [ (keyBlock "toCIDRSets" . indent 2) . vsep $
-            List.map
-              ( \case
-                  CIDR (Right (cidr, name)) ->
-                    keyValue "cidr" (pretty cidr <> " # " <> pretty name)
-                  Except (Right (cidr, reason)) ->
-                    keyValue "except" (pretty cidr <> " # " <> pretty reason)
-              )
-              items
+        [ keyBlock
+            "toCIDRSets"
+            ( indent 2 $
+                vsep
+                  ( List.map
+                      ( \case
+                          CIDR (Right (cidr, name)) ->
+                            indent 2 $
+                              keyValue "cidr" (pretty cidr <> " # " <> pretty name)
+                          Except (Right (cidr, reason)) ->
+                            indent 2 $
+                              keyValue "except" (pretty cidr <> " # " <> pretty reason)
+                      )
+                      items
+                  )
+            )
         , if List.null ports
             then mempty
             else
-              keyBlock "toPorts" . indent 2 $
-                keyBlock
-                  "- ports"
-                  ( indent 2 $
-                      vsep
-                        ( List.map
-                            ( \p ->
-                                vsep
-                                  [ keyValue "- port" (pretty p.port)
-                                  , keyValue "  protocol" (pretty p.protocol)
-                                  ]
-                            )
-                            ports
-                        )
-                  )
-        ]
-    ToEntity name (PortRule ports) ->
-      keyBlock "toEntities" $
-        vsep
-          [ "-" <+> pretty name
-          , if List.null ports
-              then mempty
-              else
-                keyBlock "toPorts" . indent 2 $
+              keyBlock "toPorts" $
+                indent 2 $
                   keyBlock
                     "- ports"
                     ( indent 2 $
@@ -154,6 +147,30 @@ instance Pretty EgressRuleItem where
                               ports
                           )
                     )
+        ]
+    ToEntity name (PortRule ports) ->
+      keyBlock "toEntities" $
+        vsep
+          [ indent 2 $ "-" <+> pretty name
+          , if List.null ports
+              then mempty
+              else
+                keyBlock "toPorts" $
+                  indent 2 $
+                    keyBlock
+                      "- ports"
+                      ( indent 4 $
+                          vsep
+                            ( List.map
+                                ( \p ->
+                                    vsep
+                                      [ keyValue "- port" (pretty p.port)
+                                      , keyValue "  protocol" (pretty p.protocol)
+                                      ]
+                                )
+                                ports
+                            )
+                      )
           ]
 
 -- | Represents { matchName: "example.com" }
@@ -175,13 +192,13 @@ instance Pretty DNSMatch where
 
 -- | Grouping of ports
 newtype PortRule = PortRule
-  { ports :: [PortProtocol]
+  { ports :: List PortProtocol
   }
   deriving stock (Show, Eq, Ord)
 
-instance Pretty PortRule where
-  pretty (PortRule ports) =
-    keyBlock "- ports" (vsep $ List.map (("-" <+>) . nest 2 . pretty) ports)
+prettyPortRule :: PortRule -> Doc ann
+prettyPortRule (PortRule ports) =
+  keyBlock "- ports" (indent 4 $ vsep $ List.map prettyPortProtocol ports)
 
 -- | Specific Port/Protocol pair
 data PortProtocol = PortProtocol
@@ -190,12 +207,12 @@ data PortProtocol = PortProtocol
   }
   deriving stock (Show, Eq, Ord)
 
-instance Pretty PortProtocol where
-  pretty (PortProtocol p proto) =
-    vsep
-      [ keyValue "port" (dquotes $ pretty p)
-      , keyValue "protocol" (pretty proto)
-      ]
+prettyPortProtocol :: PortProtocol -> Doc ann
+prettyPortProtocol (PortProtocol p proto) =
+  vsep
+    [ keyValue "- port" (dquotes $ pretty p)
+    , indent 2 $ keyValue "protocol" (pretty proto)
+    ]
 
 -- | Helper for "key: value"
 keyValue :: Text -> Doc ann -> Doc ann
@@ -203,4 +220,4 @@ keyValue k v = pretty k <> ":" <+> v
 
 -- | Helper for "key:" followed by a nested block
 keyBlock :: Text -> Doc ann -> Doc ann
-keyBlock k v = pretty k <> ":" <> hardline <> indent 2 v
+keyBlock k v = pretty k <> ":" <> hardline <> v
