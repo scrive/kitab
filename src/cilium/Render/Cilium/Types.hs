@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+
 {- HLINT ignore "Redundant $" -}
 
 module Render.Cilium.Types where
@@ -117,10 +118,12 @@ instance Pretty EgressRuleItem where
                 vsep
                   ( List.map
                       ( \case
-                          CIDR (Right (cidr, name)) ->  indent 2 $
-                            keyValue "cidr" (pretty cidr <> " # " <> pretty name)
-                          Except (Right (cidr, reason)) -> indent 2 $
-                            keyValue "except" (pretty cidr <> " # " <> pretty reason)
+                          CIDR (Right (cidr, name)) ->
+                            indent 2 $
+                              keyValue "cidr" (pretty cidr <> " # " <> pretty name)
+                          Except (Right (cidr, reason)) ->
+                            indent 2 $
+                              keyValue "except" (pretty cidr <> " # " <> pretty reason)
                       )
                       items
                   )
@@ -128,33 +131,11 @@ instance Pretty EgressRuleItem where
         , if List.null ports
             then mempty
             else
-              keyBlock "toPorts" $ indent 2 $
-                keyBlock
-                  "- ports"
-                  ( indent 2 $
-                      vsep
-                        ( List.map
-                            ( \p ->
-                                vsep
-                                  [ keyValue "- port" (pretty p.port)
-                                  , keyValue "  protocol" (pretty p.protocol)
-                                  ]
-                            )
-                            ports
-                        )
-                  )
-        ]
-    ToEntity name (PortRule ports) ->
-      keyBlock "toEntities" $
-        vsep
-          [ indent 2 $ "-" <+> pretty name
-          , if List.null ports
-              then mempty
-              else
-                keyBlock "toPorts" $ indent 2 $
+              keyBlock "toPorts" $
+                indent 2 $
                   keyBlock
                     "- ports"
-                    ( indent 4 $
+                    ( indent 2 $
                         vsep
                           ( List.map
                               ( \p ->
@@ -166,6 +147,30 @@ instance Pretty EgressRuleItem where
                               ports
                           )
                     )
+        ]
+    ToEntity name (PortRule ports) ->
+      keyBlock "toEntities" $
+        vsep
+          [ indent 2 $ "-" <+> pretty name
+          , if List.null ports
+              then mempty
+              else
+                keyBlock "toPorts" $
+                  indent 2 $
+                    keyBlock
+                      "- ports"
+                      ( indent 4 $
+                          vsep
+                            ( List.map
+                                ( \p ->
+                                    vsep
+                                      [ keyValue "- port" (pretty p.port)
+                                      , keyValue "  protocol" (pretty p.protocol)
+                                      ]
+                                )
+                                ports
+                            )
+                      )
           ]
 
 -- | Represents { matchName: "example.com" }

@@ -82,6 +82,7 @@ service "s3" {
 	fqdn "s3.amazonaws.com"
 	port 443
 }
+
 service "mailgun" {
 	fqdn "smtp.eu.mailgun.org"
 	port 465
@@ -176,6 +177,7 @@ Which gives us this schema:
 And the following Cilium Network Policy for the `media-proxy` service (amongst others)
 
 ```yaml
+---
 apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
 metadata:
@@ -198,28 +200,29 @@ spec:
               - matchPattern: "*"
     - toFQDNs:
         - matchName: "opensearch.internal.network"
-        toPorts:
-            - ports:
-              - port: "443"
-                protocol: TCP
-    - toFQDNs:
-        - matchName: "tracing.internal.network"
-        toPorts:
-            - ports:
-              - port: "4317"
-                protocol: TCP
-    - toFQDNs:
-        - matchName: "smtp.eu.mailgun.org"
-        toPorts:
-            - ports:
-              - port: "465"
-                protocol: TCP
-    - toEntities:
-        - host
           toPorts:
             - ports:
-                - port: 123
-                  protocol: UDP
-                - port: 30928
+                - port: "443"
                   protocol: TCP
+    - toFQDNs:
+        - matchName: "tracing.internal.network"
+          toPorts:
+            - ports:
+                - port: "4317"
+                  protocol: TCP
+    - toFQDNs:
+        - matchName: "smtp.eu.mailgun.org"
+          toPorts:
+            - ports:
+                - port: "465"
+                  protocol: TCP
+    - toEntities:
+        - host
+      toPorts:
+        - ports:
+            - port: 123
+              protocol: UDP
+            - port: 30928
+              protocol: TCP
+
 ```

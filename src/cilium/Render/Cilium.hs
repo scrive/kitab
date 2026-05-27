@@ -21,11 +21,10 @@ import Render.Cilium.Types
 renderCilium :: CiliumNetworkPolicy -> Text
 renderCilium policy =
   policy
-  & pretty
-  & layoutPretty defaultLayoutOptions
-  & renderStrict
-  & (\t -> t <> "\n")
-
+    & pretty
+    & layoutPretty defaultLayoutOptions
+    & renderStrict
+    & (\t -> t <> "\n")
 
 -- | Convert a Kitab Service to a Cilium Policy
 toCiliumPolicy
