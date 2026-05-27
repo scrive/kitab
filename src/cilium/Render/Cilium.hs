@@ -19,7 +19,13 @@ import Core.Model.ServiceName
 import Render.Cilium.Types
 
 renderCilium :: CiliumNetworkPolicy -> Text
-renderCilium = renderStrict . layoutPretty defaultLayoutOptions . pretty
+renderCilium policy =
+  policy
+  & pretty
+  & layoutPretty defaultLayoutOptions
+  & renderStrict
+  & (\t -> t <> "\n")
+
 
 -- | Convert a Kitab Service to a Cilium Policy
 toCiliumPolicy
