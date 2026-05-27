@@ -93,7 +93,7 @@ instance Pretty EgressRuleItem where
       keyBlock "toFQDNs" $
         vsep
           [ "-" <+> align (pretty fqdn)
-          , keyBlock "toPorts" (indent 2 $ pretty ports)
+          , keyBlock "toPorts4" (indent 2 $ pretty ports)
           ]
     (ToEndpoint ep) -> keyBlock "toEndpoints" $ "-" <+> align (pretty ep)
     (ToPort portRules dnsMatch) ->
@@ -116,7 +116,7 @@ instance Pretty EgressRuleItem where
         , if List.null ports
             then mempty
             else
-              keyBlock "toPorts" . indent 2 $
+              keyBlock "toPorts2" . indent 2 $
                 keyBlock
                   "- ports"
                   ( indent 2 $
@@ -139,7 +139,7 @@ instance Pretty EgressRuleItem where
           , if List.null ports
               then mempty
               else
-                keyBlock "toPorts" . indent 2 $
+                keyBlock "toPorts3" . indent 2 $
                   keyBlock
                     "- ports"
                     ( indent 2 $
@@ -181,7 +181,7 @@ newtype PortRule = PortRule
 
 instance Pretty PortRule where
   pretty (PortRule ports) =
-    keyBlock "- ports" (vsep $ List.map (("-" <+>) . nest 2 . pretty) ports)
+    keyBlock "- ports" (vsep $ List.map (("-" <+>) . pretty) ports)
 
 -- | Specific Port/Protocol pair
 data PortProtocol = PortProtocol
@@ -194,7 +194,7 @@ instance Pretty PortProtocol where
   pretty (PortProtocol p proto) =
     vsep
       [ keyValue "port" (dquotes $ pretty p)
-      , keyValue "protocol" (pretty proto)
+      , keyValue "  protocol" (pretty proto)
       ]
 
 -- | Helper for "key: value"
