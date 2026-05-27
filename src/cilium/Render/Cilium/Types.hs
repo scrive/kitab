@@ -24,7 +24,8 @@ data CiliumNetworkPolicy = CiliumNetworkPolicy
 instance Pretty CiliumNetworkPolicy where
   pretty CiliumNetworkPolicy {..} =
     vsep
-      [ keyValue "apiVersion" (pretty apiVersion)
+      [ "---"
+      , keyValue "apiVersion" (pretty apiVersion)
       , keyValue "kind" (pretty kind)
       , keyBlock "metadata" (indent 2 $ pretty metadata)
       , keyBlock "spec" (indent 2 $ pretty spec)
