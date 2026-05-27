@@ -15,7 +15,7 @@ import Core.Validation
 import Driver.Variable
 import Parser.V1.Types
 import Render.C4 qualified as C4
-import Render.C4.C4Service.Types
+import Render.C4.C4Container.Types
 import Test.Utils
 
 test :: TestTree
@@ -39,13 +39,6 @@ renderServices = runTestEff $ do
               _ -> Nothing
           )
           declarations
-  let contexts =
-        mapMaybe
-          ( \case
-              ContextDeclaration c -> Just c
-              _ -> Nothing
-          )
-          declarations
   let entities =
         mapMaybe
           ( \case
@@ -61,6 +54,6 @@ renderServices = runTestEff $ do
   let graphEdges =
         graph
           & Graph.edgeList
-          & fmap (\(es, a, b) -> (es, toC4Service serviceIndex a, toC4Service serviceIndex b))
+          & fmap (\(es, a, b) -> (es, toC4Container serviceIndex a, toC4Container serviceIndex b))
   let adjacencyMap = AM.edges graphEdges
-  (pure . TL.encodeUtf8) . T.fromStrict $ C4.renderC4 contexts adjacencyMap
+  (pure . TL.encodeUtf8) . T.fromStrict $ C4.renderC4 adjacencyMap

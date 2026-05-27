@@ -1,9 +1,10 @@
 {-# LANGUAGE OverloadedLabels #-}
 
-module Render.C4.C4Service.Types
-  ( C4Service (..)
-  , mkC4ServiceAlias
-  , toC4Service
+module Render.C4.C4Container.Types
+  ( C4Container (..)
+  , ServiceTree (..)
+  , mkC4ContainerAlias
+  , toC4Container
   , buildServiceTree
   ) where
 
@@ -22,41 +23,41 @@ import Core.Model.Reference
 import Core.Model.Service
 import Core.Model.ServiceName
 
-newtype C4ServiceAlias = C4ServiceAlias Text
+newtype C4ContainerAlias = C4ContainerAlias Text
   deriving newtype (Eq, Show, Ord, Pretty)
 
-mkC4ServiceAlias :: Text -> C4ServiceAlias
-mkC4ServiceAlias input =
+mkC4ContainerAlias :: Text -> C4ContainerAlias
+mkC4ContainerAlias input =
   input
     & T.replace "-" "_"
     & T.replace " " "_"
-    & C4ServiceAlias
+    & C4ContainerAlias
 
-data C4Service = C4Service
-  { alias :: C4ServiceAlias
+data C4Container = C4Container
+  { alias :: C4ContainerAlias
   , name :: Text
   , hierarchy :: List ContextName
   }
   deriving stock (Eq, Show, Ord)
 
-toC4Service :: Map ServiceName (ServiceInfo var) -> Reference -> C4Service
-toC4Service serviceIndex = \case
+toC4Container :: Map ServiceName (ServiceInfo var) -> Reference -> C4Container
+toC4Container serviceIndex = \case
   ServiceRef (ServiceName name) ->
-    let alias = mkC4ServiceAlias name
+    let alias = mkC4ContainerAlias name
         mServiceInfo = Map.lookup (ServiceName name) serviceIndex
         hierarchy = maybeToList $ mServiceInfo ^? _Just % #serviceContext % _Just
-    in C4Service {alias, name, hierarchy}
+    in C4Container {alias, name, hierarchy}
   EntityRef (EntityName name) ->
-    let alias = mkC4ServiceAlias name
+    let alias = mkC4ContainerAlias name
         hierarchy = []
-    in C4Service {alias, name, hierarchy}
+    in C4Container {alias, name, hierarchy}
   ToolRef mContext (ServiceName serviceName) name ->
-    let alias = mkC4ServiceAlias name
+    let alias = mkC4ContainerAlias name
         hierarchy = maybeToList mContext <> [ContextName serviceName]
-    in C4Service {alias, name, hierarchy}
+    in C4Container {alias, name, hierarchy}
 
 data ServiceTree = ServiceTree
-  { leaves :: List C4Service
+  { leaves :: List C4Container
   , subTrees :: Map ContextName ServiceTree
   }
   deriving stock (Eq, Show, Ord)
@@ -70,14 +71,14 @@ emptyServiceTree =
 
 -- |  Build a service tree based on a list of services.
 --  This function sorts the services internally.
-buildServiceTree :: List C4Service -> ServiceTree
+buildServiceTree :: List C4Container -> ServiceTree
 buildServiceTree services =
   services
     & List.sortOn (.hierarchy)
     & \sortedServices ->
       runPureEff $ State.evalState sortedServices (buildNode [] emptyServiceTree)
 
--- | We want to iterate over the list of 'C4Service' with the following decision tree:
+-- | We want to iterate over the list of 'C4Container' with the following decision tree:
 --   * If the list has a service in it, we process it:
 --     * If the service's hierarchy is the same as the current @path@ we add it
 --        to the current node's leaves
@@ -86,7 +87,7 @@ buildServiceTree services =
 --   * If the list is empty, or the service's hierarchy is not in the path,
 --      then we return the accumulated 'ServiceTree', thus ending the recursion.
 buildNode
-  :: State (List C4Service) :> es
+  :: State (List C4Container) :> es
   => List ContextName
   -> ServiceTree
   -> Eff es ServiceTree
@@ -103,8 +104,8 @@ buildNode path st =
           buildNode path st {subTrees = subTrees'}
       | otherwise -> pure st
 
-sPeek :: State (List C4Service) :> es => Eff es (Maybe C4Service)
+sPeek :: State (List C4Container) :> es => Eff es (Maybe C4Container)
 sPeek = State.gets listToMaybe
 
-sTail :: State (List C4Service) :> es => Eff es Unit
-sTail = State.modify @(List C4Service) (List.drop 1)
+sTail :: State (List C4Container) :> es => Eff es Unit
+sTail = State.modify @(List C4Container) (List.drop 1)

@@ -94,13 +94,6 @@ runGenerate options = do
         case result of
           Right a -> pure a
           Left err -> Error.throwError . NE.singleton $ kdlParseError inputPath err
-      let contexts =
-            mapMaybe
-              ( \case
-                  ContextDeclaration c -> Just c
-                  _ -> Nothing
-              )
-              declarations
       let cloudSelector = Selector options.cloud
       let regionSelector = Selector options.region
       let envSelector = Selector options.environment
@@ -147,7 +140,6 @@ runGenerate options = do
             PumlFormat ->
               renderToPuml
                 serviceIndex
-                contexts
                 options.outputDir
                 verbosity
                 graph

@@ -6,6 +6,8 @@ with-compiler: ghc-9.12.2
 
 test-show-details: direct
 
+optimization: False
+
 documentation: False
 
 profiling: True

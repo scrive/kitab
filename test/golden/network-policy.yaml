@@ -30,8 +30,6 @@ spec:
             - ports:
               - port: "4317"
                 protocol: TCP
-              - port: "4318"
-                protocol: TCP
     - toFQDNs:
         - matchName: "smtp.eu.mailgun.org"
         toPorts:
