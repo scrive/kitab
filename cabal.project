@@ -14,7 +14,7 @@ profiling: True
 
 package *
   profiling-detail: none
-  ghc-options: -fprof-auto -fprof-auto-calls -haddock -finfo-table-map
+  ghc-options: -fprof-auto -fprof-auto-calls -haddock -finfo-table-map -fwrite-ide-info
 
 tests: True
 
