@@ -20,10 +20,8 @@ data ConnectionType
   | Postgres
   | Domain
   | ExternalTool
+  | Browser
   deriving stock (Eq, Show, Ord, Enum, Bounded)
-
-instance Pretty ConnectionType where
-  pretty = pretty . display
 
 instance Display ConnectionType where
   displayBuilder = \case
@@ -34,6 +32,10 @@ instance Display ConnectionType where
     Postgres -> "postgres"
     Domain -> "domain"
     ExternalTool -> "external-tool"
+    Browser -> "browser"
+
+instance Pretty ConnectionType where
+  pretty = pretty . display
 
 data Service (var :: Type) = Service
   { serviceName :: ServiceName

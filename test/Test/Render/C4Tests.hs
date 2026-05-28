@@ -27,7 +27,41 @@ test =
         diffCmd
         "test/golden/service.puml"
         renderServices
+    , goldenVsStringDiff
+        "Browser to backend connection"
+        diffCmd
+        "test/golden/web-app-to-backend.puml"
+        renderWebAppToBackend
     ]
+
+renderWebAppToBackend :: IO LazyByteString
+renderWebAppToBackend = runTestEff $ do
+  declarations <- assertParseDocument "test/fixtures/web-app-to-backend.kdl"
+  let serviceDefinitions' =
+        mapMaybe
+          ( \case
+              ServiceDeclaration s -> Just s
+              _ -> Nothing
+          )
+          declarations
+  let entities =
+        mapMaybe
+          ( \case
+              EntityDeclaration c -> Just c
+              _ -> Nothing
+          )
+          declarations
+  let aggregatedInventory = AggregatedInventory mempty mempty
+  serviceDefinitions <- traverse (resolveServiceVars aggregatedInventory) serviceDefinitions'
+  let graph = buildGraph serviceDefinitions entities
+  let serviceIndex = buildServiceIndex serviceDefinitions
+  void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)
+  let graphEdges =
+        graph
+          & Graph.edgeList
+          & fmap (\(es, a, b) -> (es, toC4Container serviceIndex a, toC4Container serviceIndex b))
+  let adjacencyMap = AM.edges graphEdges
+  (pure . TL.encodeUtf8) . T.fromStrict $ C4.renderC4 adjacencyMap
 
 renderServices :: IO LazyByteString
 renderServices = runTestEff $ do
