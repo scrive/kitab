@@ -13,7 +13,7 @@ Container_Boundary(k8s, k8s) {
   Container(user_registry, "user-registry")
   Container(media_proxy, "media-proxy")
   Container(main_app, "main-app")
-  Container_Boundary(media-proxy, media-proxy) {
+  Container_Boundary(media_proxy, media-proxy) {
     Container(pngquant, "pngquant")
   }
 }
