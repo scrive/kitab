@@ -117,6 +117,7 @@ connectionTypeDecoder = do
     "postgres" -> pure Postgres
     "domain" -> pure Domain
     "external-tool" -> pure ExternalTool
+    "browser" -> pure Browser
     _ -> KDL.fail $ "Found unknown connection type: " <> connTypeText <> ". Supported connection types are " <> mconcat (List.intersperse ", " supportedConnectionTypes)
 
 supportedConnectionTypes :: List Text

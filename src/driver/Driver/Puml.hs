@@ -17,7 +17,6 @@ import System.OsPath qualified as OsPath
 
 import Core.Model.Reference
 import Core.Model.Service
-import Core.Model.ServiceContext
 import Core.Model.ServiceName
 import Driver.Verbosity
 import Render.C4 qualified as C4

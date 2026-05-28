@@ -1,0 +1,7 @@
+service "backend"
+
+service "web-app" {
+  depends-on "backend" {
+    via "browser"
+  }
+}
