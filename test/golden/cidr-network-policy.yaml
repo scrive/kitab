@@ -8,6 +8,26 @@ spec:
     matchLabels:
       app: "my-app"
   egress:
+    - toCIDRSet:
+        - cidr: "0.0.0.0/0" # Internet
+          except:
+            - "10.0.1.0/8" # Internal network
+            - "10.0.2.0/8" # Internal network
+    - toCIDRSet:
+        - cidr: "10.147.128.0/24" # MySQL
+      toPorts:
+        - ports:
+            - port: "3306"
+              protocol: TCP
+    - toCIDRSet:
+        - cidr: "10.23.32.0/24" # Integrations
+        - cidr: "10.23.31.0/24" # Internal shenanigans
+    - toCIDRSet:
+        - cidr: "10.42.42.0/24" # NTP
+      toPorts:
+        - ports:
+            - port: "123"
+              protocol: UDP
     - toEndpoints:
         - matchLabels:
             io.kubernetes.pod.namespace: "kube-system"
@@ -19,23 +39,3 @@ spec:
           rules:
             dns:
               - matchPattern: "*"
-    - toCIDRSets:
-          cidr: 0.0.0.0/0 # Internet
-          except: 10.0.0.0/8 # Internal network
-
-    - toCIDRSets:
-          cidr: 10.147.128.0/24 # MySQL
-      toPorts:
-        - ports:
-          - port: 3306
-            protocol: TCP
-    - toCIDRSets:
-          cidr: 10.23.32.0/24 # Integrations
-          cidr: 10.23.31.0/24 # Internal shenanigans
-
-    - toCIDRSets:
-          cidr: 10.42.42.0/24 # NTP
-      toPorts:
-        - ports:
-          - port: 123
-            protocol: UDP

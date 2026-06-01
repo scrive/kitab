@@ -21,27 +21,27 @@ spec:
               - matchPattern: "*"
     - toFQDNs:
         - matchName: "opensearch.internal.network"
-          toPorts:
-            - ports:
-                - port: "443"
-                  protocol: TCP
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
     - toFQDNs:
         - matchName: "tracing.internal.network"
-          toPorts:
-            - ports:
-                - port: "4317"
-                  protocol: TCP
+      toPorts:
+        - ports:
+            - port: "4317"
+              protocol: TCP
     - toFQDNs:
         - matchName: "smtp.eu.mailgun.org"
-          toPorts:
-            - ports:
-                - port: "465"
-                  protocol: TCP
+      toPorts:
+        - ports:
+            - port: "465"
+              protocol: TCP
     - toEntities:
         - host
       toPorts:
         - ports:
-            - port: 123
+            - port: "123"
               protocol: UDP
-            - port: 30928
+            - port: "30928"
               protocol: TCP

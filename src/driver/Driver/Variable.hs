@@ -47,23 +47,27 @@ resolveCIDRVars
   -> CIDRSet Var
   -> Eff es (CIDRSet Void)
 resolveCIDRVars inventory cidrSet = do
-  resolvedCIDRSetItems <- traverse (resolveCIDRItemVar inventory) cidrSet.items
-  pure $ cidrSet {items = resolvedCIDRSetItems}
+  resolvedRules <- traverse (resolveCidrRuleNodeVars inventory) cidrSet.cidrRules
+  pure $ cidrSet {cidrRules = resolvedRules}
 
-resolveCIDRItemVar
+resolveCidrRuleNodeVars
   :: Error (NonEmpty CLIError) :> es
   => AggregatedInventory
-  -> CIDRSetItem Var
-  -> Eff es (CIDRSetItem Void)
-resolveCIDRItemVar inventory item =
-  case item of
-    CIDR (Right value) -> pure $ CIDR (Right value)
-    Except (Right value) -> pure $ Except (Right value)
-    CIDR (Left (Var variable)) ->
-      case Inventory.lookup inventory variable of
-        Just result -> pure (CIDR (Right (result.value, fromMaybe "" result.description)))
-        Nothing -> Error.throwError (NE.singleton $ variableNotFound variable)
-    Except (Left (Var variable)) ->
-      case Inventory.lookup inventory variable of
-        Just result -> pure (CIDR (Right (result.value, fromMaybe "" result.description)))
-        Nothing -> Error.throwError (NE.singleton $ variableNotFound variable)
+  -> CidrRuleNode Var
+  -> Eff es (CidrRuleNode Void)
+resolveCidrRuleNodeVars inventory ruleNode = do
+  resolvedCidr <- resolveCIDRVar inventory ruleNode.cidr
+  resolvedExcepts <- traverse (resolveCIDRVar inventory) ruleNode.excepts
+  pure $ ruleNode {cidr = resolvedCidr, excepts = resolvedExcepts}
+
+resolveCIDRVar
+  :: Error (NonEmpty CLIError) :> es
+  => AggregatedInventory
+  -> CidrEntry Var
+  -> Eff es (CidrEntry Void)
+resolveCIDRVar inventory cidrVar = case cidrVar of
+  Right value -> pure $ Right value
+  Left (Var variable) ->
+    case Inventory.lookup inventory variable of
+      Just result -> pure (Right (result.value, result.description))
+      Nothing -> Error.throwError (NE.singleton $ variableNotFound variable)

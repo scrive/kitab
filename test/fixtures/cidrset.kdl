@@ -1,20 +1,31 @@
 cidr-set "network" {
-	cidr "0.0.0.0/0" "Internet"
-	except "10.0.0.0/8" "Internal network"
+	cidr-rule {
+		cidr "0.0.0.0/0" "Internet"
+		except "10.0.1.0/8" "Internal network"
+		except "10.0.2.0/8" "Internal network"
+	}
 }
 
 cidr-set "mysql" {
-    cidr (var)mysql-cluster-cidr
+	cidr-rule {
+	    cidr (var)mysql-cluster-cidr
+	}
 	port 3306
 }
 
 cidr-set "integrations" {
-	cidr "10.23.32.0/24" "Integrations"
-	cidr "10.23.31.0/24" "Internal shenanigans"
+	cidr-rule {
+		cidr "10.23.32.0/24" "Integrations"
+	}
+	cidr-rule {
+		cidr "10.23.31.0/24" "Internal shenanigans"
+	}
 }
 
 cidr-set "ntp" {
-	cidr "10.42.42.0/24" "NTP"
+	cidr-rule {
+		cidr "10.42.42.0/24" "NTP"
+	}
 	port 123 "UDP"
 }
 

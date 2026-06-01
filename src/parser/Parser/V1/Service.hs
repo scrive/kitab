@@ -10,7 +10,6 @@ import Data.Set qualified as Set
 import KDL
 
 import Core.Model.ContextName
-import Core.Model.InventoryVariable (VariableName (..))
 import Core.Model.PortNode
 import Core.Model.Service
 import Core.Variable
@@ -18,6 +17,7 @@ import Parser.V1.EntityName
 import Parser.V1.PortNode
 import Parser.V1.ServiceContext
 import Parser.V1.ServiceName
+import Parser.V1.Var
 
 data ServiceMetadata (var :: Type)
   = FQDNNode (Either var Text)
@@ -124,18 +124,7 @@ supportedConnectionTypes :: List Text
 supportedConnectionTypes = display <$> ([minBound .. maxBound] :: (List ConnectionType))
 
 fqdnDecoder :: NodeListDecoder (Either Var Text)
-fqdnDecoder =
-  KDL.nodeWith "fqdn" $ do
-    KDL.argWith' ["text", "var"] . KDL.withDecoder KDL.any $
-      ( \val -> do
-          s <- case val.data_ of
-            KDL.String s -> pure s
-            _ -> KDL.failM "Expected string"
-          case (.identifier.value) <$> val.ann of
-            Just "var" -> pure . Left $ Var (VariableName s)
-            -- Nothing or Just "text"
-            _ -> pure . Right $ s
-      )
+fqdnDecoder = KDL.nodeWith "fqdn" varOrTextArg
 
 toolCallDecoder :: NodeListDecoder Text
 toolCallDecoder = KDL.nodeWith "call" $ do

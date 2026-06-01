@@ -1,5 +1,9 @@
 -- |  This is where the logic for gathering inventories
-module Driver.Inventory where
+module Driver.Inventory
+  ( getInventories
+  , listInventoryFiles
+  , parseInventories
+  ) where
 
 import Data.List.NonEmpty (NonEmpty)
 import Data.List.NonEmpty qualified as NE
