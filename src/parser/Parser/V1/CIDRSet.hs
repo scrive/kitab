@@ -1,58 +1,46 @@
 module Parser.V1.CIDRSet where
 
+import Data.List.NonEmpty (NonEmpty ((:|)))
 import KDL
 
 import Core.Model.CIDRSet
-import Core.Model.InventoryVariable
+import Core.Model.PortNode
 import Core.Variable
 import Parser.V1.PortNode
+import Parser.V1.Var
 
 cidrSetDecoder :: NodeListDecoder (CIDRSet Var)
 cidrSetDecoder = KDL.nodeWith "cidr-set" $ do
   setName <- KDL.argWith KDL.string
-  ports <- KDL.children $ KDL.many portDecoder
-  items <-
-    KDL.children $
-      KDL.many
-        ( cidrDecoder
-            <|> exceptionDecoder
-        )
-  pure $ CIDRSet setName items ports
+  -- Children of a cidr-set node, in any order. At least one cidr-rule is
+  -- required so that the rendered policy always has a destination.
+  (cidrRules, ports) <- KDL.children $ do
+    firstRule <- cidrRuleDecoder
+    mixed <- KDL.many ((Left <$> cidrRuleDecoder) <|> (Right <$> portDecoder))
+    let (moreRules, ports) = partitionEithers mixed
+    pure (firstRule :| moreRules, ports)
+  pure $ CIDRSet {setName, cidrRules, ports}
 
-cidrDecoder :: NodeListDecoder (CIDRSetItem Var)
-cidrDecoder = KDL.nodeWith "cidr" $ do
-  cidrOrVar <-
-    KDL.argWith' ["text", "var"] . KDL.withDecoder KDL.any $
-      ( \val -> do
-          s <- case val.data_ of
-            KDL.String s -> pure s
-            _ -> KDL.failM "Expected string"
-          case (.identifier.value) <$> val.ann of
-            Just "var" -> pure . Left $ Var (VariableName s)
-            -- Nothing or Just "text"
-            _ -> pure . Right $ s
-      )
-  case cidrOrVar of
-    Left var -> pure $ CIDR (Left var)
-    Right cidr -> do
-      name <- KDL.argWith KDL.string
-      pure $ CIDR (Right (cidr, name))
+cidrRuleDecoder :: NodeListDecoder (CidrRuleNode Var)
+cidrRuleDecoder = KDL.nodeWith "cidr-rule" $ do
+  (cidr, excepts) <- KDL.children $ do
+    cidr <- cidrDecoder
+    excepts <- KDL.many exceptionDecoder
+    pure (cidr, excepts)
+  pure $ CidrRuleNode {cidr, excepts}
 
-exceptionDecoder :: NodeListDecoder (CIDRSetItem Var)
-exceptionDecoder = KDL.nodeWith "except" $ do
-  cidrOrVar <-
-    KDL.argWith' ["text", "var"] . KDL.withDecoder KDL.any $
-      ( \val -> do
-          s <- case val.data_ of
-            KDL.String s -> pure s
-            _ -> KDL.failM "Expected string"
-          case (.identifier.value) <$> val.ann of
-            Just "var" -> pure . Left $ Var (VariableName s)
-            -- Nothing or Just "text"
-            _ -> pure . Right $ s
-      )
+cidrDecoder :: NodeListDecoder (CidrEntry Var)
+cidrDecoder = KDL.nodeWith "cidr" labelledVarOrText
+
+exceptionDecoder :: NodeListDecoder (CidrEntry Var)
+exceptionDecoder = KDL.nodeWith "except" labelledVarOrText
+
+-- | A var-or-text argument; a literal text is followed by a label argument
+labelledVarOrText :: NodeDecoder (CidrEntry Var)
+labelledVarOrText = do
+  cidrOrVar <- varOrTextArg
   case cidrOrVar of
-    Left var -> pure $ Except (Left var)
+    Left var -> pure $ Left var
     Right cidr -> do
-      reason <- KDL.argWith KDL.string
-      pure $ Except (Right (cidr, reason))
+      label <- KDL.argWith KDL.string
+      pure $ Right (cidr, Just label)

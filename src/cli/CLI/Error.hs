@@ -8,6 +8,7 @@ import System.OsPath
 
 import Core.Model.ContextName
 import Core.Model.InventoryVariable
+import Core.Model.ServiceName
 import Core.Validation
 
 data CLIErrorType
@@ -16,6 +17,7 @@ data CLIErrorType
   | GraphValidationError
   | UnkownContextFilter
   | VariableNotFound
+  | CiliumValidationError
   deriving stock (Eq, Show, Ord, Enum, Bounded)
 
 instance Display CLIErrorType where
@@ -25,6 +27,7 @@ instance Display CLIErrorType where
     GraphValidationError -> "Graph validation error"
     UnkownContextFilter -> "Unknown context filter"
     VariableNotFound -> "Variable not found"
+    CiliumValidationError -> "Cilium validation error"
 
 errorCodeFromType :: CLIErrorType -> ErrorCode
 errorCodeFromType = \case
@@ -33,6 +36,7 @@ errorCodeFromType = \case
   GraphValidationError -> ErrorCode 241
   UnkownContextFilter -> ErrorCode 154
   VariableNotFound -> ErrorCode 523
+  CiliumValidationError -> ErrorCode 310
 
 newtype ErrorCode = ErrorCode Word
   deriving newtype (Eq, Show, Ord)
@@ -51,42 +55,51 @@ instance Display CLIError where
   displayBuilder CLIError {..} =
     "Error: " <> displayBuilder errorCode <> " " <> displayBuilder errorMessage
 
+-- | Build a 'CLIError', deriving the error code from the error type
+mkError :: CLIErrorType -> Text -> CLIError
+mkError errorType errorMessage =
+  CLIError {errorType, errorCode = errorCodeFromType errorType, errorMessage}
+
 noFileAtProvidedLocation :: OsPath -> CLIError
 noFileAtProvidedLocation path =
-  CLIError
-    { errorType = FileDoesNotExist
-    , errorCode = errorCodeFromType FileDoesNotExist
-    , errorMessage = "Could not find file at " <> T.show path <> "."
-    }
+  mkError FileDoesNotExist $
+    "Could not find file at " <> T.show path <> "."
 
 kdlParseError :: OsPath -> DecodeError -> CLIError
 kdlParseError path decodeError =
-  CLIError
-    { errorType = ParseError
-    , errorCode = errorCodeFromType ParseError
-    , errorMessage = "Could not parse file " <> T.show path <> ". Got the following error: " <> renderDecodeError decodeError
-    }
+  mkError ParseError $
+    "Could not parse file " <> T.show path <> ". Got the following error: " <> renderDecodeError decodeError
 
 graphValidationError :: ValidationError -> CLIError
 graphValidationError validationError =
-  CLIError
-    { errorType = GraphValidationError
-    , errorCode = errorCodeFromType GraphValidationError
-    , errorMessage = T.show validationError
-    }
+  mkError GraphValidationError $
+    T.show validationError
 
 unknownContextFilter :: ContextName -> CLIError
 unknownContextFilter contextFilter =
-  CLIError
-    { errorType = UnkownContextFilter
-    , errorCode = errorCodeFromType UnkownContextFilter
-    , errorMessage = "Could not find context " <> display contextFilter <> " to filter services."
-    }
+  mkError UnkownContextFilter $
+    "Could not find context " <> display contextFilter <> " to filter services."
 
 variableNotFound :: VariableName -> CLIError
 variableNotFound expectedVariable =
-  CLIError
-    { errorType = VariableNotFound
-    , errorCode = errorCodeFromType VariableNotFound
-    , errorMessage = "Could not find a definition for " <> display expectedVariable <> " in provided inventories."
-    }
+  mkError VariableNotFound $
+    "Could not find a definition for " <> display expectedVariable <> " in provided inventories."
+
+missingConnectionTarget :: ServiceName -> ServiceName -> CLIError
+missingConnectionTarget source target =
+  mkError CiliumValidationError $
+    "Service " <> display source <> " connects to undeclared service " <> display target <> "."
+
+unreachableConnectionTarget :: ServiceName -> ServiceName -> CLIError
+unreachableConnectionTarget source target =
+  mkError CiliumValidationError $
+    "Service "
+      <> display source
+      <> " cannot reach service "
+      <> display target
+      <> ": it has no fqdn and is not in the same context. Cilium needs either a shared context or an fqdn to emit an egress rule."
+
+missingCidrSetTarget :: ServiceName -> Text -> CLIError
+missingCidrSetTarget source target =
+  mkError CiliumValidationError $
+    "Service " <> display source <> " connects to undeclared cidr-set " <> target <> "."

@@ -229,8 +229,10 @@ It has no child nodes.
 #### Example
 
 ```kdl
-cidr-set {
-	cidr "10.42.42.0/24" "NTP"
+cidr-set "ntp" {
+	cidr-rule {
+		cidr "10.42.42.0/24" "NTP"
+	}
 	port 123 "UDP"
 }
 
@@ -253,20 +255,23 @@ This is mainly used by the Cilium renderer. See https://docs.cilium.io/en/stable
 
 This node can contain the following children:
 
-* [`cidr`](#cidr);
-* [`except`](#except).
+* [`cidr-rule`](#cidr-rule) (at least one is required);
 * [`port`](#port)
 
 #### Examples
 
 ```kdl
 cidr-set "network" {
-  cidr "0.0.0.0/0" "Internet"
-  except "10.0.0.0/8" "Internal network, to be refined further down"
+  cidr-rule {
+    cidr "0.0.0.0/0" "Internet"
+    except "10.0.0.0/8" "Internal network, to be refined further down"
+  }
 }
 
 cidr-set "mysql" {
-  cidr "10.147.128.0/24" "MySQL"
+  cidr-rule {
+    cidr "10.147.128.0/24" "MySQL"
+  }
   port 3306
 }
 
@@ -276,42 +281,79 @@ service "my-app" {
 }
 ```
 
+### <a name="cidr-rule"></a> `cidr-rule`
+
+Declare a CIDR range and its exceptions inside a [`cidr-set`](#cidr-set).
+A `cidr-set` can contain several `cidr-rule` nodes.
+
+This node can contain the following children:
+
+* [`cidr`](#cidr) (exactly one is required);
+* [`except`](#except).
+
+#### Examples
+
+```kdl
+cidr-set "integrations" {
+  cidr-rule {
+    cidr "10.23.32.0/24" "Integrations"
+  }
+  cidr-rule {
+    cidr "10.23.31.0/24" "Internal shenanigans"
+  }
+}
+```
+
 ### <a name="cidr"></a> `cidr`
 
 Declare a CIDR IP range or address, and a comment to clarify what it represents.
+Instead of a literal range and comment, a [variable](#inventory) reference can
+be given; the comment is then taken from the variable's `description`.
 
 It has no child nodes.
 
 | Argument   | Type |
 |------------|------|
-| CIDR range | text |
-| Comment    | text |
+| CIDR range | text or `(var)` reference |
+| Comment    | text (only with a literal CIDR range) |
 
 #### Examples
 
 ```kdl
 cidr-set "mysql" {
-  cidr "10.147.128.0/24" "MySQL"
+  cidr-rule {
+    cidr "10.147.128.0/24" "MySQL"
+  }
+}
+
+cidr-set "opensearch" {
+  cidr-rule {
+    cidr (var)opensearch-cidr
+  }
 }
 ```
 
 ### <a name="except"></a> `except`
 
-Declare an exception to a [`cidr`](#cidr) node in the same [`cidr-set`](#cidr-set)
+Declare an exception to the [`cidr`](#cidr) node of the same [`cidr-rule`](#cidr-rule).
+A `cidr-rule` can contain several `except` nodes.
 
 It has no child nodes.
 
 | Argument   | Type |
 |------------|------|
-| CIDR range | text |
-| Comment    | text |
+| CIDR range | text or `(var)` reference |
+| Comment    | text (only with a literal CIDR range) |
 
 #### Examples
 
 ```kdl
 cidr-set "network" {
-  cidr "0.0.0.0/0" "Internet"
-  except "10.0.0.0/8" "Internal network, to be refined further down"
+  cidr-rule {
+    cidr "0.0.0.0/0" "Internet"
+    except "10.0.0.0/8" "Internal network, to be refined further down"
+    except "192.168.0.0/16" "Local network"
+  }
 }
 ```
 
@@ -398,7 +440,9 @@ inventory cloud=aws region=eu-west-1 env=prod {
 }
 
 cidr-set "mysql" {
-  cidr (var)mysql-cluster-cidr
+	cidr-rule {
+		cidr (var)mysql-cluster-cidr
+	}
 	port 3306
 }
 ```
@@ -406,12 +450,12 @@ cidr-set "mysql" {
 When using the Cilium renderer, this gives us:
 
 ```yaml
-- toCIDRSets:
-      cidr: 10.147.128.0/24 # MySQL cluster
+- toCIDRSet:
+    - cidr: "10.147.128.0/24" # MySQL cluster
   toPorts:
-      - ports:
-          - port: 3306
-            protocol: TCP
+    - ports:
+        - port: "3306"
+          protocol: TCP
 ```
 
 ## ENVIRONMENT VARIABLES

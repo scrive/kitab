@@ -77,11 +77,11 @@ checkMismatched graph =
         , (destination, labelsSD) <- Map.toList targets
         , -- Canonical order: only check A vs B (ignore B vs A) to prevent duplicates
         source < destination
-        , -- "Unpack" the list of labels to treat them as individual edge instances
-        labelSD <- labelsSD
         , -- Look up the opposite direction
         let labelsDS = getLabels destination source
         , not (null labelsDS) -- Ensure opposite edges actually exist
+        , -- "Unpack" the list of labels to treat them as individual edge instances
+        labelSD <- labelsSD
         , -- Iterate through opposite labels and check for mismatch
         labelDS <- labelsDS
         , labelSD /= labelDS

@@ -89,6 +89,7 @@ library
     Parser.V1.ServiceContext
     Parser.V1.ServiceName
     Parser.V1.Types
+    Parser.V1.Var
 
   build-depends:
     algebraic-graphs,
@@ -198,6 +199,10 @@ library kitab-cilium
   exposed-modules:
     Render.Cilium
     Render.Cilium.Types
+    Render.Cilium.Types.CIDRRule
+    Render.Cilium.Types.EgressRule
+    Render.Cilium.Types.NetworkPolicy
+    Render.Cilium.Utils
 
   build-depends:
     algebraic-graphs,
