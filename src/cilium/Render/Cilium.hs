@@ -46,7 +46,7 @@ toCiliumPolicy serviceIndex entityIndex cidrIndex service =
         PolicySpec
           { endpointSelector =
               EndpointSelector $
-                Map.singleton "app" (display service.serviceName)
+                Map.singleton "app.kubernetes.io/name" (display service.serviceName)
           , egress =
               Maybe.mapMaybe (cidrEgressRule cidrIndex) service.cidrConnections
                 <> [dnsEgressRule] -- The implicit DNS requirement
