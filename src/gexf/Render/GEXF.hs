@@ -10,7 +10,6 @@ import Text.XML (def, renderText)
 import Text.XML.Stream.Render.Internal (RenderSettings (..))
 import Text.XML.Writer
 
-import Core.Model.ContextName
 import Core.Model.Reference
 import Core.Model.Service
 import Core.Model.ServiceContext ()
@@ -46,15 +45,15 @@ renderGEXF graph serviceIndex =
             hierarchy = mServiceInfo ^? _Just % #serviceContext % _Just
         in toXML $ serviceToGexfNode serviceName hierarchy
       EntityRef entityRef -> toXML $ entityRefToNode entityRef
-      ToolRef _ (ServiceName contextName) toolName ->
-        toXML $ serviceToGexfNode (ServiceName toolName) (Just (ContextName contextName))
+      ToolRef _ (ServiceName service) toolName ->
+        toXML $ toolToGexfNode service toolName
 
     renderEdge :: Tuple2 Word (Tuple3 (List ConnectionType) Reference Reference) -> XML
     renderEdge (i, (e, u, v)) =
       toXML
         Edge
           { edgeId = EdgeId i
-          , edgeSource = NodeId (display u)
-          , edgeTarget = NodeId (display v)
+          , edgeSource = referenceNodeId u
+          , edgeTarget = referenceNodeId v
           , edgeLabel = display (head e)
           }
