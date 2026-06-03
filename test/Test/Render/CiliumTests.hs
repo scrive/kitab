@@ -17,6 +17,7 @@ import Core.Validation
 import Driver.Variable
 import Parser.V1.Types
 import Render.Cilium qualified as Cilium
+import Render.Cilium.Resolved
 import Test.Utils
 
 test :: TestTree
@@ -33,6 +34,9 @@ test =
         diffCmd
         "test/golden/cidr-network-policy.yaml"
         renderCIDRSetPolicy
+    , testThat
+        "Resolution rejects undeclared entity targets"
+        rejectUndeclaredEntityTarget
     ]
 
 renderService :: IO LazyByteString
@@ -68,7 +72,10 @@ renderService = runTestEff $ do
   let cidrIndex = buildCidrIndex cidrDefinitions
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)
   mediaProxyService <- assertJust "" $ List.find (\s -> s.serviceName == "media-proxy") serviceDefinitions
-  ((pure . TL.encodeUtf8) . T.fromStrict) . Cilium.renderCilium $ Cilium.toCiliumPolicy serviceIndex entityIndex cidrIndex mediaProxyService
+  resolvedService <-
+    assertRight "Service does not resolve" . validationToEither $
+      resolveService serviceIndex entityIndex cidrIndex mediaProxyService
+  ((pure . TL.encodeUtf8) . T.fromStrict) . Cilium.renderCilium $ Cilium.toCiliumPolicy resolvedService
 
 renderCIDRSetPolicy :: IO LazyByteString
 renderCIDRSetPolicy = runTestEff $ do
@@ -113,4 +120,20 @@ renderCIDRSetPolicy = runTestEff $ do
   let cidrIndex = buildCidrIndex cidrDefinitions
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)
   myAppService <- assertJust "" $ List.find (\s -> s.serviceName == "my-app") serviceDefinitions
-  ((pure . TL.encodeUtf8) . T.fromStrict) . Cilium.renderCilium $ Cilium.toCiliumPolicy serviceIndex entityIndex cidrIndex myAppService
+  resolvedService <-
+    assertRight "Service does not resolve" . validationToEither $
+      resolveService serviceIndex entityIndex cidrIndex myAppService
+  ((pure . TL.encodeUtf8) . T.fromStrict) . Cilium.renderCilium $ Cilium.toCiliumPolicy resolvedService
+
+rejectUndeclaredEntityTarget :: TestEff Unit
+rejectUndeclaredEntityTarget = do
+  let service =
+        emptyService
+          { serviceName = "web"
+          , entityAccesses = [EntityAccess {accessTarget = "kafka", accessPorts = mempty}]
+          }
+  case resolveService mempty mempty mempty service of
+    Failure violations ->
+      assertEqual "Unexpected resolution errors" [MissingEntity "web" "kafka"] (toList violations)
+    Success resolved ->
+      assertFailure $ "Resolution accepted an undeclared entity target: " <> show resolved

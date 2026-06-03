@@ -8,8 +8,8 @@ import System.OsPath
 
 import Core.Model.ContextName
 import Core.Model.InventoryVariable
-import Core.Model.ServiceName
 import Core.Validation
+import Render.Cilium.Resolved (ResolutionError (..))
 
 data CLIErrorType
   = ParseError
@@ -85,21 +85,18 @@ variableNotFound expectedVariable =
   mkError VariableNotFound $
     "Could not find a definition for " <> display expectedVariable <> " in provided inventories."
 
-missingConnectionTarget :: ServiceName -> ServiceName -> CLIError
-missingConnectionTarget source target =
-  mkError CiliumValidationError $
-    "Service " <> display source <> " connects to undeclared service " <> display target <> "."
-
-unreachableConnectionTarget :: ServiceName -> ServiceName -> CLIError
-unreachableConnectionTarget source target =
-  mkError CiliumValidationError $
-    "Service "
-      <> display source
-      <> " cannot reach service "
-      <> display target
-      <> ": it has no fqdn and is not in the same context. Cilium needs either a shared context or an fqdn to emit an egress rule."
-
-missingCidrSetTarget :: ServiceName -> Text -> CLIError
-missingCidrSetTarget source target =
-  mkError CiliumValidationError $
-    "Service " <> display source <> " connects to undeclared cidr-set " <> target <> "."
+resolutionError :: ResolutionError -> CLIError
+resolutionError =
+  mkError CiliumValidationError . \case
+    MissingService source target ->
+      "Service " <> display source <> " connects to undeclared service " <> display target <> "."
+    UnreachableService source target ->
+      "Service "
+        <> display source
+        <> " cannot reach service "
+        <> display target
+        <> ": it has no fqdn and is not in the same context. Cilium needs either a shared context or an fqdn to emit an egress rule."
+    MissingCidrSet source target ->
+      "Service " <> display source <> " connects to undeclared cidr-set " <> target <> "."
+    MissingEntity source target ->
+      "Service " <> display source <> " accesses undeclared entity " <> display target <> "."

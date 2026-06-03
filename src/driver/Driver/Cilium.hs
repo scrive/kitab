@@ -7,7 +7,6 @@ import Data.ByteString.Char8 qualified as BS8
 import Data.List qualified as List
 import Data.List.NonEmpty (NonEmpty)
 import Data.List.NonEmpty qualified as NE
-import Data.Map.Strict qualified as Map
 import Data.Text qualified as T
 import Data.Text.Encoding qualified as T
 import Data.Void
@@ -20,6 +19,7 @@ import Effectful.FileSystem (FileSystem)
 import Effectful.FileSystem.IO.ByteString qualified as FileSystem
 import System.OsPath (osp, (</>))
 import System.OsPath qualified as OsPath
+import Validation
 
 import CLI.Error
 import Core.Model.CIDRSet
@@ -30,6 +30,7 @@ import Core.Model.Service
 import Core.Model.ServiceName
 import Driver.Verbosity
 import Render.Cilium qualified as Cilium
+import Render.Cilium.Resolved
 
 renderToCilium
   :: (Console :> es, Error (NonEmpty CLIError) :> es, FileSystem :> es)
@@ -44,13 +45,13 @@ renderToCilium
   -> Eff es Unit
 renderToCilium contextFilters knownContexts serviceIndex entitiesIndex cidrIndex outputDir verbosity serviceDefinitions = do
   validateContextFilters knownContexts contextFilters
-  validateConnections serviceIndex cidrIndex serviceDefinitions
+  resolvedDefinitions <- resolveServices serviceIndex entitiesIndex cidrIndex serviceDefinitions
   let filteredDefinitions =
         case contextFilters of
-          [] -> serviceDefinitions
-          _ -> List.filter (isInContext contextFilters) serviceDefinitions
+          [] -> resolvedDefinitions
+          _ -> List.filter (isInContext contextFilters) resolvedDefinitions
   outputs <- forM filteredDefinitions $ \service -> do
-    let rendered = Cilium.renderCilium (Cilium.toCiliumPolicy serviceIndex entitiesIndex cidrIndex service)
+    let rendered = Cilium.renderCilium (Cilium.toCiliumPolicy service)
     outputFile <- OsPath.encodeUtf . T.unpack $ display service.serviceName
     outputPath <- OsPath.decodeUtf (outputDir </> outputFile <> [osp|-network-policy.yaml|])
     pure (outputPath, rendered)
@@ -58,40 +59,20 @@ renderToCilium contextFilters knownContexts serviceIndex entitiesIndex cidrIndex
     when (isVerbose verbosity) (Console.putStrLn $ "Writing file " <> BS8.pack outputPath)
     FileSystem.writeFile outputPath (T.encodeUtf8 rendered)
 
--- | Check that every connection can be rendered as a Cilium egress rule:
--- service targets must be declared and reachable (per 'Cilium.reachability'),
--- and cidr-set targets must be declared. All violations are accumulated and
--- reported together.
-validateConnections
+-- | Resolve every service against the declaration indices (see
+-- 'resolveService'), so that rendering cannot fail. All violations are
+-- accumulated and reported together.
+resolveServices
   :: Error (NonEmpty CLIError) :> es
   => Map ServiceName (ServiceInfo Void)
+  -> Map EntityName EntityInfo
   -> Map Text (CIDRSet Void)
   -> List (Service Void)
-  -> Eff es Unit
-validateConnections serviceIndex cidrIndex serviceDefinitions = do
-  let serviceViolations =
-        [ violation
-        | service <- serviceDefinitions
-        , Connection {connectionWith} <- service.serviceConnections
-        , Just violation <-
-            [checkConnection service.serviceInfo.serviceContext service.serviceName connectionWith]
-        ]
-  let cidrViolations =
-        [ missingCidrSetTarget service.serviceName connection.connectTarget
-        | service <- serviceDefinitions
-        , connection <- service.cidrConnections
-        , Map.notMember connection.connectTarget cidrIndex
-        ]
-  forM_ (NE.nonEmpty $ serviceViolations <> cidrViolations) Error.throwError
-  where
-    checkConnection :: Maybe ContextName -> ServiceName -> ServiceName -> Maybe CLIError
-    checkConnection mContext source target =
-      case Map.lookup target serviceIndex of
-        Nothing -> Just $ missingConnectionTarget source target
-        Just serviceInfo ->
-          case Cilium.reachability mContext serviceInfo of
-            Cilium.Unreachable -> Just $ unreachableConnectionTarget source target
-            _ -> Nothing
+  -> Eff es (List ResolvedService)
+resolveServices serviceIndex entityIndex cidrIndex serviceDefinitions =
+  case traverse (resolveService serviceIndex entityIndex cidrIndex) serviceDefinitions of
+    Failure violations -> Error.throwError $ fmap resolutionError violations
+    Success resolved -> pure resolved
 
 -- | Ensure every context passed via @--context@ corresponds to a context
 -- declared in the document. Unknown filters are accumulated and reported
@@ -105,9 +86,8 @@ validateContextFilters knownContexts contextFilters =
   forM_ (NE.nonEmpty $ List.filter (`notElem` knownContexts) contextFilters) $
     Error.throwError . fmap unknownContextFilter
 
-isInContext :: List ContextName -> Service Void -> Bool
+isInContext :: List ContextName -> ResolvedService -> Bool
 isInContext contextFilters service =
-  let mContext = service.serviceInfo.serviceContext
-  in case mContext of
-       Nothing -> False
-       Just c -> c `elem` contextFilters
+  case service.serviceContext of
+    Nothing -> False
+    Just c -> c `elem` contextFilters
