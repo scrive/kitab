@@ -135,20 +135,29 @@ routeTo mContext ServiceInfo {serviceContext, serviceFqdn}
   | Just (Right hostname) <- serviceFqdn = Just (ViaFqdn hostname)
   | otherwise = Nothing
 
--- | Select which ports to use for a connection:
--- 1. If no ports are specified by the caller, use the ones opened by the callee
--- 2. If the caller specifies ports and they are a subset of the callee's ports, use them
--- 3. Otherwise fall back to port 443/TCP
-pickServicePorts :: ServiceInfo Void -> Set PortNode -> Set PortNode
-pickServicePorts ServiceInfo {servicePorts} ports
-  | Set.null ports = servicePorts
-  | ports `Set.isSubsetOf` servicePorts = ports
-  | otherwise = Set.singleton (PortNode 443 "TCP")
+-- | Select which ports to use for a target:
+-- 1. If no ports are specified by the caller, use the ones opened by the target
+-- 2. If the caller specifies ports and they are a subset of the target's ports, use them
+-- 3. Otherwise use the fallback
+pickPorts
+  :: Set PortNode
+  -- ^ Fallback ports
+  -> Set PortNode
+  -- ^ Target ports
+  -> Set PortNode
+  -- ^ Caller ports
+  -> Set PortNode
+pickPorts fallback targetPorts ports
+  | Set.null ports = targetPorts
+  | ports `Set.isSubsetOf` targetPorts = ports
+  | otherwise = fallback
 
--- | Select which ports to use for an entity connection: the caller's ports if
--- they are a subset of the entity's, otherwise the entity's own ports
+-- | 'pickPorts' against a service's ports, falling back to port 443/TCP
+pickServicePorts :: ServiceInfo Void -> Set PortNode -> Set PortNode
+pickServicePorts ServiceInfo {servicePorts} =
+  pickPorts (Set.singleton (PortNode 443 "TCP")) servicePorts
+
+-- | 'pickPorts' against an entity's ports, falling back to no ports at all
 pickEntityPorts :: EntityInfo -> Set PortNode -> Set PortNode
-pickEntityPorts EntityInfo {entityPorts} ports
-  | Set.null ports = entityPorts
-  | ports `Set.isSubsetOf` entityPorts = ports
-  | otherwise = Set.empty
+pickEntityPorts EntityInfo {entityPorts} =
+  pickPorts Set.empty entityPorts
