@@ -4,6 +4,7 @@ module Driver.Cilium where
 
 import Control.DeepSeq (force)
 import Data.ByteString.Char8 qualified as BS8
+import Data.List qualified as List
 import Data.List.NonEmpty (NonEmpty)
 import Data.List.NonEmpty qualified as NE
 import Data.Map.Strict qualified as Map
@@ -32,16 +33,23 @@ import Render.Cilium qualified as Cilium
 
 renderToCilium
   :: (Console :> es, Error (NonEmpty CLIError) :> es, FileSystem :> es)
-  => Map ServiceName (ServiceInfo Void)
+  => List ContextName
+  -> List ContextName
+  -> Map ServiceName (ServiceInfo Void)
   -> Map EntityName EntityInfo
   -> Map Text (CIDRSet Void)
   -> OsPath.OsPath
   -> VerbositySetting
   -> List (Service Void)
   -> Eff es Unit
-renderToCilium serviceIndex entitiesIndex cidrIndex outputDir verbosity serviceDefinitions = do
+renderToCilium contextFilters knownContexts serviceIndex entitiesIndex cidrIndex outputDir verbosity serviceDefinitions = do
+  validateContextFilters knownContexts contextFilters
   validateConnections serviceIndex cidrIndex serviceDefinitions
-  outputs <- forM serviceDefinitions $ \service -> do
+  let filteredDefinitions =
+        case contextFilters of
+          [] -> serviceDefinitions
+          _ -> List.filter (isInContext contextFilters) serviceDefinitions
+  outputs <- forM filteredDefinitions $ \service -> do
     let rendered = Cilium.renderCilium (Cilium.toCiliumPolicy serviceIndex entitiesIndex cidrIndex service)
     outputFile <- OsPath.encodeUtf . T.unpack $ display service.serviceName
     outputPath <- OsPath.decodeUtf (outputDir </> outputFile <> [osp|-network-policy.yaml|])
@@ -84,3 +92,22 @@ validateConnections serviceIndex cidrIndex serviceDefinitions = do
           case Cilium.reachability mContext serviceInfo of
             Cilium.Unreachable -> Just $ unreachableConnectionTarget source target
             _ -> Nothing
+
+-- | Ensure every context passed via @--context@ corresponds to a context
+-- declared in the document. Unknown filters are accumulated and reported
+-- together so a typo does not silently yield empty output.
+validateContextFilters
+  :: Error (NonEmpty CLIError) :> es
+  => List ContextName
+  -> List ContextName
+  -> Eff es Unit
+validateContextFilters knownContexts contextFilters =
+  forM_ (NE.nonEmpty $ List.filter (`notElem` knownContexts) contextFilters) $
+    Error.throwError . fmap unknownContextFilter
+
+isInContext :: List ContextName -> Service Void -> Bool
+isInContext contextFilters service =
+  let mContext = service.serviceInfo.serviceContext
+  in case mContext of
+       Nothing -> False
+       Just c -> c `elem` contextFilters

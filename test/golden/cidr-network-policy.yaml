@@ -6,7 +6,7 @@ metadata:
 spec:
   endpointSelector:
     matchLabels:
-      app: "my-app"
+      app.kubernetes.io/name: "my-app"
   egress:
     - toCIDRSet:
         - cidr: "0.0.0.0/0" # Internet

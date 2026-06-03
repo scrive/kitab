@@ -1,6 +1,9 @@
-module CLI.Cmd.Generate where
+module CLI.Cmd.Generate
+  ( GenerateOptions (..)
+  , OutputFormat (..)
+  , runGenerate
+  ) where
 
-import Data.List qualified as List
 import Data.List.NonEmpty (NonEmpty)
 import Data.List.NonEmpty qualified as NE
 import Data.Map.Strict qualified as Map
@@ -16,7 +19,6 @@ import Effectful.FileSystem
 import Effectful.FileSystem qualified as FileSystem
 import Effectful.FileSystem.IO.ByteString qualified as FileSystem
 import Layoutz
-import Optics.Core
 import System.OsPath
 import System.OsPath qualified as OsPath
 import Validation
@@ -27,8 +29,7 @@ import Core.Model.ContextName
 import Core.Model.Inventory.Aggregated
 import Core.Model.Inventory.Selector (Selector (..))
 import Core.Model.InventoryVariable
-import Core.Model.Service
-import Core.Model.ServiceContext
+import Core.Model.ServiceContext (ServiceContext (..))
 import Core.Validation
 import Driver.Cilium
 import Driver.Colours
@@ -111,6 +112,13 @@ runGenerate options = do
                   _ -> Nothing
               )
               declarations
+      let declaredContexts =
+            mapMaybe
+              ( \case
+                  ContextDeclaration ServiceContext {contextName} -> Just contextName
+                  _ -> Nothing
+              )
+              declarations
       serviceDefinitions <- do
         declarations
           & mapMaybe
@@ -145,6 +153,8 @@ runGenerate options = do
                 graph
             CiliumFormat ->
               renderToCilium
+                options.contextFilters
+                declaredContexts
                 serviceIndex
                 entitiesIndex
                 cidrIndex
@@ -157,22 +167,6 @@ runGenerate options = do
                 options.outputDir
                 verbosity
                 graph
-
-filterServicesByContext
-  :: Error (NonEmpty CLIError) :> es
-  => List ContextName
-  -> List ServiceContext
-  -> List (Service var)
-  -> Eff es (List (Service var))
-filterServicesByContext [] _ services = pure services
-filterServicesByContext contextFilters contexts services = do
-  filteredServices <- forM contextFilters $ \contextFilter -> filterServices contextFilter
-  pure $ List.concat filteredServices
-  where
-    filterServices contextFilter = do
-      unless (List.any (\c -> c.contextName == contextFilter) contexts) $ Error.throwError (NE.singleton (unknownContextFilter contextFilter))
-      pure $
-        List.filter (\s -> (s ^. #serviceInfo % #serviceContext :: Maybe ContextName) == Just contextFilter) services
 
 printInventory :: Console :> es => TerminalColoursSettings -> AggregatedInventory -> Eff es Unit
 printInventory coloursSettings AggregatedInventory {aggregatedAttributes, aggregatedVars} = do
