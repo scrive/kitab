@@ -4,7 +4,6 @@ import Data.List.NonEmpty (NonEmpty ((:|)))
 import KDL
 
 import Core.Model.CIDRSet
-import Core.Model.PortNode
 import Core.Variable
 import Parser.V1.PortNode
 import Parser.V1.Var

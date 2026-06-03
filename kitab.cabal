@@ -150,6 +150,7 @@ library kitab-core
     algebraic-graphs,
     base ^>=4.21,
     containers,
+    deepseq,
     effectful,
     extra,
     filepath,

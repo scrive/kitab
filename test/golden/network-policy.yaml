@@ -6,7 +6,7 @@ metadata:
 spec:
   endpointSelector:
     matchLabels:
-      app: "media-proxy"
+      app.kubernetes.io/name: "media-proxy"
   egress:
     - toEndpoints:
         - matchLabels:
