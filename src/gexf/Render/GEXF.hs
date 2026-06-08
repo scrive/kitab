@@ -16,11 +16,11 @@ import Core.Model.ServiceContext ()
 import Core.Model.ServiceName
 import Render.GEXF.Types
 
-renderGEXF
+renderToGEXF
   :: AdjacencyMap (List ConnectionType) Reference
   -> Map ServiceName (ServiceInfo Void)
   -> Text
-renderGEXF graph serviceIndex =
+renderToGEXF graph serviceIndex =
   TL.toStrict
     . renderText def {rsPretty = True}
     . documentA

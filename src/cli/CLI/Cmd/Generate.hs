@@ -142,7 +142,7 @@ runGenerate options = do
                 verbosity
                 services
             GexfFormat ->
-              renderGEXF
+              renderToGEXF
                 serviceIndex
                 options.outputDir
                 verbosity

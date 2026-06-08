@@ -1,22 +1,20 @@
 {-# LANGUAGE QuasiQuotes #-}
 
+{- HLINT ignore "Use uncurry" -}
+
 module Driver.Cilium where
 
 import Control.DeepSeq (force)
-import Data.ByteString.Char8 qualified as BS8
 import Data.List qualified as List
 import Data.List.NonEmpty (NonEmpty)
 import Data.List.NonEmpty qualified as NE
 import Data.Text qualified as T
-import Data.Text.Encoding qualified as T
 import Data.Void
 import Effectful
 import Effectful.Console.ByteString (Console)
-import Effectful.Console.ByteString qualified as Console
 import Effectful.Error.Static (Error)
 import Effectful.Error.Static qualified as Error
 import Effectful.FileSystem (FileSystem)
-import Effectful.FileSystem.IO.ByteString qualified as FileSystem
 import System.OsPath (osp, (</>))
 import System.OsPath qualified as OsPath
 import Validation
@@ -28,6 +26,7 @@ import Core.Model.Entity
 import Core.Model.EntityName
 import Core.Model.Service
 import Core.Model.ServiceName
+import Driver.Output
 import Driver.Verbosity
 import Render.Cilium qualified as Cilium
 import Render.Cilium.Resolved
@@ -55,9 +54,7 @@ renderToCilium contextFilters knownContexts serviceIndex entitiesIndex cidrIndex
     outputFile <- OsPath.encodeUtf . T.unpack $ display service.serviceName
     outputPath <- OsPath.decodeUtf (outputDir </> outputFile <> [osp|-network-policy.yaml|])
     pure (outputPath, rendered)
-  forM_ (force outputs) $ \(outputPath, rendered) -> do
-    when (isVerbose verbosity) (Console.putStrLn $ "Writing file " <> BS8.pack outputPath)
-    FileSystem.writeFile outputPath (T.encodeUtf8 rendered)
+  forM_ (force outputs) $ \(outputPath, rendered) -> writeArtifact verbosity outputPath rendered
 
 -- | Resolve every service against the declaration indices (see
 -- 'resolveService'), so that rendering cannot fail. All violations are
