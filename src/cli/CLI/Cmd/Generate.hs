@@ -29,7 +29,6 @@ import Core.Model.ContextName
 import Core.Model.Inventory.Aggregated
 import Core.Model.Inventory.Selector (Selector (..))
 import Core.Model.InventoryVariable
-import Core.Model.ServiceContext (ServiceContext (..))
 import Core.Validation
 import Driver.Cilium
 import Driver.Colours
@@ -88,7 +87,7 @@ runGenerate options = do
     Just errors -> do
       Error.throwError (fmap noFileAtProvidedLocation errors)
     Nothing -> do
-      declarations <- concatForM options.inputs $ \inputPath -> do
+      allDeclarations <- concatForM options.inputs $ \inputPath -> do
         filePath <- OsPath.decodeUtf inputPath
         fileContent <- FileSystem.readFile filePath
         let result = parseKitabDocument filePath (T.decodeUtf8 fileContent)
@@ -105,41 +104,15 @@ runGenerate options = do
               regionSelector
               envSelector
               inventories
-      let entities =
-            mapMaybe
-              ( \case
-                  EntityDeclaration e -> Just e
-                  _ -> Nothing
-              )
-              declarations
-      let declaredContexts =
-            mapMaybe
-              ( \case
-                  ContextDeclaration ServiceContext {contextName} -> Just contextName
-                  _ -> Nothing
-              )
-              declarations
-      serviceDefinitions <- do
-        declarations
-          & mapMaybe
-            ( \case
-                ServiceDeclaration s -> Just s
-                _ -> Nothing
-            )
-          & traverse (resolveServiceVars aggregatedInventory)
-
-      cidrDefinitions <-
-        mapMaybe
-          ( \case
-              CIDRSetDeclaration c -> Just c
-              _ -> Nothing
-          )
-          declarations
-          & traverse (resolveCIDRVars aggregatedInventory)
-      let graph = buildGraph serviceDefinitions entities
+      let declarations = partitionDeclarations allDeclarations
+      let entities = declarations.entities
+      let contexts = declarations.contexts
+      services <- traverse (resolveServiceVars aggregatedInventory) declarations.services
+      cidrs <- traverse (resolveCIDRVars aggregatedInventory) declarations.cidrs
+      let graph = buildGraph services entities
       let entitiesIndex = buildEntityIndex entities
-      let serviceIndex = buildServiceIndex serviceDefinitions
-      let cidrIndex = buildCidrIndex cidrDefinitions
+      let serviceIndex = buildServiceIndex services
+      let cidrIndex = buildCidrIndex cidrs
       when (isVerbose verbosity) $ printInventory coloursSettings aggregatedInventory
       case checkGraph graph of
         Failure errors -> Error.throwError $ fmap graphValidationError errors
@@ -154,13 +127,13 @@ runGenerate options = do
             CiliumFormat ->
               renderToCilium
                 options.contextFilters
-                declaredContexts
+                contexts
                 serviceIndex
                 entitiesIndex
                 cidrIndex
                 options.outputDir
                 verbosity
-                serviceDefinitions
+                services
             GexfFormat ->
               renderGEXF
                 serviceIndex
