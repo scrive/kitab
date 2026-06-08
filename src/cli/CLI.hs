@@ -4,6 +4,7 @@
 module CLI where
 
 import Data.List qualified as List
+import Data.Map.Strict qualified as Map
 import Data.Text qualified as T
 import Data.Version
 import Development.GitRev
@@ -110,12 +111,9 @@ withInfo opts desc =
     $ progDesc desc
 
 outputFormat :: ReadM OutputFormat
-outputFormat = eitherReader $
-  \case
-    "puml" -> Right PumlFormat
-    "cilium" -> Right CiliumFormat
-    "gexf" -> Right GexfFormat
-    _ -> Left $ "Kitab only supports the following formats: " <> mconcat (List.intersperse ", " supportedFormats)
+outputFormat = eitherReader $ \string -> case Map.lookup (T.pack string) supportedOutputFormats of
+  Just o -> Right o
+  Nothing -> Left $ "Kitab only supports the following formats: " <> mconcat (List.intersperse ", " supportedFormats)
 
 supportedFormats :: List String
 supportedFormats = T.unpack . display <$> ([minBound .. maxBound] :: List OutputFormat)

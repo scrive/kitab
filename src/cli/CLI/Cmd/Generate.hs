@@ -2,6 +2,7 @@ module CLI.Cmd.Generate
   ( GenerateOptions (..)
   , OutputFormat (..)
   , runGenerate
+  , supportedOutputFormats
   ) where
 
 import Data.List.NonEmpty (NonEmpty)
@@ -66,6 +67,12 @@ instance Display OutputFormat where
     PumlFormat -> "puml"
     CiliumFormat -> "cilium"
     GexfFormat -> "gexf"
+
+supportedOutputFormats :: Map Text OutputFormat
+supportedOutputFormats =
+  [minBound .. maxBound]
+    <&> (\connType -> (display connType, connType))
+    & Map.fromList
 
 runGenerate
   :: (Console :> es, FileSystem :> es, Error (NonEmpty CLIError) :> es, Environment :> es)

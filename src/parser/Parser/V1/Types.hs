@@ -1,6 +1,5 @@
 module Parser.V1.Types where
 
-
 import Core.Model.CIDRSet
 import Core.Model.ContextName
 import Core.Model.Entity
