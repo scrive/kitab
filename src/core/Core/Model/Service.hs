@@ -1,6 +1,16 @@
 {-# LANGUAGE DerivingVia #-}
 
-module Core.Model.Service where
+module Core.Model.Service
+  ( ConnectionType (..)
+  , connectionTypes
+  , Service (..)
+  , emptyService
+  , ServiceInfo (..)
+  , emptyServiceInfo
+  , Connection (..)
+  , EntityAccess (..)
+  , CIDRConnection (..)
+  ) where
 
 import Data.Map.Strict qualified as Map
 import Data.Set
@@ -13,6 +23,7 @@ import Core.Model.EntityName
 import Core.Model.PortNode
 import Core.Model.ServiceName
 
+-- | Describes how two edges connect to each-other.
 data ConnectionType
   = HTTPS
   | SMTPS
@@ -61,7 +72,7 @@ emptyService :: Service var
 emptyService =
   Service
     { serviceName = ""
-    , serviceInfo = defaultServiceInfo
+    , serviceInfo = emptyServiceInfo
     , serviceConnections = []
     , entityAccesses = []
     , cidrConnections = []
@@ -76,8 +87,8 @@ data ServiceInfo (var :: Type) = ServiceInfo
   }
   deriving stock (Eq, Show, Ord, Generic)
 
-defaultServiceInfo :: ServiceInfo a
-defaultServiceInfo =
+emptyServiceInfo :: ServiceInfo a
+emptyServiceInfo =
   ServiceInfo
     { serviceFqdn = Nothing
     , serviceContext = Nothing

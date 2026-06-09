@@ -30,7 +30,7 @@ testParallelConnectionsDetection = do
   let service =
         emptyService
           { serviceName = "A"
-          , serviceInfo = defaultServiceInfo
+          , serviceInfo = emptyServiceInfo
           , serviceConnections =
               [Connection (ServiceName "B") HTTPS [], Connection (ServiceName "B") FunctionCall []]
           }
@@ -46,7 +46,7 @@ testSelfReferentialConnections = do
   let service =
         emptyService
           { serviceName = "A"
-          , serviceInfo = defaultServiceInfo
+          , serviceInfo = emptyServiceInfo
           , serviceConnections =
               [Connection (ServiceName "A") HTTPS []]
           }
@@ -62,14 +62,14 @@ testMismatchedConnections = do
   let serviceA =
         emptyService
           { serviceName = "A"
-          , serviceInfo = defaultServiceInfo
+          , serviceInfo = emptyServiceInfo
           , serviceConnections =
               [Connection (ServiceName "B") HTTPS []]
           }
       serviceB =
         emptyService
           { serviceName = "B"
-          , serviceInfo = defaultServiceInfo
+          , serviceInfo = emptyServiceInfo
           , serviceConnections =
               [Connection (ServiceName "A") FunctionCall []]
           }

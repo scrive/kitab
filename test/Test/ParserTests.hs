@@ -63,7 +63,7 @@ testServiceDecoding = do
   let expectedResult =
         emptyService
           { serviceName = "media-proxy"
-          , serviceInfo = defaultServiceInfo
+          , serviceInfo = emptyServiceInfo
           , serviceConnections =
               [ Connection {connectionWith = ServiceName "main-app", connectionType = HTTPS, connectionPorts = [PortNode 3833 "TCP"]}
               ]
@@ -137,7 +137,7 @@ testParsingServiceWithVar = do
   let expectedResult =
         emptyService
           { serviceName = "opensearch"
-          , serviceInfo = defaultServiceInfo {serviceFqdn = Just (Left (Var "opensearch-fqdn"))}
+          , serviceInfo = emptyServiceInfo {serviceFqdn = Just (Left (Var "opensearch-fqdn"))}
           , serviceConnections =
               []
           }
