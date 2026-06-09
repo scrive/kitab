@@ -1,8 +1,9 @@
 module Parser.V1.Entity where
 
-import Data.Maybe qualified as Maybe
 import Data.Set qualified as Set
+import GHC.Generics
 import KDL
+import Optics.Core
 
 import Core.Model.ContextName
 import Core.Model.Entity
@@ -14,15 +15,7 @@ import Parser.V1.ServiceContext
 data EntityChild
   = EntityPort PortNode
   | EntityContext ContextName
-  deriving stock (Eq, Ord, Show)
-
-getEntityPort :: EntityChild -> Maybe PortNode
-getEntityPort (EntityPort p) = Just p
-getEntityPort _ = Nothing
-
-getEntityContext :: EntityChild -> Maybe ContextName
-getEntityContext (EntityContext c) = Just c
-getEntityContext _ = Nothing
+  deriving stock (Eq, Ord, Show, Generic)
 
 entityDecoder :: NodeListDecoder Entity
 entityDecoder = KDL.nodeWith "entity" $ do
@@ -32,7 +25,7 @@ entityDecoder = KDL.nodeWith "entity" $ do
       (EntityPort <$> portDecoder)
         <|> (EntityContext <$> contextReferenceDecoder)
 
-  let ports = Maybe.mapMaybe getEntityPort mixedChildren
-  let context = Maybe.listToMaybe $ Maybe.mapMaybe getEntityContext mixedChildren
-  let entityInfo = EntityInfo {entityPorts = Set.fromList ports, entityContext = context}
+  let entityPorts = Set.fromList $ toListOf (folded % #_EntityPort) mixedChildren
+  let entityContext = headOf (folded % #_EntityContext) mixedChildren
+  let entityInfo = EntityInfo {entityPorts, entityContext}
   pure Entity {entityName, entityInfo}

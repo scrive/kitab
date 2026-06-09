@@ -6,9 +6,10 @@ module Parser.V1.Service
 
 import Data.List qualified as List
 import Data.Map.Strict qualified as Map
-import Data.Maybe qualified as Maybe
 import Data.Set qualified as Set
+import GHC.Generics
 import KDL
+import Optics.Core
 
 import Core.Model.ContextName
 import Core.Model.PortNode
@@ -28,35 +29,7 @@ data ServiceMetadata (var :: Type)
   | AccessNode EntityAccess
   | ConnectNode CIDRConnection
   | CallTool Text
-  deriving stock (Eq, Ord, Show)
-
-getFQDN :: ServiceMetadata var -> Maybe (Either var Text)
-getFQDN (FQDNNode t) = Just t
-getFQDN _ = Nothing
-
-getServiceContext :: ServiceMetadata var -> Maybe ContextName
-getServiceContext (ServiceContextNode c) = Just c
-getServiceContext _ = Nothing
-
-getConnection :: ServiceMetadata var -> Maybe Connection
-getConnection (DependsOnNode c) = Just c
-getConnection _ = Nothing
-
-getPort :: ServiceMetadata var -> Maybe PortNode
-getPort (ServicePortNode p) = Just p
-getPort _ = Nothing
-
-getEntityAccess :: ServiceMetadata var -> Maybe EntityAccess
-getEntityAccess (AccessNode a) = Just a
-getEntityAccess _ = Nothing
-
-getCidrConnection :: ServiceMetadata var -> Maybe CIDRConnection
-getCidrConnection (ConnectNode a) = Just a
-getCidrConnection _ = Nothing
-
-getToolCall :: ServiceMetadata var -> Maybe Text
-getToolCall (CallTool t) = Just t
-getToolCall _ = Nothing
+  deriving stock (Eq, Ord, Show, Generic)
 
 serviceDecoder :: NodeListDecoder (Service Var)
 serviceDecoder = KDL.nodeWith "service" $ do
@@ -71,14 +44,14 @@ serviceDecoder = KDL.nodeWith "service" $ do
         <|> (ServiceContextNode <$> contextReferenceDecoder)
         <|> (CallTool <$> toolCallDecoder)
 
-  let serviceFqdn = Maybe.listToMaybe $ mapMaybe getFQDN mixedChildren
-  let servicePorts = Set.fromList $ mapMaybe getPort mixedChildren
-  let serviceContext = Maybe.listToMaybe $ mapMaybe getServiceContext mixedChildren
+  let serviceFqdn = headOf (folded % #_FQDNNode) mixedChildren
+  let servicePorts = Set.fromList $ toListOf (folded % #_ServicePortNode) mixedChildren
+  let serviceContext = headOf (folded % #_ServiceContextNode) mixedChildren
   let serviceInfo = ServiceInfo {serviceFqdn, serviceContext, servicePorts}
-  let serviceConnections = mapMaybe getConnection mixedChildren
-  let entityAccesses = mapMaybe getEntityAccess mixedChildren
-  let cidrConnections = mapMaybe getCidrConnection mixedChildren
-  let toolCalls = mapMaybe getToolCall mixedChildren
+  let serviceConnections = toListOf (folded % #_DependsOnNode) mixedChildren
+  let entityAccesses = toListOf (folded % #_AccessNode) mixedChildren
+  let cidrConnections = toListOf (folded % #_ConnectNode) mixedChildren
+  let toolCalls = toListOf (folded % #_CallTool) mixedChildren
 
   pure Service {serviceName, serviceInfo, serviceConnections, entityAccesses, cidrConnections, toolCalls}
 
