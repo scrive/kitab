@@ -75,6 +75,7 @@ library
     Driver.Environment
     Driver.GEXF
     Driver.Inventory
+    Driver.Output
     Driver.Puml
     Driver.Variable
     Driver.Verbosity

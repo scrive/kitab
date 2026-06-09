@@ -5,6 +5,7 @@ module Parser.V1.Service
   ) where
 
 import Data.List qualified as List
+import Data.Map.Strict qualified as Map
 import Data.Maybe qualified as Maybe
 import Data.Set qualified as Set
 import KDL
@@ -84,9 +85,6 @@ serviceDecoder = KDL.nodeWith "service" $ do
 dependsOnDecoder :: NodeListDecoder Connection
 dependsOnDecoder = KDL.nodeWith "depends-on" $ do
   connectionWith <- KDL.argWith serviceNameDecoder
-  -- referenceName <- KDL.argWith serviceNameDecoder
-  -- referenceContext <- KDL.optional $ KDL.propWith "context" (ContextName <$> KDL.string)
-  -- pure referenceName
   (connectionPorts, connectionType) <- KDL.children $ do
     connectionPorts <- Set.fromList <$> KDL.many portDecoder
     connectionType <- KDL.nodeWith "via" connectionTypeDecoder
@@ -109,16 +107,9 @@ connectDecoder = KDL.nodeWith "connect" $ do
 connectionTypeDecoder :: NodeDecoder ConnectionType
 connectionTypeDecoder = do
   connTypeText <- arg
-  case connTypeText of
-    "https" -> pure HTTPS
-    "function-call" -> pure FunctionCall
-    "smtps" -> pure SMTPS
-    "redis" -> pure Redis
-    "postgres" -> pure Postgres
-    "domain" -> pure Domain
-    "external-tool" -> pure ExternalTool
-    "browser" -> pure Browser
-    _ -> KDL.fail $ "Found unknown connection type: " <> connTypeText <> ". Supported connection types are " <> mconcat (List.intersperse ", " supportedConnectionTypes)
+  case Map.lookup connTypeText connectionTypes of
+    Just r -> pure r
+    Nothing -> KDL.fail $ "Found unknown connection type: " <> connTypeText <> ". Supported connection types are " <> mconcat (List.intersperse ", " supportedConnectionTypes)
 
 supportedConnectionTypes :: List Text
 supportedConnectionTypes = display <$> ([minBound .. maxBound] :: (List ConnectionType))

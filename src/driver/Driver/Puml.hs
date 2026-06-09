@@ -5,19 +5,16 @@ module Driver.Puml where
 import Algebra.Graph.Labelled (Graph)
 import Algebra.Graph.Labelled qualified as Graph
 import Algebra.Graph.Labelled.AdjacencyMap qualified as AM
-import Data.ByteString.Char8 qualified as BS8
-import Data.Text.Encoding qualified as T
 import Effectful
 import Effectful.Console.ByteString (Console)
-import Effectful.Console.ByteString qualified as Console
 import Effectful.FileSystem (FileSystem)
-import Effectful.FileSystem.IO.ByteString qualified as FileSystem
 import System.OsPath (OsPath, osp, (</>))
 import System.OsPath qualified as OsPath
 
 import Core.Model.Reference
 import Core.Model.Service
 import Core.Model.ServiceName
+import Driver.Output (writeArtifact)
 import Driver.Verbosity
 import Render.C4 qualified as C4
 import Render.C4.C4Container.Types qualified as C4
@@ -37,5 +34,4 @@ renderToPuml serviceIndex outputDir verbosity graph = do
   let adjacencyMap = AM.edges graphEdges
   let rendered = C4.renderC4 adjacencyMap
   outputPath <- OsPath.decodeUtf (outputDir </> [osp|architecture.c4|])
-  when (isVerbose verbosity) (Console.putStrLn $ "Writing file " <> BS8.pack outputPath)
-  FileSystem.writeFile outputPath (T.encodeUtf8 rendered)
+  writeArtifact verbosity outputPath rendered

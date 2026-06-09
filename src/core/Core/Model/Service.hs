@@ -2,6 +2,7 @@
 
 module Core.Model.Service where
 
+import Data.Map.Strict qualified as Map
 import Data.Set
 import Data.Set qualified as Set
 import GHC.Generics
@@ -36,6 +37,12 @@ instance Display ConnectionType where
 
 instance Pretty ConnectionType where
   pretty = pretty . display
+
+connectionTypes :: Map Text ConnectionType
+connectionTypes =
+  [minBound .. maxBound]
+    <&> (\connType -> (display connType, connType))
+    & Map.fromList
 
 data Service (var :: Type) = Service
   { serviceName :: ServiceName
