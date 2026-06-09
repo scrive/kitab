@@ -1,34 +1,18 @@
 # Architecture
 
-The project is split into several components in order to enforce dependencies between what are the Infrastructure, Domain, Application and Presentation layers
+Kitab is split between several sub-libraries to enforce proper separation between the various layers of the application.
 
-## Infrastructure
 
-The *Infrastructure* layer provides foundations like:
-  * File management operations
-  * Parsing
+## `lib:kitab`
 
-### Components
-  * `lib:kitab`
+This is the main library, which contains the CLI implementation,
+the parsing logic, and the driver – code that handles the orchestration of
+rendering and file system operations.
 
-## Domain
+## `lib:kitab-core`
 
-It defines types and relationships described in the KDL files.
+This library holds the code model definitions.
 
-### Components
-  * `lib:kitab-core`
+## `lib:kitab-c4`, `lib:kitab-cilium`, `lib:kitab-gexf`
 
-## Presentation
-
-The human interface of the program is defined in the Presentation layer.
-This is where CLI and output formats like C4 are defined.
-
-### Components
-  * `lib:kitab-c4`
-
-## Application
-
-This layer provides high-level coordination of the other layers.
-
-### Components
-  * `lib:kitab`
+Format-specific renderers.
