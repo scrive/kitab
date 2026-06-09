@@ -133,7 +133,6 @@ library kitab-core
     Core.Model.ContextName
     Core.Model.Entity
     Core.Model.EntityName
-    Core.Model.EntityReference
     Core.Model.Inventory
     Core.Model.Inventory.Aggregated
     Core.Model.Inventory.Selector
@@ -143,7 +142,6 @@ library kitab-core
     Core.Model.Service
     Core.Model.ServiceContext
     Core.Model.ServiceName
-    Core.Model.ServiceReference
     Core.Validation
     Core.Variable
 
