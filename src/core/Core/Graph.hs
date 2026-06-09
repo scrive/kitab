@@ -18,29 +18,17 @@ import Core.Model.Reference
 import Core.Model.Service
 import Core.Model.ServiceName
 
+buildIndex :: Ord k => (a -> k) -> (a -> v) -> List a -> Map k v
+buildIndex key val = foldr (\x -> Map.insert (key x) (val x)) Map.empty
+
 buildServiceIndex :: List (Service Void) -> Map ServiceName (ServiceInfo Void)
-buildServiceIndex =
-  foldr
-    ( \Service {serviceName, serviceInfo} ->
-        Map.insert serviceName serviceInfo
-    )
-    Map.empty
+buildServiceIndex = buildIndex (.serviceName) (.serviceInfo)
 
 buildEntityIndex :: List Entity -> Map EntityName EntityInfo
-buildEntityIndex =
-  foldr
-    ( \Entity {entityName, entityInfo} ->
-        Map.insert entityName entityInfo
-    )
-    Map.empty
+buildEntityIndex = buildIndex (.entityName) (.entityInfo)
 
 buildCidrIndex :: List (CIDRSet Void) -> Map Text (CIDRSet Void)
-buildCidrIndex =
-  foldr
-    ( \cidrSet@CIDRSet {setName} ->
-        Map.insert setName cidrSet
-    )
-    Map.empty
+buildCidrIndex = buildIndex (.setName) identity
 
 buildGraph :: List (Service var) -> List Entity -> Graph (List ConnectionType) Reference
 buildGraph services entities =
