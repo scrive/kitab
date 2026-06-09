@@ -1,5 +1,8 @@
 {-# LANGUAGE RecordWildCards #-}
 
+-- |
+--   CLI Errors are given three-digit codes to help with referencing in search engines (especially tickets) and messaging applications.
+--   These numbers are picked at random.
 module CLI.Error where
 
 import Data.Text qualified as T
