@@ -13,7 +13,7 @@ decodeServiceDocument :: KDL.DocumentDecoder (List (Declaration Var))
 decodeServiceDocument =
   KDL.document . KDL.many $
     oneOf
-      [ VersionDeclration <$> versionDecoder
+      [ VersionDeclaration <$> versionDecoder
       , EntityDeclaration <$> entityDecoder
       , CIDRSetDeclaration <$> cidrSetDecoder
       , ContextDeclaration <$> contextDecoder

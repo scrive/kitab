@@ -18,7 +18,7 @@ data CLIErrorType
   = ParseError
   | FileDoesNotExist
   | GraphValidationError
-  | UnkownContextFilter
+  | UnknownContextFilter
   | VariableNotFound
   | CiliumValidationError
   deriving stock (Eq, Show, Ord, Enum, Bounded)
@@ -28,7 +28,7 @@ instance Display CLIErrorType where
     ParseError -> "Parse error"
     FileDoesNotExist -> "File does not exist"
     GraphValidationError -> "Graph validation error"
-    UnkownContextFilter -> "Unknown context filter"
+    UnknownContextFilter -> "Unknown context filter"
     VariableNotFound -> "Variable not found"
     CiliumValidationError -> "Cilium validation error"
 
@@ -37,7 +37,7 @@ errorCodeFromType = \case
   ParseError -> ErrorCode 234
   FileDoesNotExist -> ErrorCode 100
   GraphValidationError -> ErrorCode 241
-  UnkownContextFilter -> ErrorCode 154
+  UnknownContextFilter -> ErrorCode 154
   VariableNotFound -> ErrorCode 523
   CiliumValidationError -> ErrorCode 310
 
@@ -80,7 +80,7 @@ graphValidationError validationError =
 
 unknownContextFilter :: ContextName -> CLIError
 unknownContextFilter contextFilter =
-  mkError UnkownContextFilter $
+  mkError UnknownContextFilter $
     "Could not find context " <> display contextFilter <> " to filter services."
 
 variableNotFound :: VariableName -> CLIError
