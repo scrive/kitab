@@ -34,6 +34,7 @@ data ServiceMetadata (var :: Type)
 serviceDecoder :: NodeListDecoder (Service Var)
 serviceDecoder = KDL.nodeWith "service" $ do
   serviceName <- KDL.argWith serviceNameDecoder
+  rendererProps <- KDL.remainingProps
   mixedChildren <-
     KDL.children . KDL.many $
       (FQDNNode <$> fqdnDecoder)
@@ -47,7 +48,7 @@ serviceDecoder = KDL.nodeWith "service" $ do
   let serviceFqdn = headOf (folded % #_FQDNNode) mixedChildren
   let servicePorts = Set.fromList $ toListOf (folded % #_ServicePortNode) mixedChildren
   let serviceContext = headOf (folded % #_ServiceContextNode) mixedChildren
-  let serviceInfo = ServiceInfo {serviceFqdn, serviceContext, servicePorts}
+  let serviceInfo = ServiceInfo {serviceFqdn, serviceContext, servicePorts, rendererProps}
   let serviceConnections = toListOf (folded % #_DependsOnNode) mixedChildren
   let entityAccesses = toListOf (folded % #_AccessNode) mixedChildren
   let cidrConnections = toListOf (folded % #_ConnectNode) mixedChildren

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedLists #-}
 
-module Test.ParserTests where
+module Test.ParserTests (test) where
 
 import Algebra.Graph.Export.Dot
 import Data.ByteString.Lazy (LazyByteString)
@@ -29,6 +29,11 @@ test =
   testGroup
     "Parser"
     [ testThat "Decode single service definition" testServiceDecoding
+    , testGroup
+        "Metadata"
+        [ testThat "Invalid service prop values are parsed" testInvalidPropValuesAreParsed
+        , testThat "Invalid service prop are rejected" testInvalidPropKeysAreParsed
+        ]
     , testGroup
         "Version"
         [ testThat "Unknown version number is handled" testUnkonwnVersionHandling
@@ -73,6 +78,22 @@ testServiceDecoding = do
     "Expected service definition"
     expectedResult
     result
+
+testInvalidPropValuesAreParsed :: TestEff Unit
+testInvalidPropValuesAreParsed = do
+  result <- assertParse (KDL.document serviceDecoder) "test/fixtures/invalid-service-prop-value.kdl"
+  assertEqual
+    "Could not parse invalid prop value"
+    (Map.fromList [("puml:type", "invalid")])
+    result.serviceInfo.rendererProps
+
+testInvalidPropKeysAreParsed :: TestEff Unit
+testInvalidPropKeysAreParsed = do
+  result <- assertParse (KDL.document serviceDecoder) "test/fixtures/invalid-service-prop-key.kdl"
+  assertEqual
+    "Could not parse invalid prop key"
+    (Map.fromList [("puml:blargh", "database")])
+    result.serviceInfo.rendererProps
 
 testUnkonwnVersionHandling :: TestEff Unit
 testUnkonwnVersionHandling = do

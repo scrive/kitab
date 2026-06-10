@@ -4,8 +4,10 @@
 title System Architecture (C4 Container View)
 
 ' --- Contexts ---
-Container(network, "network")
-Container(my_app, "my-app")
+Container_Ext(network, "network")
+Container_Boundary(k8s, k8s) {
+  Container(my_app, "my-app")
+}
 
 ' --- Relationships ---
 Rel(my_app, network, "network")

@@ -1,0 +1,3 @@
+service "postgres" puml:type="invalid" {
+	port 5432
+}

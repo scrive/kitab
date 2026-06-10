@@ -5,6 +5,7 @@
 --   These numbers are picked at random.
 module CLI.Error where
 
+import Data.Set qualified as Set
 import Data.Text qualified as T
 import KDL (DecodeError, renderDecodeError)
 import System.OsPath
@@ -13,6 +14,8 @@ import Core.Model.ContextName
 import Core.Model.InventoryVariable
 import Core.Validation
 import Render.Cilium.Resolved (ResolutionError (..))
+import Render.Puml.C4Container.Types (InvalidPumlPropError (..), PumlError (..), UnknownPumlPropError (..))
+import Render.Puml.PumlType (knownPumlProps)
 
 data CLIErrorType
   = ParseError
@@ -21,6 +24,7 @@ data CLIErrorType
   | UnknownContextFilter
   | VariableNotFound
   | CiliumValidationError
+  | PumlValidationError
   deriving stock (Eq, Show, Ord, Enum, Bounded)
 
 instance Display CLIErrorType where
@@ -31,6 +35,7 @@ instance Display CLIErrorType where
     UnknownContextFilter -> "Unknown context filter"
     VariableNotFound -> "Variable not found"
     CiliumValidationError -> "Cilium validation error"
+    PumlValidationError -> "Puml validation error"
 
 errorCodeFromType :: CLIErrorType -> ErrorCode
 errorCodeFromType = \case
@@ -40,6 +45,7 @@ errorCodeFromType = \case
   UnknownContextFilter -> ErrorCode 154
   VariableNotFound -> ErrorCode 523
   CiliumValidationError -> ErrorCode 310
+  PumlValidationError -> ErrorCode 412
 
 newtype ErrorCode = ErrorCode Word
   deriving newtype (Eq, Show, Ord)
@@ -87,6 +93,27 @@ variableNotFound :: VariableName -> CLIError
 variableNotFound expectedVariable =
   mkError VariableNotFound $
     "Could not find a definition for " <> display expectedVariable <> " in provided inventories."
+
+pumlValidationError :: PumlError -> CLIError
+pumlValidationError = \case
+  InvalidPumlProp InvalidPumlPropError {serviceName, propKey, providedValue, supportedValues} ->
+    mkError PumlValidationError $
+      "Service "
+        <> display serviceName
+        <> " has unknown value for "
+        <> propKey
+        <> ": "
+        <> providedValue
+        <> ". Supported values are "
+        <> T.intercalate ", " supportedValues
+  UnknownPumlProp UnknownPumlPropError {serviceName, propKey} ->
+    mkError PumlValidationError $
+      "Service "
+        <> display serviceName
+        <> " has unknown puml prop: "
+        <> propKey
+        <> ". Known props are "
+        <> T.intercalate ", " (Set.toList knownPumlProps)
 
 resolutionError :: ResolutionError -> CLIError
 resolutionError =

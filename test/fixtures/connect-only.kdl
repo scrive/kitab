@@ -5,5 +5,6 @@ cidr-set "network" {
 }
 
 service "my-app" {
+	in-context "k8s"
 	connect "network"
 }

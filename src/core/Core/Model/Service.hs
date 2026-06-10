@@ -87,6 +87,9 @@ data ServiceInfo (var :: Type) = ServiceInfo
   -- ^ Fqdn is a Cilium thing.
   , serviceContext :: Maybe ContextName
   , servicePorts :: Set PortNode
+  , rendererProps :: Map Text Text
+  -- ^ Optional, renderer-specific properties kept abstract in the core model.
+  -- Each renderer interprets (and validates) the keys it understands.
   }
   deriving stock (Eq, Show, Ord, Generic)
 
@@ -96,6 +99,7 @@ emptyServiceInfo =
     { serviceFqdn = Nothing
     , serviceContext = Nothing
     , servicePorts = Set.empty
+    , rendererProps = Map.empty
     }
 
 data Connection = Connection

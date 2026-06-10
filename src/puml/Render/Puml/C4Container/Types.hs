@@ -1,8 +1,12 @@
+{-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE OverloadedLabels #-}
 
 module Render.Puml.C4Container.Types
   ( C4Container (..)
   , ServiceTree (..)
+  , PumlError (..)
+  , InvalidPumlPropError (..)
+  , UnknownPumlPropError (..)
   , mkC4ContainerAlias
   , toC4Container
   , buildServiceTree
@@ -22,6 +26,7 @@ import Core.Model.EntityName
 import Core.Model.Reference
 import Core.Model.Service
 import Core.Model.ServiceName
+import Render.Puml.PumlType (PropError (..), PumlType, defaultPumlType, parsePumlType, validatePumlProps)
 
 newtype C4ContainerAlias = C4ContainerAlias Text
   deriving newtype (Eq, Show, Ord, Pretty)
@@ -37,28 +42,58 @@ data C4Container = C4Container
   { alias :: C4ContainerAlias
   , name :: Text
   , hierarchy :: List ContextName
+  , pumlType :: PumlType
   }
   deriving stock (Eq, Show, Ord)
 
-toC4Container :: Map ServiceName (ServiceInfo var) -> Reference -> C4Container
+-- | A known prop carries a value the renderer does not accept.
+data InvalidPumlPropError = InvalidPumlPropError
+  { serviceName :: ServiceName
+  , propKey :: Text
+  , providedValue :: Text
+  , supportedValues :: List Text
+  }
+  deriving stock (Eq, Show, Ord)
+
+-- | A @puml:@ prop key the renderer does not understand (e.g. a typo).
+data UnknownPumlPropError = UnknownPumlPropError
+  { serviceName :: ServiceName
+  , propKey :: Text
+  }
+  deriving stock (Eq, Show, Ord)
+
+-- | A renderer-time validation failure on a service's @puml:@-namespaced props.
+data PumlError
+  = InvalidPumlProp InvalidPumlPropError
+  | UnknownPumlProp UnknownPumlPropError
+  deriving stock (Eq, Show, Ord)
+
+toC4Container :: Map ServiceName (ServiceInfo var) -> Reference -> Either PumlError C4Container
 toC4Container serviceIndex = \case
-  ServiceRef (ServiceName name) ->
+  ServiceRef serviceName@(ServiceName name) ->
     let alias = mkC4ContainerAlias name
-        mServiceInfo = Map.lookup (ServiceName name) serviceIndex
+        mServiceInfo = Map.lookup serviceName serviceIndex
         hierarchy = maybeToList $ mServiceInfo ^? _Just % #serviceContext % _Just
-    in C4Container {alias, name, hierarchy}
+        rendererProps = maybe Map.empty (.rendererProps) mServiceInfo
+    in case validatePumlProps rendererProps of
+         Left unknownKey -> Left $ UnknownPumlProp UnknownPumlPropError {serviceName, propKey = unknownKey}
+         Right () ->
+           case parsePumlType rendererProps of
+             Left PropError {propKey, providedValue, supportedValues} ->
+               Left $ InvalidPumlProp InvalidPumlPropError {serviceName, propKey, providedValue, supportedValues}
+             Right pumlType -> Right C4Container {alias, name, hierarchy, pumlType}
   EntityRef (EntityName name) ->
     let alias = mkC4ContainerAlias name
         hierarchy = []
-    in C4Container {alias, name, hierarchy}
+    in Right C4Container {alias, name, hierarchy, pumlType = defaultPumlType}
   ToolRef mContext (ServiceName serviceName) name ->
     let alias = mkC4ContainerAlias name
         hierarchy = maybeToList mContext <> [ContextName serviceName]
-    in C4Container {alias, name, hierarchy}
+    in Right C4Container {alias, name, hierarchy, pumlType = defaultPumlType}
   CIDRRef (CIDRConnection name) ->
     let alias = mkC4ContainerAlias name
         hierarchy = []
-    in C4Container {alias, name, hierarchy}
+    in Right C4Container {alias, name, hierarchy, pumlType = defaultPumlType}
 
 data ServiceTree = ServiceTree
   { leaves :: List C4Container

@@ -28,6 +28,7 @@
             { serviceFqdn = Nothing
             , serviceContext = Just "k8s"
             , servicePorts = fromList []
+            , rendererProps = fromList []
             }
         , serviceConnections =
             [ Connection
@@ -78,6 +79,7 @@
                     , protocol = "TCP"
                     }
                 ]
+            , rendererProps = fromList []
             }
         , serviceConnections = []
         , entityAccesses = []
@@ -98,6 +100,7 @@
                     , protocol = "TCP"
                     }
                 ]
+            , rendererProps = fromList []
             }
         , serviceConnections = []
         , entityAccesses = []
@@ -118,6 +121,7 @@
                     , protocol = "TCP"
                     }
                 ]
+            , rendererProps = fromList []
             }
         , serviceConnections = []
         , entityAccesses = []
@@ -138,6 +142,7 @@
                     , protocol = "TCP"
                     }
                 ]
+            , rendererProps = fromList []
             }
         , serviceConnections = []
         , entityAccesses = []
@@ -152,6 +157,7 @@
             { serviceFqdn = Nothing
             , serviceContext = Just "k8s"
             , servicePorts = fromList []
+            , rendererProps = fromList []
             }
         , serviceConnections = []
         , entityAccesses = []
@@ -166,6 +172,7 @@
             { serviceFqdn = Nothing
             , serviceContext = Just "k8s"
             , servicePorts = fromList []
+            , rendererProps = fromList []
             }
         , serviceConnections =
             [ Connection
