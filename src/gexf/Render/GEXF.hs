@@ -47,6 +47,8 @@ renderToGEXF graph serviceIndex =
       EntityRef entityRef -> toXML $ entityRefToNode entityRef
       ToolRef _ (ServiceName service) toolName ->
         toXML $ toolToGexfNode service toolName
+      CIDRRef cidrConnection ->
+        toXML $ cidrConnectionToGexfNode cidrConnection
 
     renderEdge :: Tuple2 Word (Tuple3 (List ConnectionType) Reference Reference) -> XML
     renderEdge (i, (e, u, v)) =

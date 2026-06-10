@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gexf version="1.2" xmlns="http://www.gexf.net/1.2draft">
+    <graph defaultedgetype="directed" mode="static">
+        <attributes class="node">
+            <attribute
+              id="context"
+              title="context"
+              type="string"/>
+            <attribute
+              id="context_id"
+              title="Context ID"
+              type="int"/>
+        </attributes>
+        <nodes>
+            <node id="my-app" label="my-app"/>
+            <node id="network" label="network"/>
+        </nodes>
+        <edges>
+            <edge
+              id="e0"
+              label="network"
+              source="my-app"
+              target="network"/>
+        </edges>
+    </graph>
+</gexf>
