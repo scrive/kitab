@@ -13,6 +13,7 @@ import System.Exit qualified as System
 import System.IO
 
 import CLI
+import CLI.Cmd.Dump (runDump)
 import CLI.Cmd.Generate (runGenerate)
 import CLI.Error
 import CLI.Types
@@ -40,3 +41,4 @@ runOptions
   => Command
   -> Eff es Unit
 runOptions (CmdGenerate cmdOptions) = runGenerate cmdOptions
+runOptions (CmdDump cmdOptions) = runDump cmdOptions

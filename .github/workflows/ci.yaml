@@ -57,8 +57,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ steps.setup-haskell.outputs.cabal-store }}
-          key: ${{ runner.os }}-ghc-${{ matrix.ghc }}-cabal-${{ hashFiles('./dist-newstyle/cache/plan.json') }}
-          restore-keys: ${{ runner.os }}-ghc-${{ matrix.ghc }}-
+          key: ${{ runner.os }}-ghc-${{ matrix.ghc }}-${{ hashFiles('./dist-newstyle/cache/plan.json') }}
+          restore-keys: ${{ runner.os }}-ghc-${{ matrix.ghc }}
 
       - name: Build - ${{ matrix.ghc }}
         run: cabal build
@@ -96,9 +96,9 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ${{ steps.setup-haskell.outputs.cabal-store }}
-          key: ${{ runner.os }}-ghc-${{ matrix.ghc }}-cabal-${{ hashFiles('./dist-newstyle/cache/plan.json') }}
+          key: ${{ runner.os }}-ghc-${{ matrix.ghc }}-${{ hashFiles('./dist-newstyle/cache/plan.json') }}
 
-          restore-keys: ${{ runner.os }}-ghc-${{ matrix.ghc }}-
+          restore-keys: ${{ runner.os }}-ghc-${{ matrix.ghc }}
 
       - name: Build
         run: cabal build --project-file=cabal.release.project
@@ -167,9 +167,9 @@ jobs:
       - uses: actions/cache@v5
         with:
           path: ${{ steps.setup-haskell.outputs.cabal-store }}
-          key: ${{ runner.os }}-ghc-${{ matrix.ghc }}-cabal-${{ hashFiles('./dist-newstyle/cache/plan.json') }}
+          key: ${{ runner.os }}-ghc-${{ matrix.ghc }}-${{ hashFiles('./dist-newstyle/cache/plan.json') }}
 
-          restore-keys: ${{ runner.os }}-${{ steps.setup.outputs.ghc-version }}-
+          restore-keys: ${{ runner.os }}-ghc-${{ matrix.ghc }}
 
       - name: Build
         run: cabal build --project-file=cabal.static.project

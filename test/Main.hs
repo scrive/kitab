@@ -2,6 +2,7 @@ module Main (main) where
 
 import Test.Tasty
 
+import Test.CLI.DumpTests qualified as DumpTests
 import Test.InventoryTests qualified as InventoryTests
 import Test.ModelTests qualified as ModelTests
 import Test.ParserTests qualified as ParserTests
@@ -16,6 +17,7 @@ main =
 tests :: List TestTree
 tests =
   [ ModelTests.test
+  , DumpTests.test
   , ParserTests.test
   , PumlTests.test
   , CiliumTests.test

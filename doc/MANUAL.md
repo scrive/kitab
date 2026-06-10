@@ -4,10 +4,20 @@ kitab — Documentation and Infrastructure for service-oriented architectures
 
 ## SYNOPSIS
 
+### Generate
+
 Usage: kitab generate [-q|--quiet] (-f|--format FORMAT)
                       (-o|--output-dir DIRECTORY) [--context CONTEXT]
                       [--cloud CLOUD] [--region REGION] [--env ENVIRONMENT]
                       [-i|--inventory DIRECTORY] FILES
+
+  Produce artifacts from definition files
+
+### Dump
+
+Usage: kitab dump FILE
+
+  Dump the parsed Haskell AST of a single KDL file
 
 ## DESCRIPTION
 
