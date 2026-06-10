@@ -24,7 +24,7 @@ import Paths_kitab (version)
 parseCommand :: Parser Command
 parseCommand =
   subparser $
-    command "generate" (parseGenerateOptions `withInfo` "")
+    command "generate" (parseGenerateOptions `withInfo` "Produce artifacts from definition files")
       <> command "dump" (parseDumpOptions `withInfo` "Dump the parsed Haskell AST of a single KDL file")
 
 parseGenerateOptions :: Parser Command
