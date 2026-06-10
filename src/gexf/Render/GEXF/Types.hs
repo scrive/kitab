@@ -5,6 +5,7 @@ import Text.XML.Writer
 import Core.Model.ContextName
 import Core.Model.EntityName
 import Core.Model.Reference
+import Core.Model.Service
 import Core.Model.ServiceName
 
 -- | Root GEXF element
@@ -176,6 +177,14 @@ serviceToGexfNode serviceName mContextName =
         case mContextName of
           Nothing -> []
           Just contextName -> contextAttValues (display contextName)
+    }
+
+cidrConnectionToGexfNode :: CIDRConnection -> Node
+cidrConnectionToGexfNode cidrConnection =
+  Node
+    { nodeId = referenceNodeId (CIDRRef cidrConnection)
+    , nodeLabel = Label (display cidrConnection.connectTarget)
+    , nodeAttrs = []
     }
 
 entityRefToNode :: EntityName -> Node

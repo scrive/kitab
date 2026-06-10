@@ -95,23 +95,8 @@ testServiceDefinitionsParsing = runTestEff $ do
 
 testGraphToDot :: IO LazyByteString
 testGraphToDot = runTestEff $ do
-  declarations <- assertParseDocument "test/fixtures/multiple-service-definitions.kdl"
-  let entities =
-        mapMaybe
-          ( \case
-              EntityDeclaration e -> Just e
-              _ -> Nothing
-          )
-          declarations
-  let serviceDefinitions' =
-        mapMaybe
-          ( \case
-              ServiceDeclaration s -> Just s
-              _ -> Nothing
-          )
-          declarations
-
-  let graph = buildGraph serviceDefinitions' entities
+  declarations <- partitionDeclarations <$> assertParseDocument "test/fixtures/multiple-service-definitions.kdl"
+  let graph = buildGraph declarations.services declarations.entities
 
   pure . TL.encodeUtf8 $ TL.fromStrict (export (defaultStyle display) graph)
 
