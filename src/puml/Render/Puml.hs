@@ -1,4 +1,4 @@
-module Render.C4 (renderC4) where
+module Render.Puml (renderPuml) where
 
 import Algebra.Graph.Labelled.AdjacencyMap (AdjacencyMap)
 import Algebra.Graph.Labelled.AdjacencyMap qualified as AM
@@ -9,12 +9,12 @@ import Prettyprinter.Render.Text (renderStrict)
 
 import Core.Model.ContextName
 import Core.Model.Service
-import Render.C4.C4Container.Types
+import Render.Puml.C4Container.Types
 
-renderC4
+renderPuml
   :: AdjacencyMap (List ConnectionType) C4Container
   -> Text
-renderC4 graph = renderStrict . layoutPretty defaultLayoutOptions $ pumlDoc
+renderPuml graph = renderStrict . layoutPretty defaultLayoutOptions $ pumlDoc
   where
     pumlDoc :: Doc ann
     pumlDoc =

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedLabels #-}
 
-module Render.C4.C4Container.Types
+module Render.Puml.C4Container.Types
   ( C4Container (..)
   , ServiceTree (..)
   , mkC4ContainerAlias

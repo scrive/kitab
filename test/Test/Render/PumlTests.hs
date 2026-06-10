@@ -1,4 +1,4 @@
-module Test.Render.C4Tests where
+module Test.Render.PumlTests where
 
 import Algebra.Graph.Labelled qualified as Graph
 import Algebra.Graph.Labelled.AdjacencyMap qualified as AM
@@ -14,8 +14,8 @@ import Core.Model.Inventory.Aggregated
 import Core.Validation
 import Driver.Variable
 import Parser.V1.Types
-import Render.C4 qualified as C4
-import Render.C4.C4Container.Types
+import Render.Puml qualified as Puml
+import Render.Puml.C4Container.Types
 import Test.Utils
 
 test :: TestTree
@@ -61,7 +61,7 @@ renderWebAppToBackend = runTestEff $ do
           & Graph.edgeList
           & fmap (\(es, a, b) -> (es, toC4Container serviceIndex a, toC4Container serviceIndex b))
   let adjacencyMap = AM.edges graphEdges
-  (pure . TL.encodeUtf8) . T.fromStrict $ C4.renderC4 adjacencyMap
+  (pure . TL.encodeUtf8) . T.fromStrict $ Puml.renderPuml adjacencyMap
 
 renderServices :: IO LazyByteString
 renderServices = runTestEff $ do
@@ -90,4 +90,4 @@ renderServices = runTestEff $ do
           & Graph.edgeList
           & fmap (\(es, a, b) -> (es, toC4Container serviceIndex a, toC4Container serviceIndex b))
   let adjacencyMap = AM.edges graphEdges
-  (pure . TL.encodeUtf8) . T.fromStrict $ C4.renderC4 adjacencyMap
+  (pure . TL.encodeUtf8) . T.fromStrict $ Puml.renderPuml adjacencyMap

@@ -16,8 +16,8 @@ import Core.Model.Service
 import Core.Model.ServiceName
 import Driver.Output (writeArtifact)
 import Driver.Verbosity
-import Render.C4 qualified as C4
-import Render.C4.C4Container.Types qualified as C4
+import Render.Puml qualified as Puml
+import Render.Puml.C4Container.Types qualified as Puml
 
 renderToPuml
   :: (Console :> es, FileSystem :> es)
@@ -30,8 +30,8 @@ renderToPuml serviceIndex outputDir verbosity graph = do
   let graphEdges =
         graph
           & Graph.edgeList
-          & fmap (\(es, a, b) -> (es, C4.toC4Container serviceIndex a, C4.toC4Container serviceIndex b))
+          & fmap (\(es, a, b) -> (es, Puml.toC4Container serviceIndex a, Puml.toC4Container serviceIndex b))
   let adjacencyMap = AM.edges graphEdges
-  let rendered = C4.renderC4 adjacencyMap
-  outputPath <- OsPath.decodeUtf (outputDir </> [osp|architecture.c4|])
+  let rendered = Puml.renderPuml adjacencyMap
+  outputPath <- OsPath.decodeUtf (outputDir </> [osp|architecture.puml|])
   writeArtifact verbosity outputPath rendered

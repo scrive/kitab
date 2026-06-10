@@ -1,4 +1,4 @@
-module Render.C4.C4Entity.Types where
+module Render.Puml.C4Entity.Types where
 
 import Core.Model.EntityName
 

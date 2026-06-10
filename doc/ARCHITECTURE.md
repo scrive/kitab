@@ -13,6 +13,6 @@ rendering and file system operations.
 
 This library holds the code model definitions.
 
-## `lib:kitab-c4`, `lib:kitab-cilium`, `lib:kitab-gexf`
+## `lib:kitab-puml`, `lib:kitab-cilium`, `lib:kitab-gexf`
 
 Format-specific renderers.
