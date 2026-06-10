@@ -32,27 +32,36 @@ test =
         diffCmd
         "test/golden/web-app-to-backend.puml"
         renderWebAppToBackend
+    , goldenVsStringDiff
+        "Service with only a connect node"
+        diffCmd
+        "test/golden/connect-only.puml"
+        renderConnectOnly
     ]
+
+renderConnectOnly :: IO LazyByteString
+renderConnectOnly = runTestEff $ do
+  declarations <- partitionDeclarations <$> assertParseDocument "test/fixtures/connect-only.kdl"
+  let entities = declarations.entities
+  let aggregatedInventory = AggregatedInventory mempty mempty
+  serviceDefinitions <- traverse (resolveServiceVars aggregatedInventory) declarations.services
+  let graph = buildGraph serviceDefinitions entities
+  let serviceIndex = buildServiceIndex serviceDefinitions
+  void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)
+  liftIO $ print graph
+  let graphEdges =
+        graph
+          & Graph.edgeList
+          & fmap (\(es, a, b) -> (es, toC4Container serviceIndex a, toC4Container serviceIndex b))
+  let adjacencyMap = AM.edges graphEdges
+  (pure . TL.encodeUtf8) . T.fromStrict $ Puml.renderPuml adjacencyMap
 
 renderWebAppToBackend :: IO LazyByteString
 renderWebAppToBackend = runTestEff $ do
-  declarations <- assertParseDocument "test/fixtures/web-app-to-backend.kdl"
-  let serviceDefinitions' =
-        mapMaybe
-          ( \case
-              ServiceDeclaration s -> Just s
-              _ -> Nothing
-          )
-          declarations
-  let entities =
-        mapMaybe
-          ( \case
-              EntityDeclaration c -> Just c
-              _ -> Nothing
-          )
-          declarations
+  declarations <- partitionDeclarations <$> assertParseDocument "test/fixtures/web-app-to-backend.kdl"
+  let entities = declarations.entities
   let aggregatedInventory = AggregatedInventory mempty mempty
-  serviceDefinitions <- traverse (resolveServiceVars aggregatedInventory) serviceDefinitions'
+  serviceDefinitions <- traverse (resolveServiceVars aggregatedInventory) declarations.services
   let graph = buildGraph serviceDefinitions entities
   let serviceIndex = buildServiceIndex serviceDefinitions
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)
@@ -65,23 +74,10 @@ renderWebAppToBackend = runTestEff $ do
 
 renderServices :: IO LazyByteString
 renderServices = runTestEff $ do
-  declarations <- assertParseDocument "test/fixtures/multiple-service-definitions.kdl"
-  let serviceDefinitions' =
-        mapMaybe
-          ( \case
-              ServiceDeclaration s -> Just s
-              _ -> Nothing
-          )
-          declarations
-  let entities =
-        mapMaybe
-          ( \case
-              EntityDeclaration c -> Just c
-              _ -> Nothing
-          )
-          declarations
+  declarations <- partitionDeclarations <$> assertParseDocument "test/fixtures/multiple-service-definitions.kdl"
+  let entities = declarations.entities
   let aggregatedInventory = AggregatedInventory mempty mempty
-  serviceDefinitions <- traverse (resolveServiceVars aggregatedInventory) serviceDefinitions'
+  serviceDefinitions <- traverse (resolveServiceVars aggregatedInventory) declarations.services
   let graph = buildGraph serviceDefinitions entities
   let serviceIndex = buildServiceIndex serviceDefinitions
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)

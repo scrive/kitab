@@ -76,30 +76,10 @@ test =
 renderService :: IO LazyByteString
 renderService = runTestEff $ do
   let aggregatedInventory = AggregatedInventory mempty mempty
-  declarations <- assertParseDocument "test/fixtures/multiple-service-definitions.kdl"
-  serviceDefinitions <-
-    mapMaybe
-      ( \case
-          ServiceDeclaration s -> Just s
-          _ -> Nothing
-      )
-      declarations
-      & traverse (resolveServiceVars aggregatedInventory)
-  let entities =
-        mapMaybe
-          ( \case
-              EntityDeclaration s -> Just s
-              _ -> Nothing
-          )
-          declarations
-  cidrDefinitions <-
-    mapMaybe
-      ( \case
-          CIDRSetDeclaration c -> Just c
-          _ -> Nothing
-      )
-      declarations
-      & traverse (resolveCIDRVars aggregatedInventory)
+  declarations <- partitionDeclarations <$> assertParseDocument "test/fixtures/multiple-service-definitions.kdl"
+  serviceDefinitions <- traverse (resolveServiceVars aggregatedInventory) declarations.services
+  let entities = declarations.entities
+  cidrDefinitions <- traverse (resolveCIDRVars aggregatedInventory) declarations.cidrs
   let graph = buildGraph serviceDefinitions entities
   let serviceIndex = buildServiceIndex serviceDefinitions
   let entityIndex = buildEntityIndex entities
@@ -124,30 +104,10 @@ renderCIDRSetPolicy = runTestEff $ do
           { aggregatedAttributes = Map.fromList [("cloud", "aws"), ("env", "dev")]
           , aggregatedVars = Map.fromList [("mysql-cluster-cidr", mysqlFqdn)]
           }
-  declarations <- assertParseDocument "test/fixtures/cidrset.kdl"
-  serviceDefinitions <-
-    mapMaybe
-      ( \case
-          ServiceDeclaration s -> Just s
-          _ -> Nothing
-      )
-      declarations
-      & traverse (resolveServiceVars aggregatedInventory)
-  let entities =
-        mapMaybe
-          ( \case
-              EntityDeclaration s -> Just s
-              _ -> Nothing
-          )
-          declarations
-  cidrDefinitions <-
-    mapMaybe
-      ( \case
-          CIDRSetDeclaration c -> Just c
-          _ -> Nothing
-      )
-      declarations
-      & traverse (resolveCIDRVars aggregatedInventory)
+  declarations <- partitionDeclarations <$> assertParseDocument "test/fixtures/cidrset.kdl"
+  serviceDefinitions <- traverse (resolveServiceVars aggregatedInventory) declarations.services
+  let entities = declarations.entities
+  cidrDefinitions <- traverse (resolveCIDRVars aggregatedInventory) declarations.cidrs
   let graph = buildGraph serviceDefinitions entities
   let serviceIndex = buildServiceIndex serviceDefinitions
   let entityIndex = buildEntityIndex entities

@@ -42,7 +42,9 @@ buildGraph services entities =
                     Graph.edges [(List.singleton HTTPS, incomingService, EntityRef access.accessTarget) | access <- service.entityAccesses]
                   toolConnectionsGraph =
                     Graph.edges [(List.singleton ExternalTool, incomingService, ToolRef service.serviceInfo.serviceContext service.serviceName call) | call <- service.toolCalls]
-              in Graph.overlays [serviceConnectionsGraph, entityConnectionsGraph, toolConnectionsGraph, acc]
+                  cidrConnectionsGraph =
+                    Graph.edges [(List.singleton Network, incomingService, CIDRRef call) | call <- service.cidrConnections]
+              in Graph.overlays [serviceConnectionsGraph, entityConnectionsGraph, toolConnectionsGraph, cidrConnectionsGraph, acc]
           )
           Graph.empty
           services

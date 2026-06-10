@@ -1,0 +1,9 @@
+cidr-set "network" {
+	cidr-rule {
+		cidr "0.0.0.0/0" "Internet"
+	}
+}
+
+service "my-app" {
+	connect "network"
+}

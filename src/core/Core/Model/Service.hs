@@ -33,6 +33,8 @@ data ConnectionType
   | Domain
   | ExternalTool
   | Browser
+  | -- | Abstract network connection to represent CIDR Connections from Services
+    Network
   deriving stock (Eq, Show, Ord, Enum, Bounded)
 
 instance Display ConnectionType where
@@ -45,6 +47,7 @@ instance Display ConnectionType where
     Domain -> "domain"
     ExternalTool -> "external-tool"
     Browser -> "browser"
+    Network -> "network"
 
 instance Pretty ConnectionType where
   pretty = pretty . display

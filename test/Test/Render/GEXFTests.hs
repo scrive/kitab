@@ -30,23 +30,10 @@ test =
 
 renderServices :: IO LazyByteString
 renderServices = runTestEff $ do
-  declarations <- assertParseDocument "test/fixtures/multiple-service-definitions.kdl"
-  let serviceDefinitions' =
-        mapMaybe
-          ( \case
-              ServiceDeclaration s -> Just s
-              _ -> Nothing
-          )
-          declarations
-  let entities =
-        mapMaybe
-          ( \case
-              EntityDeclaration c -> Just c
-              _ -> Nothing
-          )
-          declarations
+  declarations <- partitionDeclarations <$> assertParseDocument "test/fixtures/multiple-service-definitions.kdl"
+  let entities = declarations.entities
   let aggregatedInventory = AggregatedInventory mempty mempty
-  serviceDefinitions <- traverse (resolveServiceVars aggregatedInventory) serviceDefinitions'
+  serviceDefinitions <- traverse (resolveServiceVars aggregatedInventory) declarations.services
   let graph = buildGraph serviceDefinitions entities
   let serviceIndex = buildServiceIndex serviceDefinitions
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)

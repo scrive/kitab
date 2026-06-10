@@ -55,6 +55,10 @@ toC4Container serviceIndex = \case
     let alias = mkC4ContainerAlias name
         hierarchy = maybeToList mContext <> [ContextName serviceName]
     in C4Container {alias, name, hierarchy}
+  CIDRRef (CIDRConnection name) ->
+    let alias = mkC4ContainerAlias name
+        hierarchy = []
+    in C4Container {alias, name, hierarchy}
 
 data ServiceTree = ServiceTree
   { leaves :: List C4Container
