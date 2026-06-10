@@ -14,6 +14,7 @@ import Options.Applicative.Help.Pretty
 import System.OsPath
 import System.OsPath qualified as OsPath
 
+import CLI.Cmd.Dump
 import CLI.Cmd.Generate
 import CLI.Error
 import CLI.Types
@@ -24,6 +25,7 @@ parseCommand :: Parser Command
 parseCommand =
   subparser $
     command "generate" (parseGenerateOptions `withInfo` "")
+      <> command "dump" (parseDumpOptions `withInfo` "Dump the parsed Haskell AST of a single KDL file")
 
 parseGenerateOptions :: Parser Command
 parseGenerateOptions =
@@ -39,6 +41,10 @@ parseGenerateOptions =
             <*> optional (option pathParser (short 'i' <> long "inventory" <> metavar "DIRECTORY" <> help "Path to an inventory directory"))
             <*> some (argument pathParser (metavar "FILES" <> help "input files, can be specified multiple times" <> action "file"))
         )
+
+parseDumpOptions :: Parser Command
+parseDumpOptions =
+  CmdDump . DumpOptions <$> argument pathParser (metavar "FILE" <> help "Input KDL file" <> action "file")
 
 contextFilterParser :: ReadM ContextName
 contextFilterParser = str

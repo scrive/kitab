@@ -67,6 +67,7 @@ library
   -- cabal-gild: discover src/driver src/parser src/cli
   exposed-modules:
     CLI
+    CLI.Cmd.Dump
     CLI.Cmd.Generate
     CLI.Error
     CLI.Types
@@ -111,6 +112,7 @@ library
     layoutz,
     optics-core,
     optparse-applicative,
+    pretty-simple,
     text,
     validation-selective,
 
@@ -276,6 +278,7 @@ test-suite kitab-test
   hs-source-dirs: test
   -- cabal-gild: discover test --exclude "test/Main.hs"
   other-modules:
+    Test.CLI.DumpTests
     Test.InventoryTests
     Test.ModelTests
     Test.ParserTests
