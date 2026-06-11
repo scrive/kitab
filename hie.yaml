@@ -12,8 +12,8 @@ cradle:
     - path: "./src/core"
       config: { cradle: { cabal: { component: "kitab:lib:kitab-core" } } }
 
-    - path: "./src/c4"
-      config: { cradle: { cabal: { component: "kitab:lib:kitab-c4" } } }
+    - path: "./src/puml"
+      config: { cradle: { cabal: { component: "kitab:lib:kitab-puml" } } }
 
     - path: "./src/cilium"
       config: { cradle: { cabal: { component: "kitab:lib:kitab-cilium" } } }

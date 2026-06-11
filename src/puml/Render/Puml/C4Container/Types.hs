@@ -15,7 +15,6 @@ module Render.Puml.C4Container.Types
 import Data.List qualified as List
 import Data.Map.Strict qualified as Map
 import Data.Text qualified as T
-import Data.Void
 import Effectful
 import Effectful.State.Static.Local (State)
 import Effectful.State.Static.Local qualified as State
@@ -28,7 +27,7 @@ import Core.Model.EntityName
 import Core.Model.Reference
 import Core.Model.Service
 import Core.Model.ServiceName
-import Render.Puml.PumlType (PropError (..), PumlType, defaultPumlType, parsePumlType, validatePumlProps)
+import Render.Puml.PumlType
 
 newtype C4ContainerAlias = C4ContainerAlias Text
   deriving newtype (Eq, Show, Ord, Pretty)
@@ -50,21 +49,19 @@ data C4Container = C4Container
 
 -- | A known prop carries a value the renderer does not accept.
 data InvalidPumlPropError = InvalidPumlPropError
-  { serviceName :: ServiceName
+  { name :: Text
   , propKey :: Text
   , providedValue :: Text
   , supportedValues :: List Text
   }
   deriving stock (Eq, Show, Ord)
 
--- | A @puml:@ prop key the renderer does not understand (e.g. a typo).
 data UnknownPumlPropError = UnknownPumlPropError
-  { serviceName :: ServiceName
+  { name :: Text
   , propKey :: Text
   }
   deriving stock (Eq, Show, Ord)
 
--- | A renderer-time validation failure on a service's @puml:@-namespaced props.
 data PumlError
   = InvalidPumlProp InvalidPumlPropError
   | UnknownPumlProp UnknownPumlPropError
@@ -82,11 +79,11 @@ toC4Container serviceIndex cidrIndex = \case
         hierarchy = maybeToList $ mServiceInfo ^? _Just % #serviceContext % _Just
         rendererProps = maybe Map.empty (.rendererProps) mServiceInfo
     in case validatePumlProps rendererProps of
-         Left unknownKey -> Left $ UnknownPumlProp UnknownPumlPropError {serviceName, propKey = unknownKey}
+         Left unknownKey -> Left $ UnknownPumlProp UnknownPumlPropError {name = display serviceName, propKey = unknownKey}
          Right () ->
            case parsePumlType rendererProps of
              Left PropError {propKey, providedValue, supportedValues} ->
-               Left $ InvalidPumlProp InvalidPumlPropError {serviceName, propKey, providedValue, supportedValues}
+               Left $ InvalidPumlProp InvalidPumlPropError {name = display serviceName, propKey, providedValue, supportedValues}
              Right pumlType -> Right C4Container {alias, name, hierarchy, pumlType}
   EntityRef (EntityName name) ->
     let alias = mkC4ContainerAlias name
@@ -96,18 +93,18 @@ toC4Container serviceIndex cidrIndex = \case
     let alias = mkC4ContainerAlias name
         hierarchy = maybeToList mContext <> [ContextName serviceName]
     in Right C4Container {alias, name, hierarchy, pumlType = defaultPumlType}
-  CIDRRef (CIDRConnection name) ->
-    let alias = mkC4ContainerAlias name
+  CIDRRef (CIDRConnection cidrSetName) ->
+    let alias = mkC4ContainerAlias cidrSetName
         hierarchy = []
-    in -- rendererProps = maybe Map.empty (.rendererProps) mServiceInfo
-       -- in case validatePumlProps rendererProps of
-       --          Left unknownKey -> Left $ UnknownPumlProp UnknownPumlPropError {serviceName, propKey = unknownKey}
-       --          Right () ->
-       --            case parsePumlType rendererProps of
-       --              Left PropError {propKey, providedValue, supportedValues} ->
-       --                Left $ InvalidPumlProp InvalidPumlPropError {serviceName, propKey, providedValue, supportedValues}
-       -- Right pumlType ->
-       Right C4Container {alias, name, hierarchy, pumlType = defaultPumlType}
+        mCidrSet = Map.lookup cidrSetName cidrIndex
+        rendererProps = maybe Map.empty (.rendererProps) mCidrSet
+    in case validatePumlProps rendererProps of
+         Left unknownKey -> Left $ UnknownPumlProp UnknownPumlPropError {name = cidrSetName, propKey = unknownKey}
+         Right () ->
+           case parsePumlType rendererProps of
+             Left PropError {propKey, providedValue, supportedValues} ->
+               Left $ InvalidPumlProp InvalidPumlPropError {name = cidrSetName, propKey, providedValue, supportedValues}
+             Right pumlType -> Right C4Container {alias, name = cidrSetName, hierarchy, pumlType}
 
 data ServiceTree = ServiceTree
   { leaves :: List C4Container
@@ -122,7 +119,7 @@ emptyServiceTree =
     , subTrees = Map.empty
     }
 
--- |  Build a service tree based on a list of services.
+-- | Build a service tree based on a list of services.
 --  This function sorts the services internally.
 buildServiceTree :: List C4Container -> ServiceTree
 buildServiceTree services =

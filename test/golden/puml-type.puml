@@ -4,15 +4,13 @@
 title System Architecture (C4 Container View)
 
 ' --- Contexts ---
-ContainerDb_Ext(managed_db, "managed-db")
+Container_Ext(postgres, "postgres")
 Container_Boundary(k8s, k8s) {
   ContainerQueue(rabbitmq, "rabbitmq")
-  ContainerDb(postgres, "postgres")
   Container(main_app, "main-app")
 }
 
 ' --- Relationships ---
-Rel(main_app, managed_db, "postgres")
 Rel(main_app, postgres, "postgres")
 Rel(main_app, rabbitmq, "https")
 @enduml

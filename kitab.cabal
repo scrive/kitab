@@ -104,10 +104,10 @@ library
     filepath,
     gitrev,
     kdl-hs,
-    kitab:kitab-c4,
     kitab:kitab-cilium,
     kitab:kitab-core,
     kitab:kitab-gexf,
+    kitab:kitab-puml,
     kitab-prelude,
     layoutz,
     optics-core,
@@ -168,7 +168,7 @@ library kitab-core
     base hiding (Prelude),
     kitab-prelude (Prelude),
 
-library kitab-c4
+library kitab-puml
   import: extensions
   import: ghc-options
   -- cabal-gild: discover src/puml
@@ -299,12 +299,12 @@ test-suite kitab-test
     filepath,
     kdl-hs,
     kitab,
-    kitab:kitab-c4,
     kitab:kitab-cilium,
     kitab:kitab-core,
     kitab:kitab-gexf,
-    optics-core,
+    kitab:kitab-puml,
     kitab-prelude,
+    optics-core,
     pretty-simple ^>=4.1.4.0,
     tasty,
     tasty-golden,

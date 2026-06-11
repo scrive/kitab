@@ -4,7 +4,6 @@ import Algebra.Graph.Labelled (Graph)
 import Algebra.Graph.Labelled qualified as Graph
 import Algebra.Graph.Labelled.AdjacencyMap (AdjacencyMap)
 import Algebra.Graph.Labelled.AdjacencyMap qualified as AM
-import Optics.Core
 import Data.ByteString.Lazy (LazyByteString)
 import Data.List.NonEmpty (NonEmpty)
 import Data.Map.Strict qualified as Map
@@ -12,15 +11,16 @@ import Data.Text.Lazy qualified as T
 import Data.Text.Lazy.Encoding qualified as TL
 import Data.Void (Void)
 import Effectful.Error.Static qualified as Error
+import Optics.Core
 import Test.Tasty
 import Test.Tasty.Golden
 import Validation
 
 import CLI.Error (CLIError)
 import Core.Graph
+import Core.Model.CIDRSet
 import Core.Model.Inventory.Aggregated
 import Core.Model.Reference
-import Core.Model.CIDRSet
 import Core.Model.Service
 import Core.Model.ServiceName
 import Core.Validation
@@ -34,7 +34,7 @@ import Test.Utils
 test :: TestTree
 test =
   testGroup
-    "C4 rendering golden tests"
+    "PlantUML rendering golden tests"
     [ goldenVsStringDiff
         "Services"
         diffCmd
@@ -51,7 +51,7 @@ test =
         "test/golden/connect-only.puml"
         renderConnectOnly
     , goldenVsStringDiff
-        "Service puml:type renders Container, ContainerDb and ContainerQueue"
+        "Service and CIDR Set with puml:type renders Container, ContainerDb and ContainerQueue"
         diffCmd
         "test/golden/puml-type.puml"
         renderPumlType
@@ -82,7 +82,7 @@ testUnknownPumlType = do
   result <- assertLeft "Expected an unknown puml type error" $ toC4Container serviceIndex cidrIndex (ServiceRef (ServiceName "postgres"))
   assertEqual
     "Expected the offending puml type to be reported"
-    (InvalidPumlProp InvalidPumlPropError {serviceName = ServiceName "postgres", propKey = "puml:type", providedValue = "invalid", supportedValues = ["database", "queue", "service"]})
+    (InvalidPumlProp InvalidPumlPropError {name = "postgres", propKey = "puml:type", providedValue = "invalid", supportedValues = ["database", "queue", "service"]})
     result
 
 testUnknownPumlProp :: TestEff Unit
@@ -93,7 +93,7 @@ testUnknownPumlProp = do
   result <- assertLeft "Expected an unknown puml prop error" $ toC4Container serviceIndex cidrIndex (ServiceRef (ServiceName "postgres"))
   assertEqual
     "Expected the offending puml prop key to be reported"
-    (UnknownPumlProp UnknownPumlPropError {serviceName = ServiceName "postgres", propKey = "puml:tpye"})
+    (UnknownPumlProp UnknownPumlPropError {name = "postgres", propKey = "puml:tpye"})
     result
 
 toAdjacencyMap
