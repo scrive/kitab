@@ -5,6 +5,7 @@
             { serviceFqdn = Nothing
             , serviceContext = Nothing
             , servicePorts = fromList []
+            , rendererProps = fromList []
             }
         , serviceConnections =
             [ Connection

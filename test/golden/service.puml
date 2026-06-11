@@ -4,11 +4,11 @@
 title System Architecture (C4 Container View)
 
 ' --- Contexts ---
-Container(s3, "s3")
-Container(otel_tracing, "otel-tracing")
-Container(opensearch, "opensearch")
-Container(mailgun, "mailgun")
-Container(host, "host")
+Container_Ext(s3, "s3")
+Container_Ext(otel_tracing, "otel-tracing")
+Container_Ext(opensearch, "opensearch")
+Container_Ext(mailgun, "mailgun")
+Container_Ext(host, "host")
 Container_Boundary(k8s, k8s) {
   Container(user_registry, "user-registry")
   Container(media_proxy, "media-proxy")

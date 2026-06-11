@@ -176,12 +176,14 @@ library kitab-c4
     Render.Puml
     Render.Puml.C4Container.Types
     Render.Puml.C4Entity.Types
+    Render.Puml.PumlType
 
   build-depends:
     algebraic-graphs,
     base ^>=4.21,
     containers,
     effectful-core,
+    extra,
     kitab:kitab-core,
     kitab-prelude,
     optics-core,

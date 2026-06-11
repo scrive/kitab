@@ -1,6 +1,12 @@
-service "backend"
+context "k8s"
+
+service "backend" {
+  in-context "k8s"
+}
 
 service "web-app" {
+  in-context "k8s"
+
   depends-on "backend" {
     via "browser"
   }

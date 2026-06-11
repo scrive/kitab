@@ -10,6 +10,7 @@ import Prettyprinter.Render.Text (renderStrict)
 import Core.Model.ContextName
 import Core.Model.Service
 import Render.Puml.C4Container.Types
+import Render.Puml.PumlType (pumlContainerMacro, pumlExternalContainerMacro)
 
 renderPuml
   :: AdjacencyMap (List ConnectionType) C4Container
@@ -73,8 +74,12 @@ subTreeToPuml (ContextName name, tree) =
 
 prettyContainerNode :: C4Container -> Doc ann
 prettyContainerNode service =
-  "Container"
+  pretty (macro service.pumlType)
     <> tupled
       [ pretty service.alias
       , dquotes (pretty service.name)
       ]
+  where
+    macro
+      | List.null service.hierarchy = pumlExternalContainerMacro
+      | otherwise = pumlContainerMacro

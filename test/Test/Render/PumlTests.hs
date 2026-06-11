@@ -1,17 +1,28 @@
 module Test.Render.PumlTests where
 
+import Algebra.Graph.Labelled (Graph)
 import Algebra.Graph.Labelled qualified as Graph
+import Algebra.Graph.Labelled.AdjacencyMap (AdjacencyMap)
 import Algebra.Graph.Labelled.AdjacencyMap qualified as AM
 import Data.ByteString.Lazy (LazyByteString)
+import Data.List.NonEmpty (NonEmpty)
+import Data.Map.Strict qualified as Map
 import Data.Text.Lazy qualified as T
 import Data.Text.Lazy.Encoding qualified as TL
+import Data.Void (Void)
+import Effectful.Error.Static qualified as Error
 import Test.Tasty
 import Test.Tasty.Golden
 import Validation
 
+import CLI.Error (CLIError)
 import Core.Graph
 import Core.Model.Inventory.Aggregated
+import Core.Model.Reference
+import Core.Model.Service
+import Core.Model.ServiceName
 import Core.Validation
+import Driver.Puml (validateContainers)
 import Driver.Variable
 import Parser.V1.Types
 import Render.Puml qualified as Puml
@@ -37,53 +48,108 @@ test =
         diffCmd
         "test/golden/connect-only.puml"
         renderConnectOnly
+    , goldenVsStringDiff
+        "Service puml:type renders Container, ContainerDb and ContainerQueue"
+        diffCmd
+        "test/golden/puml-type.puml"
+        renderPumlType
+    , testThat
+        "Service with an unknown puml:type is rejected by the renderer"
+        testUnknownPumlType
+    , testThat
+        "Isolated service with an unknown puml:type is rejected"
+        testIsolatedUnknownPumlType
+    , testThat
+        "Service with an unrecognized puml: prop key is rejected"
+        testUnknownPumlProp
     ]
+
+-- | Isolated services (taking part in no edge) are still validated by the
+-- renderer driver, even though they are not emitted in the diagram.
+testIsolatedUnknownPumlType :: TestEff Unit
+testIsolatedUnknownPumlType = do
+  let serviceInfo = emptyServiceInfo {rendererProps = Map.fromList [("puml:type", "invalid")]}
+  let serviceIndex = Map.fromList [(ServiceName "postgres", serviceInfo)] :: Map ServiceName (ServiceInfo Void)
+  result <- Error.runErrorNoCallStack @(NonEmpty CLIError) $ validateContainers serviceIndex []
+  void $ assertLeft "Expected the isolated service to be rejected" result
+
+-- | The puml:type value is now validated by the Puml renderer (not the
+-- parser), so an unknown type is surfaced when building the C4 containers.
+testUnknownPumlType :: TestEff Unit
+testUnknownPumlType = do
+  let serviceInfo = emptyServiceInfo {rendererProps = Map.fromList [("puml:type", "invalid")]}
+  let serviceIndex = Map.fromList [(ServiceName "postgres", serviceInfo)]
+  result <- assertLeft "Expected an unknown puml type error" $ toC4Container serviceIndex (ServiceRef (ServiceName "postgres"))
+  assertEqual
+    "Expected the offending puml type to be reported"
+    (InvalidPumlProp InvalidPumlPropError {serviceName = ServiceName "postgres", propKey = "puml:type", providedValue = "invalid", supportedValues = ["database", "queue", "service"]})
+    result
+
+-- | A @puml:@-namespaced prop the renderer does not recognize (e.g. a typo) is
+-- rejected rather than silently ignored.
+testUnknownPumlProp :: TestEff Unit
+testUnknownPumlProp = do
+  let serviceInfo = emptyServiceInfo {rendererProps = Map.fromList [("puml:tpye", "database")]}
+  let serviceIndex = Map.fromList [(ServiceName "postgres", serviceInfo)]
+  result <- assertLeft "Expected an unknown puml prop error" $ toC4Container serviceIndex (ServiceRef (ServiceName "postgres"))
+  assertEqual
+    "Expected the offending puml prop key to be reported"
+    (UnknownPumlProp UnknownPumlPropError {serviceName = ServiceName "postgres", propKey = "puml:tpye"})
+    result
+
+toAdjacencyMap
+  :: Map ServiceName (ServiceInfo var)
+  -> Graph (List ConnectionType) Reference
+  -> TestEff (AdjacencyMap (List ConnectionType) C4Container)
+toAdjacencyMap serviceIndex graph = do
+  graphEdges <- traverse convertEdge (Graph.edgeList graph)
+  pure (AM.edges graphEdges)
+  where
+    convertEdge (es, a, b) = do
+      a' <- assertRight "Unexpected unknown puml type" $ toC4Container serviceIndex a
+      b' <- assertRight "Unexpected unknown puml type" $ toC4Container serviceIndex b
+      pure (es, a', b')
+
+renderPumlType :: IO LazyByteString
+renderPumlType = runTestEff $ do
+  declarations <- partitionDeclarations <$> assertParseDocument "test/fixtures/puml-type.kdl"
+  let aggregatedInventory = AggregatedInventory mempty mempty
+  serviceDefinitions <- traverse (resolveServiceVars aggregatedInventory) declarations.services
+  let graph = buildGraph serviceDefinitions declarations.entities
+  let serviceIndex = buildServiceIndex serviceDefinitions
+  void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)
+  adjacencyMap <- toAdjacencyMap serviceIndex graph
+  (pure . TL.encodeUtf8) . T.fromStrict $ Puml.renderPuml adjacencyMap
 
 renderConnectOnly :: IO LazyByteString
 renderConnectOnly = runTestEff $ do
   declarations <- partitionDeclarations <$> assertParseDocument "test/fixtures/connect-only.kdl"
-  let entities = declarations.entities
   let aggregatedInventory = AggregatedInventory mempty mempty
   serviceDefinitions <- traverse (resolveServiceVars aggregatedInventory) declarations.services
-  let graph = buildGraph serviceDefinitions entities
+  let graph = buildGraph serviceDefinitions declarations.entities
   let serviceIndex = buildServiceIndex serviceDefinitions
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)
-  liftIO $ print graph
-  let graphEdges =
-        graph
-          & Graph.edgeList
-          & fmap (\(es, a, b) -> (es, toC4Container serviceIndex a, toC4Container serviceIndex b))
-  let adjacencyMap = AM.edges graphEdges
+  adjacencyMap <- toAdjacencyMap serviceIndex graph
   (pure . TL.encodeUtf8) . T.fromStrict $ Puml.renderPuml adjacencyMap
 
 renderWebAppToBackend :: IO LazyByteString
 renderWebAppToBackend = runTestEff $ do
   declarations <- partitionDeclarations <$> assertParseDocument "test/fixtures/web-app-to-backend.kdl"
-  let entities = declarations.entities
   let aggregatedInventory = AggregatedInventory mempty mempty
   serviceDefinitions <- traverse (resolveServiceVars aggregatedInventory) declarations.services
-  let graph = buildGraph serviceDefinitions entities
+  let graph = buildGraph serviceDefinitions declarations.entities
   let serviceIndex = buildServiceIndex serviceDefinitions
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)
-  let graphEdges =
-        graph
-          & Graph.edgeList
-          & fmap (\(es, a, b) -> (es, toC4Container serviceIndex a, toC4Container serviceIndex b))
-  let adjacencyMap = AM.edges graphEdges
+  adjacencyMap <- toAdjacencyMap serviceIndex graph
   (pure . TL.encodeUtf8) . T.fromStrict $ Puml.renderPuml adjacencyMap
 
 renderServices :: IO LazyByteString
 renderServices = runTestEff $ do
   declarations <- partitionDeclarations <$> assertParseDocument "test/fixtures/multiple-service-definitions.kdl"
-  let entities = declarations.entities
   let aggregatedInventory = AggregatedInventory mempty mempty
   serviceDefinitions <- traverse (resolveServiceVars aggregatedInventory) declarations.services
-  let graph = buildGraph serviceDefinitions entities
+  let graph = buildGraph serviceDefinitions declarations.entities
   let serviceIndex = buildServiceIndex serviceDefinitions
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)
-  let graphEdges =
-        graph
-          & Graph.edgeList
-          & fmap (\(es, a, b) -> (es, toC4Container serviceIndex a, toC4Container serviceIndex b))
-  let adjacencyMap = AM.edges graphEdges
+  adjacencyMap <- toAdjacencyMap serviceIndex graph
   (pure . TL.encodeUtf8) . T.fromStrict $ Puml.renderPuml adjacencyMap

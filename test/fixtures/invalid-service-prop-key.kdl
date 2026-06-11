@@ -1,0 +1,3 @@
+service "postgres" puml:blargh="database" {
+	port 5432
+}

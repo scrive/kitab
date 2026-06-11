@@ -128,6 +128,7 @@ resolveConnectionPorts targetPorts callerPorts = do
           { serviceFqdn = Nothing
           , serviceContext = Just "ctx"
           , servicePorts = targetPorts
+          , rendererProps = Map.empty
           }
   let serviceIndex = Map.singleton "target" targetInfo
   let service =

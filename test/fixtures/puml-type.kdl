@@ -1,0 +1,36 @@
+context "k8s"
+
+// A regular service, rendered as a plain Container (the default).
+service "main-app" {
+	in-context "k8s"
+
+	depends-on "postgres" {
+		via "postgres"
+	}
+
+	depends-on "rabbitmq" {
+		via "https"
+	}
+
+	depends-on "managed-db" {
+		via "postgres"
+	}
+}
+
+// puml:type="Database" renders as a ContainerDb.
+service "postgres" puml:type="database" {
+	in-context "k8s"
+	port 5432
+}
+
+// puml:type="Queue" renders as a ContainerQueue.
+service "rabbitmq" puml:type="queue" {
+	in-context "k8s"
+	port 5672
+}
+
+// An external database (no context) renders as a ContainerDb_Ext.
+service "managed-db" puml:type="database" {
+	fqdn "db.internal.network"
+	port 5432
+}
