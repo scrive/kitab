@@ -8,6 +8,7 @@ data CIDRSet (var :: Type) = CIDRSet
   { setName :: Text
   , cidrRules :: NonEmpty (CidrRuleNode var)
   , ports :: List PortNode
+  , rendererProps :: Map Text Text
   }
   deriving stock (Eq, Ord, Show)
 

@@ -303,6 +303,7 @@ test-suite kitab-test
     kitab:kitab-cilium,
     kitab:kitab-core,
     kitab:kitab-gexf,
+    optics-core,
     kitab-prelude,
     pretty-simple ^>=4.1.4.0,
     tasty,

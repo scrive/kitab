@@ -15,12 +15,14 @@ module Render.Puml.C4Container.Types
 import Data.List qualified as List
 import Data.Map.Strict qualified as Map
 import Data.Text qualified as T
+import Data.Void
 import Effectful
 import Effectful.State.Static.Local (State)
 import Effectful.State.Static.Local qualified as State
 import Optics.Core
 import Prettyprinter
 
+import Core.Model.CIDRSet
 import Core.Model.ContextName
 import Core.Model.EntityName
 import Core.Model.Reference
@@ -68,8 +70,12 @@ data PumlError
   | UnknownPumlProp UnknownPumlPropError
   deriving stock (Eq, Show, Ord)
 
-toC4Container :: Map ServiceName (ServiceInfo var) -> Reference -> Either PumlError C4Container
-toC4Container serviceIndex = \case
+toC4Container
+  :: Map ServiceName (ServiceInfo var)
+  -> Map Text (CIDRSet var)
+  -> Reference
+  -> Either PumlError C4Container
+toC4Container serviceIndex cidrIndex = \case
   ServiceRef serviceName@(ServiceName name) ->
     let alias = mkC4ContainerAlias name
         mServiceInfo = Map.lookup serviceName serviceIndex
@@ -93,7 +99,15 @@ toC4Container serviceIndex = \case
   CIDRRef (CIDRConnection name) ->
     let alias = mkC4ContainerAlias name
         hierarchy = []
-    in Right C4Container {alias, name, hierarchy, pumlType = defaultPumlType}
+    in -- rendererProps = maybe Map.empty (.rendererProps) mServiceInfo
+       -- in case validatePumlProps rendererProps of
+       --          Left unknownKey -> Left $ UnknownPumlProp UnknownPumlPropError {serviceName, propKey = unknownKey}
+       --          Right () ->
+       --            case parsePumlType rendererProps of
+       --              Left PropError {propKey, providedValue, supportedValues} ->
+       --                Left $ InvalidPumlProp InvalidPumlPropError {serviceName, propKey, providedValue, supportedValues}
+       -- Right pumlType ->
+       Right C4Container {alias, name, hierarchy, pumlType = defaultPumlType}
 
 data ServiceTree = ServiceTree
   { leaves :: List C4Container

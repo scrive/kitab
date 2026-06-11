@@ -128,6 +128,7 @@ runGenerate options = do
             PumlFormat ->
               renderToPuml
                 serviceIndex
+                cidrIndex
                 options.outputDir
                 verbosity
                 graph
