@@ -138,6 +138,9 @@ This node can contain the following children
 |----------|------|
 | name     | text |
 
+Additionally, this node takes custom props that can help the desired renderer with some decisions.
+See [`Optional Props`](#optional-props)
+
 #### Example
 
 ```kdl
@@ -406,6 +409,21 @@ Top-level declaration for the version of the configuration language that `kitab`
 ```kdl
 version 1
 ```
+
+## Optional Props
+
+Kitab tries to infer as much as possible from the user-provided configuration files to make decision, but there are concepts which are fundamentally linked to the
+renderer used which are hard or impossible to infer from the user-level configuration. As such, the end-user can provide some "hints" to the underlying renderers,
+giving them some options to force Kitab's hand.
+
+These options are namespaced by renderer.
+
+### `puml:` namespace
+
+| Key         | Accepted values | Used by | Description |
+|-------------|-----------------|---------|-------------|
+| `puml:type` | `service` (default), `database`, `queue` | [`service`](#service) | Helps the PUML renderer decide if the container will be stylised as service (generic), database or a message queue  |
+
 
 ## INVENTORY
 
