@@ -8,7 +8,8 @@ import Core.Model.ServiceContext
 contextDecoder :: NodeListDecoder ServiceContext
 contextDecoder = KDL.nodeWith "context" $ do
   contextName <- KDL.argWith (ContextName <$> KDL.string)
-  pure ServiceContext {contextName}
+  subContexts <- KDL.children (KDL.many contextDecoder)
+  pure ServiceContext {contextName, subContexts}
 
 contextReferenceDecoder :: NodeListDecoder ContextName
 contextReferenceDecoder =

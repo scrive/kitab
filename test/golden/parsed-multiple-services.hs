@@ -18,7 +18,9 @@
     )
 , ContextDeclaration
     ( ServiceContext
-        { contextName = "k8s" }
+        { contextName = "k8s"
+        , subContexts = []
+        }
     )
 , ToolDeclaration "pngquant"
 , ServiceDeclaration

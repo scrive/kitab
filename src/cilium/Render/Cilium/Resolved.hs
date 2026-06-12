@@ -127,6 +127,12 @@ resolveService serviceIndex entityIndex cidrIndex service =
 -- | The 'Route' from a service (identified by its context) to a connection
 -- target, if any. This is the single source of truth for the reachability
 -- rule.
+--
+-- Reachability is exact-context equality: each context is its own cluster.
+-- Context nesting ('Core.Model.ServiceContext.subContexts') is a PlantUML
+-- grouping concern and is deliberately invisible here — a parent and a nested
+-- sub-context are distinct clusters, so a cross-context target still needs an
+-- fqdn.
 routeTo :: Maybe ContextName -> ServiceInfo Void -> Maybe Route
 routeTo mContext ServiceInfo {serviceContext, serviceFqdn}
   | isJust serviceContext
