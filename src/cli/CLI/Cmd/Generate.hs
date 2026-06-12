@@ -30,6 +30,7 @@ import Core.Model.ContextName
 import Core.Model.Inventory.Aggregated
 import Core.Model.Inventory.Selector (Selector (..))
 import Core.Model.InventoryVariable
+import Core.Model.ServiceContext (contextHierarchies, contextPaths)
 import Core.Validation
 import Driver.Cilium
 import Driver.Colours
@@ -127,6 +128,7 @@ runGenerate options = do
           case options.format of
             PumlFormat ->
               renderToPuml
+                (contextHierarchies contexts)
                 serviceIndex
                 cidrIndex
                 options.outputDir
@@ -135,7 +137,7 @@ runGenerate options = do
             CiliumFormat ->
               renderToCilium
                 options.contextFilters
-                contexts
+                (fmap fst (contextPaths contexts))
                 serviceIndex
                 entitiesIndex
                 cidrIndex

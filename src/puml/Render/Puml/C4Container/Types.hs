@@ -68,24 +68,35 @@ data PumlError
   deriving stock (Eq, Show, Ord)
 
 toC4Container
-  :: Map ServiceName (ServiceInfo var)
+  :: Map ContextName (List ContextName)
+  -- ^ Maps each context to its full hierarchy (root..self), so nested
+  -- contexts render as nested boundaries. See 'contextHierarchies'.
+  -> Map ServiceName (ServiceInfo var)
   -> Map Text (CIDRSet var)
   -> Reference
   -> Either PumlError C4Container
-toC4Container serviceIndex cidrIndex = \case
+toC4Container contextHierarchies serviceIndex cidrIndex = \case
   ServiceRef serviceName@(ServiceName name) ->
     let mServiceInfo = Map.lookup serviceName serviceIndex
-        hierarchy = maybeToList $ mServiceInfo ^? _Just % #serviceContext % _Just
+        hierarchy = expandContext contextHierarchies $ mServiceInfo ^? _Just % #serviceContext % _Just
         rendererProps = maybe Map.empty (.rendererProps) mServiceInfo
     in buildValidatedContainer name hierarchy rendererProps
   EntityRef (EntityName name) ->
     Right $ defaultContainer name []
   ToolRef mContext (ServiceName serviceName) name ->
-    Right $ defaultContainer name (maybeToList mContext <> [ContextName serviceName])
+    Right $ defaultContainer name (expandContext contextHierarchies mContext <> [ContextName serviceName])
   CIDRRef (CIDRConnection cidrSetName) ->
     let mCidrSet = Map.lookup cidrSetName cidrIndex
         rendererProps = maybe Map.empty (.rendererProps) mCidrSet
     in buildValidatedContainer cidrSetName [] rendererProps
+
+-- | Expand a context reference into its full hierarchy path. Falls back to a
+-- singleton path for contexts that were never declared (e.g. referenced only
+-- via @in-context@), and the empty path when a reference has no context.
+expandContext :: Map ContextName (List ContextName) -> Maybe ContextName -> List ContextName
+expandContext contextHierarchies = \case
+  Nothing -> []
+  Just contextName -> Map.findWithDefault [contextName] contextName contextHierarchies
 
 defaultContainer :: Text -> List ContextName -> C4Container
 defaultContainer name hierarchy =

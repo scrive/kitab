@@ -123,7 +123,7 @@ resolutionError =
         <> display source
         <> " cannot reach service "
         <> display target
-        <> ": it has no fqdn and is not in the same context. Cilium needs either a shared context or an fqdn to emit an egress rule."
+        <> ": it has no fqdn and is not in the same context. Cilium needs either a shared context or an fqdn to emit an egress rule. Note that each context is a separate cluster: a parent and a nested sub-context are not the same context, so nesting alone does not make services reachable."
     MissingCidrSet source target ->
       "Service " <> display source <> " connects to undeclared cidr-set " <> target <> "."
     MissingEntity source target ->

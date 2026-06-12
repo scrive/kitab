@@ -1,0 +1,25 @@
+context "company" {
+	context "k8s"
+
+	context "other-context"
+}
+
+service "gateway" {
+	in-context "company"
+
+	depends-on "main-app" {
+		via "https"
+	}
+}
+
+service "main-app" {
+	in-context "k8s"
+
+	depends-on "user-registry" {
+		via "function-call"
+	}
+}
+
+service "user-registry" {
+	in-context "k8s"
+}

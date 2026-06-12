@@ -1,7 +1,6 @@
 module Parser.V1.Types where
 
 import Core.Model.CIDRSet
-import Core.Model.ContextName
 import Core.Model.Entity
 import Core.Model.Service
 import Core.Model.ServiceContext
@@ -19,7 +18,7 @@ data Declaration (var :: Type)
 data Declarations = Declarations
   { services :: List (Service Var)
   , entities :: List Entity
-  , contexts :: List ContextName
+  , contexts :: List ServiceContext
   , cidrs :: List (CIDRSet Var)
   }
   deriving stock (Eq, Ord, Show)
@@ -38,7 +37,7 @@ partitionDeclarations declarations =
       contexts =
         mapMaybe
           ( \case
-              ContextDeclaration (ServiceContext {contextName}) -> Just contextName
+              ContextDeclaration serviceContext -> Just serviceContext
               _ -> Nothing
           )
           declarations
