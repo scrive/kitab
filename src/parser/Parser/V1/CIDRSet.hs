@@ -11,6 +11,7 @@ import Parser.V1.Var
 cidrSetDecoder :: NodeListDecoder (CIDRSet Var)
 cidrSetDecoder = KDL.nodeWith "cidr-set" $ do
   setName <- KDL.argWith KDL.string
+  rendererProps <- KDL.remainingProps
   -- Children of a cidr-set node, in any order. At least one cidr-rule is
   -- required so that the rendered policy always has a destination.
   (cidrRules, ports) <- KDL.children $ do
@@ -18,7 +19,7 @@ cidrSetDecoder = KDL.nodeWith "cidr-set" $ do
     mixed <- KDL.many ((Left <$> cidrRuleDecoder) <|> (Right <$> portDecoder))
     let (moreRules, ports) = partitionEithers mixed
     pure (firstRule :| moreRules, ports)
-  pure $ CIDRSet {setName, cidrRules, ports}
+  pure $ CIDRSet {setName, cidrRules, ports, rendererProps}
 
 cidrRuleDecoder :: NodeListDecoder (CidrRuleNode Var)
 cidrRuleDecoder = KDL.nodeWith "cidr-rule" $ do

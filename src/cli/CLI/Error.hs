@@ -96,20 +96,18 @@ variableNotFound expectedVariable =
 
 pumlValidationError :: PumlError -> CLIError
 pumlValidationError = \case
-  InvalidPumlProp InvalidPumlPropError {serviceName, propKey, providedValue, supportedValues} ->
+  InvalidPumlProp InvalidPumlPropError {name, propKey, providedValue, supportedValues} ->
     mkError PumlValidationError $
-      "Service "
-        <> display serviceName
+      display name
         <> " has unknown value for "
         <> propKey
         <> ": "
         <> providedValue
         <> ". Supported values are "
         <> T.intercalate ", " supportedValues
-  UnknownPumlProp UnknownPumlPropError {serviceName, propKey} ->
+  UnknownPumlProp UnknownPumlPropError {name, propKey} ->
     mkError PumlValidationError $
-      "Service "
-        <> display serviceName
+      display name
         <> " has unknown puml prop: "
         <> propKey
         <> ". Known props are "

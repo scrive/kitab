@@ -67,6 +67,9 @@ parseEnumProp key valueMap def props =
 pumlTypeKey :: Text
 pumlTypeKey = "puml:type"
 
+-- | Parsing of a PUML type in the `puml:type` format.
+-- >>> parsePumlType (Map.fromList [("puml:type", "database")])
+-- Right PumlDatabase
 parsePumlType :: Map Text Text -> Either PropError PumlType
 parsePumlType = parseEnumProp pumlTypeKey pumlTypes defaultPumlType
 
