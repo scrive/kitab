@@ -66,9 +66,7 @@ Service definitions are written in [KDL](https://kdl.dev) files.
 
 At the top-level, `context` node defines a system boundary, like a Kubernetes cluster.
 
-This node can contain the following children
-
-* [`entity`](#entity)
+This node can contain nested contexts so that renderers may deeply nest entities.
 
 | Argument | Type | Description         |
 |----------|------|---------------------|
@@ -78,7 +76,9 @@ This node can contain the following children
 #### Example
 
 ```kdl
-context "k8s"
+context "company" {
+  context "k8s"
+}
 ```
 
 ### <a name="entity"></a> `entity`
