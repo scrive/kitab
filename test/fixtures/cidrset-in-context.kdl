@@ -1,0 +1,15 @@
+context "company" {
+	context "k8s"
+}
+
+service "my-app" {
+	in-context "k8s"
+	connect "network"
+}
+
+cidr-set "network" {
+	in-context "company"
+	cidr-rule {
+		cidr "0.0.0.0/0" "Internet"
+	}
+}

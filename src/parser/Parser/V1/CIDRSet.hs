@@ -1,25 +1,43 @@
 module Parser.V1.CIDRSet where
 
-import Data.List.NonEmpty (NonEmpty ((:|)))
+import Data.List.NonEmpty (NonEmpty, nonEmpty)
+import GHC.Generics
 import KDL
+import Optics.Core
 
 import Core.Model.CIDRSet
+import Core.Model.ContextName
+import Core.Model.PortNode (PortNode)
 import Core.Variable
 import Parser.V1.PortNode
+import Parser.V1.ServiceContext (contextReferenceDecoder)
 import Parser.V1.Var
+
+-- | A single child node of a @cidr-set@: a rule, a port, or an @in-context@
+-- placement.
+data CidrSetChild
+  = CidrRuleChild (CidrRuleNode Var)
+  | PortChild PortNode
+  | ContextChild ContextName
+  deriving stock (Eq, Ord, Show, Generic)
 
 cidrSetDecoder :: NodeListDecoder (CIDRSet Var)
 cidrSetDecoder = KDL.nodeWith "cidr-set" $ do
   setName <- KDL.argWith KDL.string
   rendererProps <- KDL.remainingProps
-  -- Children of a cidr-set node, in any order. At least one cidr-rule is
-  -- required so that the rendered policy always has a destination.
-  (cidrRules, ports) <- KDL.children $ do
-    firstRule <- cidrRuleDecoder
-    mixed <- KDL.many ((Left <$> cidrRuleDecoder) <|> (Right <$> portDecoder))
-    let (moreRules, ports) = partitionEithers mixed
-    pure (firstRule :| moreRules, ports)
-  pure $ CIDRSet {setName, cidrRules, ports, rendererProps}
+  -- Children of a cidr-set node, in any order.
+  mixedChildren <-
+    KDL.children . KDL.many $
+      (CidrRuleChild <$> cidrRuleDecoder)
+        <|> (PortChild <$> portDecoder)
+        <|> (ContextChild <$> contextReferenceDecoder)
+  let ports = toListOf (folded % #_PortChild) mixedChildren
+  let context = headOf (folded % #_ContextChild) mixedChildren
+  -- At least one cidr-rule is required so the rendered policy always has a destination.
+  cidrRules <- case nonEmpty (toListOf (folded % #_CidrRuleChild) mixedChildren) of
+    Just rules -> pure rules
+    Nothing -> KDL.fail "A cidr-set requires at least one cidr-rule so the rendered policy always has a destination."
+  pure $ CIDRSet {setName, cidrRules, ports, context, rendererProps}
 
 cidrRuleDecoder :: NodeListDecoder (CidrRuleNode Var)
 cidrRuleDecoder = KDL.nodeWith "cidr-rule" $ do

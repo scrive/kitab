@@ -2,12 +2,14 @@ module Core.Model.CIDRSet where
 
 import Data.List.NonEmpty (NonEmpty)
 
+import Core.Model.ContextName
 import Core.Model.PortNode
 
 data CIDRSet (var :: Type) = CIDRSet
   { setName :: Text
   , cidrRules :: NonEmpty (CidrRuleNode var)
   , ports :: List PortNode
+  , context :: Maybe ContextName
   , rendererProps :: Map Text Text
   }
   deriving stock (Eq, Ord, Show)

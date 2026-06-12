@@ -88,7 +88,8 @@ toC4Container contextHierarchies serviceIndex cidrIndex = \case
   CIDRRef (CIDRConnection cidrSetName) ->
     let mCidrSet = Map.lookup cidrSetName cidrIndex
         rendererProps = maybe Map.empty (.rendererProps) mCidrSet
-    in buildValidatedContainer cidrSetName [] rendererProps
+        hierarchy = expandContext contextHierarchies (mCidrSet >>= (.context))
+    in buildValidatedContainer cidrSetName hierarchy rendererProps
 
 -- | Expand a context reference into its full hierarchy path. Falls back to a
 -- singleton path for contexts that were never declared (e.g. referenced only

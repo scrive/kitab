@@ -69,6 +69,11 @@ test =
             diffCmd
             "test/golden/nested-contexts.puml"
             renderNestedContexts
+        , goldenVsStringDiff
+            "A cidr-set with in-context renders inside its boundary"
+            diffCmd
+            "test/golden/cidrset-in-context.puml"
+            renderCidrSetInContext
         , testGroup
             "Renderer Props"
             [ goldenVsStringDiff
@@ -172,6 +177,9 @@ renderConnectOnly = renderFixture "test/fixtures/connect-only.kdl"
 
 renderNestedContexts :: IO LazyByteString
 renderNestedContexts = renderFixture "test/fixtures/nested-contexts-puml.kdl"
+
+renderCidrSetInContext :: IO LazyByteString
+renderCidrSetInContext = renderFixture "test/fixtures/cidrset-in-context.kdl"
 
 renderWebAppToBackend :: IO LazyByteString
 renderWebAppToBackend = renderFixture "test/fixtures/web-app-to-backend.kdl"
