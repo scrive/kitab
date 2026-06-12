@@ -6,23 +6,17 @@
               id="context"
               title="context"
               type="string"/>
-            <attribute
-              id="context_id"
-              title="Context ID"
-              type="int"/>
         </attributes>
         <nodes>
             <node id="mailgun" label="mailgun"/>
             <node id="main-app" label="main-app">
                 <attvalues>
                     <attvalue for="context" value="k8s"/>
-                    <attvalue for="context_id" value="100"/>
                 </attvalues>
             </node>
             <node id="media-proxy" label="media-proxy">
                 <attvalues>
                     <attvalue for="context" value="k8s"/>
-                    <attvalue for="context_id" value="100"/>
                 </attvalues>
             </node>
             <node id="opensearch" label="opensearch"/>
@@ -31,14 +25,12 @@
             <node id="user-registry" label="user-registry">
                 <attvalues>
                     <attvalue for="context" value="k8s"/>
-                    <attvalue for="context_id" value="100"/>
                 </attvalues>
             </node>
             <node id="host" label="host"/>
             <node id="media-proxy-pngquant" label="pngquant">
                 <attvalues>
                     <attvalue for="context" value="media-proxy"/>
-                    <attvalue for="context_id" value="100"/>
                 </attvalues>
             </node>
         </nodes>

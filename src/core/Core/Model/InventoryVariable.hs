@@ -1,9 +1,11 @@
 module Core.Model.InventoryVariable where
 
+import Control.DeepSeq
 import Data.String
+import Prettyprinter
 
 newtype VariableName = VariableName Text
-  deriving newtype (Eq, Ord, Show, Display, IsString)
+  deriving newtype (Eq, Ord, Show, IsString, Pretty, Display, NFData)
 
 data InventoryVariable = InventoryVariable
   { name :: VariableName
@@ -17,8 +19,8 @@ instance Eq InventoryVariable where
 instance Ord InventoryVariable where
   compare v1 v2 = compare v1.name v2.name
 
-emptyInventoryVariabe :: InventoryVariable
-emptyInventoryVariabe =
+emptyInventoryVariable :: InventoryVariable
+emptyInventoryVariable =
   InventoryVariable
     { name = ""
     , value = ""

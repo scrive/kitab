@@ -45,7 +45,7 @@ renderToGEXF graph serviceIndex =
             hierarchy = mServiceInfo ^? _Just % #serviceContext % _Just
         in toXML $ serviceToGexfNode serviceName hierarchy
       EntityRef entityRef -> toXML $ entityRefToNode entityRef
-      ToolRef _ (ServiceName service) toolName ->
+      ToolRef (ServiceName service) toolName ->
         toXML $ toolToGexfNode service toolName
       CIDRRef cidrConnection ->
         toXML $ cidrConnectionToGexfNode cidrConnection

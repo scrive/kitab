@@ -6,16 +6,11 @@
               id="context"
               title="context"
               type="string"/>
-            <attribute
-              id="context_id"
-              title="Context ID"
-              type="int"/>
         </attributes>
         <nodes>
             <node id="my-app" label="my-app">
                 <attvalues>
                     <attvalue for="context" value="k8s"/>
-                    <attvalue for="context_id" value="100"/>
                 </attvalues>
             </node>
             <node id="network" label="network"/>

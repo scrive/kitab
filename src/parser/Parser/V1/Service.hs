@@ -9,12 +9,12 @@ import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import GHC.Generics
 import KDL
-import Optics.Core
 
 import Core.Model.ContextName
 import Core.Model.PortNode
 import Core.Model.Service
 import Core.Variable
+import Parser.Util (pickAll, pickOne)
 import Parser.V1.EntityName
 import Parser.V1.PortNode
 import Parser.V1.ServiceContext
@@ -45,14 +45,14 @@ serviceDecoder = KDL.nodeWith "service" $ do
         <|> (ServiceContextNode <$> contextReferenceDecoder)
         <|> (CallTool <$> toolCallDecoder)
 
-  let serviceFqdn = headOf (folded % #_FQDNNode) mixedChildren
-  let servicePorts = Set.fromList $ toListOf (folded % #_ServicePortNode) mixedChildren
-  let serviceContext = headOf (folded % #_ServiceContextNode) mixedChildren
+  let serviceFqdn = pickOne #_FQDNNode mixedChildren
+  let servicePorts = Set.fromList $ pickAll #_ServicePortNode mixedChildren
+  let serviceContext = pickOne #_ServiceContextNode mixedChildren
   let serviceInfo = ServiceInfo {serviceFqdn, serviceContext, servicePorts, rendererProps}
-  let serviceConnections = toListOf (folded % #_DependsOnNode) mixedChildren
-  let entityAccesses = toListOf (folded % #_AccessNode) mixedChildren
-  let cidrConnections = toListOf (folded % #_ConnectNode) mixedChildren
-  let toolCalls = toListOf (folded % #_CallTool) mixedChildren
+  let serviceConnections = pickAll #_DependsOnNode mixedChildren
+  let entityAccesses = pickAll #_AccessNode mixedChildren
+  let cidrConnections = pickAll #_ConnectNode mixedChildren
+  let toolCalls = pickAll #_CallTool mixedChildren
 
   pure Service {serviceName, serviceInfo, serviceConnections, entityAccesses, cidrConnections, toolCalls}
 

@@ -17,14 +17,15 @@ import Effectful.Error.Static qualified as Error
 import Effectful.FileSystem (FileSystem)
 import System.OsPath (osp, (</>))
 import System.OsPath qualified as OsPath
-import Validation
 
 import CLI.Error
+import Core.Graph (PreparedModel (..))
 import Core.Model.CIDRSet
 import Core.Model.ContextName
 import Core.Model.Entity
 import Core.Model.EntityName
 import Core.Model.Service
+import Core.Model.ServiceContext (contextPaths)
 import Core.Model.ServiceName
 import Driver.Output
 import Driver.Verbosity
@@ -34,21 +35,18 @@ import Render.Cilium.Resolved
 renderToCilium
   :: (Console :> es, Error (NonEmpty CLIError) :> es, FileSystem :> es)
   => List ContextName
-  -> List ContextName
-  -> Map ServiceName (ServiceInfo Void)
-  -> Map EntityName EntityInfo
-  -> Map Text (CIDRSet Void)
+  -> PreparedModel
   -> OsPath.OsPath
   -> VerbositySetting
-  -> List (Service Void)
   -> Eff es Unit
-renderToCilium contextFilters knownContexts serviceIndex entitiesIndex cidrIndex outputDir verbosity serviceDefinitions = do
+renderToCilium contextFilters model outputDir verbosity = do
+  let knownContexts = fmap fst (contextPaths model.contexts)
   validateContextFilters knownContexts contextFilters
-  resolvedDefinitions <- resolveServices serviceIndex entitiesIndex cidrIndex serviceDefinitions
+  resolvedDefinitions <- resolveServices model.serviceIndex model.entityIndex model.cidrIndex model.services
   let filteredDefinitions =
         case contextFilters of
           [] -> resolvedDefinitions
-          _ -> List.filter (isInContext contextFilters) resolvedDefinitions
+          _ -> List.filter (\service -> maybe False (`elem` contextFilters) service.serviceContext) resolvedDefinitions
   outputs <- forM filteredDefinitions $ \service -> do
     let rendered = Cilium.renderCilium (Cilium.toCiliumPolicy service)
     outputFile <- OsPath.encodeUtf . T.unpack $ display service.serviceName
@@ -67,9 +65,8 @@ resolveServices
   -> List (Service Void)
   -> Eff es (List ResolvedService)
 resolveServices serviceIndex entityIndex cidrIndex serviceDefinitions =
-  case traverse (resolveService serviceIndex entityIndex cidrIndex) serviceDefinitions of
-    Failure violations -> Error.throwError $ fmap resolutionError violations
-    Success resolved -> pure resolved
+  throwOnFailure resolutionError $
+    traverse (resolveService serviceIndex entityIndex cidrIndex) serviceDefinitions
 
 -- | Ensure every context passed via @--context@ corresponds to a context
 -- declared in the document. Unknown filters are accumulated and reported
@@ -82,9 +79,3 @@ validateContextFilters
 validateContextFilters knownContexts contextFilters =
   forM_ (NE.nonEmpty $ List.filter (`notElem` knownContexts) contextFilters) $
     Error.throwError . fmap unknownContextFilter
-
-isInContext :: List ContextName -> ResolvedService -> Bool
-isInContext contextFilters service =
-  case service.serviceContext of
-    Nothing -> False
-    Just c -> c `elem` contextFilters

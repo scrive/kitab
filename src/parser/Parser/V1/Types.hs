@@ -23,42 +23,17 @@ data Declarations = Declarations
   }
   deriving stock (Eq, Ord, Show)
 
+-- | Sort a flat list of declarations into their per-kind buckets
 partitionDeclarations
   :: List (Declaration Var)
   -> Declarations
-partitionDeclarations declarations =
-  let entities =
-        mapMaybe
-          ( \case
-              EntityDeclaration e -> Just e
-              _ -> Nothing
-          )
-          declarations
-      contexts =
-        mapMaybe
-          ( \case
-              ContextDeclaration serviceContext -> Just serviceContext
-              _ -> Nothing
-          )
-          declarations
-      services =
-        declarations
-          & mapMaybe
-            ( \case
-                ServiceDeclaration s -> Just s
-                _ -> Nothing
-            )
-
-      cidrs =
-        mapMaybe
-          ( \case
-              CIDRSetDeclaration c -> Just c
-              _ -> Nothing
-          )
-          declarations
-  in Declarations
-       { services
-       , entities
-       , contexts
-       , cidrs
-       }
+partitionDeclarations =
+  foldr file (Declarations {services = [], entities = [], contexts = [], cidrs = []})
+  where
+    file declaration acc = case declaration of
+      ServiceDeclaration s -> acc {services = s : acc.services}
+      EntityDeclaration e -> acc {entities = e : acc.entities}
+      ContextDeclaration c -> acc {contexts = c : acc.contexts}
+      CIDRSetDeclaration c -> acc {cidrs = c : acc.cidrs}
+      VersionDeclaration _ -> acc
+      ToolDeclaration _ -> acc

@@ -28,7 +28,11 @@ mergeInventories
   -> List Inventory
   -> AggregatedInventory
 mergeInventories cloudSelector regionSelector environmentSelector inventories =
-  let selectorQuery = buildSelectedAttributesMap cloudSelector regionSelector environmentSelector
+  let selectorQuery =
+        Map.fromList $
+          selectorToArg "cloud" cloudSelector
+            <> selectorToArg "region" regionSelector
+            <> selectorToArg "env" environmentSelector
       aggregatedVars =
         inventories
           & List.filter (\inventory -> inventory.attributes `Map.isSubmapOf` selectorQuery)
@@ -38,23 +42,12 @@ mergeInventories cloudSelector regionSelector environmentSelector inventories =
        { aggregatedAttributes = selectorQuery
        , aggregatedVars
        }
-buildSelectedAttributesMap
-  :: Selector Cloud
-  -> Selector Region
-  -> Selector Environment
-  -> Map Text Text
-buildSelectedAttributesMap cloudSelector regionSelector environmentSelector =
-  let cloudArg = case cloudSelector.value of
-        Nothing -> []
-        Just cloud -> [("cloud", cloud)]
-      regionArg = case regionSelector.value of
-        Nothing -> []
-        Just region -> [("region", region)]
-      envArg = case environmentSelector.value of
-        Nothing -> []
-        Just env -> [("env", env)]
-      args = cloudArg <> regionArg <> envArg
-  in Map.fromList args
+
+-- | Turn a selector into a single keyed attribute, or nothing when unset.
+selectorToArg :: Text -> Selector a -> List (Tuple2 Text Text)
+selectorToArg key selector = case selector.value of
+  Nothing -> []
+  Just value -> [(key, value)]
 
 lookup
   :: AggregatedInventory
