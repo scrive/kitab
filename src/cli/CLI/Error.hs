@@ -5,10 +5,15 @@
 --   These numbers are picked at random.
 module CLI.Error where
 
+import Data.List.NonEmpty (NonEmpty)
 import Data.Set qualified as Set
 import Data.Text qualified as T
+import Effectful (Eff, (:>))
+import Effectful.Error.Static (Error)
+import Effectful.Error.Static qualified as Error
 import KDL (DecodeError, renderDecodeError)
 import System.OsPath
+import Validation (Validation (..))
 
 import Core.Model.ContextName
 import Core.Model.InventoryVariable
@@ -63,6 +68,18 @@ data CLIError = CLIError
 instance Display CLIError where
   displayBuilder CLIError {..} =
     "Error: " <> displayBuilder errorCode <> " " <> displayBuilder errorMessage
+
+-- | Throw accumulated validation errors as 'CLIError's, or return the
+-- validated value. Centralises the @Failure -> throwError@ / @Success -> pure@
+-- pattern shared by the render drivers.
+throwOnFailure
+  :: Error (NonEmpty CLIError) :> es
+  => (e -> CLIError)
+  -> Validation (NonEmpty e) a
+  -> Eff es a
+throwOnFailure toError = \case
+  Failure errors -> Error.throwError (fmap toError errors)
+  Success a -> pure a
 
 -- | Build a 'CLIError', deriving the error code from the error type
 mkError :: CLIErrorType -> Text -> CLIError

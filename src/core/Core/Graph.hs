@@ -1,5 +1,7 @@
 module Core.Graph
-  ( buildGraph
+  ( PreparedModel (..)
+  , buildPreparedModel
+  , buildGraph
   , buildServiceIndex
   , buildEntityIndex
   , buildCidrIndex
@@ -16,7 +18,36 @@ import Core.Model.Entity
 import Core.Model.EntityName
 import Core.Model.Reference
 import Core.Model.Service
+import Core.Model.ServiceContext
 import Core.Model.ServiceName
+
+-- | The fully resolved, validated-elsewhere model handed to a renderer: the
+-- connection graph plus the lookup indices and declared contexts every output
+-- format draws from.
+data PreparedModel = PreparedModel
+  { graph :: Graph (List ConnectionType) Reference
+  , services :: List (Service Void)
+  , serviceIndex :: Map ServiceName (ServiceInfo Void)
+  , entityIndex :: Map EntityName EntityInfo
+  , cidrIndex :: Map Text (CIDRSet Void)
+  , contexts :: List ServiceContext
+  }
+
+buildPreparedModel
+  :: List (Service Void)
+  -> List Entity
+  -> List (CIDRSet Void)
+  -> List ServiceContext
+  -> PreparedModel
+buildPreparedModel services entities cidrs contexts =
+  PreparedModel
+    { graph = buildGraph services entities
+    , services
+    , serviceIndex = buildServiceIndex services
+    , entityIndex = buildEntityIndex entities
+    , cidrIndex = buildCidrIndex cidrs
+    , contexts
+    }
 
 buildIndex :: Ord k => (a -> k) -> (a -> v) -> List a -> Map k v
 buildIndex key val = foldr (\x -> Map.insert (key x) (val x)) Map.empty
@@ -32,27 +63,19 @@ buildCidrIndex = buildIndex (.setName) identity
 
 buildGraph :: List (Service var) -> List Entity -> Graph (List ConnectionType) Reference
 buildGraph services entities =
-  let serviceGraph =
-        foldr
-          ( \service acc ->
-              let incomingService = ServiceRef service.serviceName
-                  serviceConnectionsGraph =
-                    Graph.edges [(List.singleton connection.connectionType, incomingService, ServiceRef connection.connectionWith) | connection <- service.serviceConnections]
-                  entityConnectionsGraph =
-                    Graph.edges [(List.singleton HTTPS, incomingService, EntityRef access.accessTarget) | access <- service.entityAccesses]
-                  toolConnectionsGraph =
-                    Graph.edges [(List.singleton ExternalTool, incomingService, ToolRef service.serviceInfo.serviceContext service.serviceName call) | call <- service.toolCalls]
-                  cidrConnectionsGraph =
-                    Graph.edges [(List.singleton Network, incomingService, CIDRRef call) | call <- service.cidrConnections]
-              in Graph.overlays [serviceConnectionsGraph, entityConnectionsGraph, toolConnectionsGraph, cidrConnectionsGraph, acc]
-          )
-          Graph.empty
-          services
-  in foldr
-       ( \entity ->
-           let incomingEntity = EntityRef entity.entityName
-               builtGraph = Graph.vertex incomingEntity
-           in Graph.overlay builtGraph
-       )
-       serviceGraph
-       entities
+  Graph.overlays $
+    Graph.edges (concatMap serviceEdges services)
+      : [Graph.vertex (EntityRef entity.entityName) | entity <- entities]
+
+-- | Every outgoing edge of a single service: connections to other services,
+-- entity accesses, external tool calls and CIDR connections.
+serviceEdges :: Service var -> List (Tuple3 (List ConnectionType) Reference Reference)
+serviceEdges service =
+  concat
+    [ [(List.singleton connection.connectionType, source, ServiceRef connection.connectionWith) | connection <- service.serviceConnections]
+    , [(List.singleton HTTPS, source, EntityRef access.accessTarget) | access <- service.entityAccesses]
+    , [(List.singleton ExternalTool, source, ToolRef service.serviceName call) | call <- service.toolCalls]
+    , [(List.singleton Network, source, CIDRRef call) | call <- service.cidrConnections]
+    ]
+  where
+    source = ServiceRef service.serviceName

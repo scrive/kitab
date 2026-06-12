@@ -83,8 +83,9 @@ toC4Container contextHierarchies serviceIndex cidrIndex = \case
     in buildValidatedContainer name hierarchy rendererProps
   EntityRef (EntityName name) ->
     Right $ defaultContainer name []
-  ToolRef mContext (ServiceName serviceName) name ->
-    Right $ defaultContainer name (expandContext contextHierarchies mContext <> [ContextName serviceName])
+  ToolRef serviceName@(ServiceName serviceNameText) name ->
+    let mContext = Map.lookup serviceName serviceIndex >>= (.serviceContext)
+    in Right $ defaultContainer name (expandContext contextHierarchies mContext <> [ContextName serviceNameText])
   CIDRRef (CIDRConnection cidrSetName) ->
     let mCidrSet = Map.lookup cidrSetName cidrIndex
         rendererProps = maybe Map.empty (.rendererProps) mCidrSet

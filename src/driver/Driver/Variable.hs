@@ -15,22 +15,17 @@ import Core.Model.InventoryVariable
 import Core.Model.Service
 import Core.Variable (Var (..))
 
-resolveServiceInfoVars
+-- | Look a variable up in the aggregated inventory, throwing a 'CLIError'
+-- when it is undefined.
+resolveVar
   :: Error (NonEmpty CLIError) :> es
   => AggregatedInventory
-  -> ServiceInfo Var
-  -> Eff es (ServiceInfo Void)
-resolveServiceInfoVars inventory si@ServiceInfo {serviceFqdn} = do
-  case serviceFqdn of
-    Just (Left (Var variable)) -> do
-      case Inventory.lookup inventory variable of
-        Just result ->
-          pure $ si {serviceFqdn = Just (Right result.value)}
-        Nothing -> Error.throwError (NE.singleton $ variableNotFound variable)
-    Just (Right value) ->
-      pure $
-        si {serviceFqdn = Just (Right value)}
-    Nothing -> pure si {serviceFqdn = Nothing}
+  -> VariableName
+  -> Eff es InventoryVariable
+resolveVar inventory variable =
+  case Inventory.lookup inventory variable of
+    Just result -> pure result
+    Nothing -> Error.throwError (NE.singleton $ variableNotFound variable)
 
 resolveServiceVars
   :: Error (NonEmpty CLIError) :> es
@@ -38,8 +33,11 @@ resolveServiceVars
   -> Service Var
   -> Eff es (Service Void)
 resolveServiceVars inventory service = do
-  resolvedServiceInfo <- resolveServiceInfoVars inventory service.serviceInfo
-  pure $ service {serviceInfo = resolvedServiceInfo}
+  let serviceInfo = service.serviceInfo
+  resolvedFqdn <- forM serviceInfo.serviceFqdn $ \case
+    Left (Var variable) -> Right . (.value) <$> resolveVar inventory variable
+    Right value -> pure (Right value)
+  pure $ service {serviceInfo = serviceInfo {serviceFqdn = resolvedFqdn}}
 
 resolveCIDRVars
   :: Error (NonEmpty CLIError) :> es
@@ -67,7 +65,6 @@ resolveCIDRVar
   -> Eff es (CidrEntry Void)
 resolveCIDRVar inventory cidrVar = case cidrVar of
   Right value -> pure $ Right value
-  Left (Var variable) ->
-    case Inventory.lookup inventory variable of
-      Just result -> pure (Right (result.value, result.description))
-      Nothing -> Error.throwError (NE.singleton $ variableNotFound variable)
+  Left (Var variable) -> do
+    result <- resolveVar inventory variable
+    pure (Right (result.value, result.description))

@@ -3,11 +3,11 @@ module Parser.V1.Entity where
 import Data.Set qualified as Set
 import GHC.Generics
 import KDL
-import Optics.Core
 
 import Core.Model.ContextName
 import Core.Model.Entity
 import Core.Model.PortNode
+import Parser.Util (pickAll, pickOne)
 import Parser.V1.EntityName
 import Parser.V1.PortNode
 import Parser.V1.ServiceContext
@@ -25,7 +25,7 @@ entityDecoder = KDL.nodeWith "entity" $ do
       (EntityPort <$> portDecoder)
         <|> (EntityContext <$> contextReferenceDecoder)
 
-  let entityPorts = Set.fromList $ toListOf (folded % #_EntityPort) mixedChildren
-  let entityContext = headOf (folded % #_EntityContext) mixedChildren
+  let entityPorts = Set.fromList $ pickAll #_EntityPort mixedChildren
+  let entityContext = pickOne #_EntityContext mixedChildren
   let entityInfo = EntityInfo {entityPorts, entityContext}
   pure Entity {entityName, entityInfo}

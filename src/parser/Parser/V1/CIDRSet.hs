@@ -1,14 +1,14 @@
 module Parser.V1.CIDRSet where
 
-import Data.List.NonEmpty (NonEmpty, nonEmpty)
+import Data.List.NonEmpty (nonEmpty)
 import GHC.Generics
 import KDL
-import Optics.Core
 
 import Core.Model.CIDRSet
 import Core.Model.ContextName
 import Core.Model.PortNode (PortNode)
 import Core.Variable
+import Parser.Util (pickAll, pickOne)
 import Parser.V1.PortNode
 import Parser.V1.ServiceContext (contextReferenceDecoder)
 import Parser.V1.Var
@@ -31,10 +31,10 @@ cidrSetDecoder = KDL.nodeWith "cidr-set" $ do
       (CidrRuleChild <$> cidrRuleDecoder)
         <|> (PortChild <$> portDecoder)
         <|> (ContextChild <$> contextReferenceDecoder)
-  let ports = toListOf (folded % #_PortChild) mixedChildren
-  let context = headOf (folded % #_ContextChild) mixedChildren
+  let ports = pickAll #_PortChild mixedChildren
+  let context = pickOne #_ContextChild mixedChildren
   -- At least one cidr-rule is required so the rendered policy always has a destination.
-  cidrRules <- case nonEmpty (toListOf (folded % #_CidrRuleChild) mixedChildren) of
+  cidrRules <- case nonEmpty (pickAll #_CidrRuleChild mixedChildren) of
     Just rules -> pure rules
     Nothing -> KDL.fail "A cidr-set requires at least one cidr-rule so the rendered policy always has a destination."
   pure $ CIDRSet {setName, cidrRules, ports, context, rendererProps}

@@ -70,7 +70,6 @@ defaultNodeAttributes =
     { attrClass = ClassNode
     , attributeList =
         [ contextAttrDef
-        , contextIdAttrDef
         ]
     }
 
@@ -113,19 +112,6 @@ contextAttrDef =
     , attrDefault = Nothing
     }
 
-contextIdAttributeId :: NodeId
-contextIdAttributeId = NodeId "context_id"
-
-contextIdAttrDef :: AttrDef
-contextIdAttrDef =
-  AttrDef
-    { attrId = contextIdAttributeId
-    , attrTitle = "Context ID"
-    , attrType = "int"
-    , attrDefault = Nothing
-    }
-
--- | Graph topology
 data Node = Node
   { nodeId :: NodeId
   , nodeLabel :: Label
@@ -133,30 +119,19 @@ data Node = Node
   }
   deriving stock (Eq, Ord, Show)
 
--- | Single source of truth for node ids: both node rendering and edge
--- rendering must derive ids through this function, since GEXF edges
--- reference nodes by exact string id and any divergence produces
--- dangling edges. Tool ids are qualified by their owning service.
 referenceNodeId :: Reference -> NodeId
 referenceNodeId = \case
-  ToolRef _ (ServiceName service) toolName -> toolNodeId service toolName
+  ToolRef (ServiceName service) toolName -> toolNodeId service toolName
   ref -> NodeId (display ref)
 
--- | See 'referenceNodeId'.
 toolNodeId :: Text -> Text -> NodeId
 toolNodeId service toolName = NodeId (service <> "-" <> toolName)
 
--- | The @context@ / @context_id@ attribute pair shared by service and
--- tool nodes.
 contextAttValues :: Text -> List AttValue
 contextAttValues context =
   [ AttValue
       { forAttrId = contextAttributeId
       , attrValue = context
-      }
-  , AttValue
-      { forAttrId = contextIdAttributeId
-      , attrValue = display (100 :: Int)
       }
   ]
 
@@ -212,7 +187,6 @@ data Edge = Edge
   , edgeSource :: NodeId
   , edgeTarget :: NodeId
   , edgeLabel :: Text
-  -- , edgeAttrs :: List Attribute
   }
   deriving stock (Eq, Ord, Show)
 

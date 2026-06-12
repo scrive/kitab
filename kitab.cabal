@@ -77,10 +77,12 @@ library
     Driver.GEXF
     Driver.Inventory
     Driver.Output
+    Driver.Parsing
     Driver.Puml
     Driver.Variable
     Driver.Verbosity
     Parser
+    Parser.Util
     Parser.V1
     Parser.V1.CIDRSet
     Parser.V1.Entity
@@ -175,7 +177,6 @@ library kitab-puml
   exposed-modules:
     Render.Puml
     Render.Puml.C4Container.Types
-    Render.Puml.C4Entity.Types
     Render.Puml.PumlType
 
   build-depends:

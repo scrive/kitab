@@ -2,7 +2,6 @@
 
 module Driver.Puml where
 
-import Algebra.Graph.Labelled (Graph)
 import Algebra.Graph.Labelled qualified as Graph
 import Algebra.Graph.Labelled.AdjacencyMap qualified as AM
 import Data.List.NonEmpty (NonEmpty)
@@ -12,17 +11,18 @@ import Data.Set qualified as Set
 import Effectful
 import Effectful.Console.ByteString (Console)
 import Effectful.Error.Static (Error)
-import Effectful.Error.Static qualified as Error
 import Effectful.FileSystem (FileSystem)
 import System.OsPath (OsPath, osp, (</>))
 import System.OsPath qualified as OsPath
 import Validation
 
 import CLI.Error
+import Core.Graph (PreparedModel (..))
 import Core.Model.CIDRSet
 import Core.Model.ContextName
 import Core.Model.Reference
 import Core.Model.Service
+import Core.Model.ServiceContext (contextHierarchies)
 import Core.Model.ServiceName
 import Driver.Output (writeArtifact)
 import Driver.Verbosity
@@ -31,16 +31,14 @@ import Render.Puml.C4Container.Types qualified as Puml
 
 renderToPuml
   :: (Console :> es, Error (NonEmpty CLIError) :> es, FileSystem :> es)
-  => Map ContextName (List ContextName)
-  -> Map ServiceName (ServiceInfo var)
-  -> Map Text (CIDRSet var)
+  => PreparedModel
   -> OsPath
   -> VerbositySetting
-  -> Graph (List ConnectionType) Reference
   -> Eff es Unit
-renderToPuml contextHierarchies serviceIndex cidrIndex outputDir verbosity graph = do
-  let edges = Graph.edgeList graph
-  containersByRef <- validateContainers contextHierarchies serviceIndex cidrIndex edges
+renderToPuml model outputDir verbosity = do
+  let edges = Graph.edgeList model.graph
+  containersByRef <-
+    validateContainers (contextHierarchies model.contexts) model.serviceIndex model.cidrIndex edges
   let graphEdges =
         edges
           & fmap (\(es, a, b) -> (es, containersByRef Map.! a, containersByRef Map.! b))
@@ -56,15 +54,13 @@ validateContainers
   -> Map Text (CIDRSet var)
   -> List (Tuple3 (List ConnectionType) Reference Reference)
   -> Eff es (Map Reference Puml.C4Container)
-validateContainers contextHierarchies serviceIndex cidrIndex edges =
-  case traverse validate references of
-    Failure errors -> Error.throwError $ fmap pumlValidationError errors
-    Success pairs -> pure (Map.fromList pairs)
+validateContainers hierarchies serviceIndex cidrIndex edges =
+  Map.fromList <$> throwOnFailure pumlValidationError (traverse validate references)
   where
     edgeReferences = concatMap (\(_, a, b) -> [a, b]) edges
     serviceReferences = ServiceRef <$> Map.keys serviceIndex
     references = Set.toList . Set.fromList $ edgeReferences <> serviceReferences
     validate reference =
-      case Puml.toC4Container contextHierarchies serviceIndex cidrIndex reference of
+      case Puml.toC4Container hierarchies serviceIndex cidrIndex reference of
         Left err -> Failure (NE.singleton err)
         Right container -> Success (reference, container)

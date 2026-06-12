@@ -1,7 +1,8 @@
 module Core.Model.EntityName where
 
+import Control.DeepSeq
 import Data.String
 import Prettyprinter
 
 newtype EntityName = EntityName Text
-  deriving newtype (Eq, Ord, Show, IsString, Pretty, Display)
+  deriving newtype (Eq, Ord, Show, IsString, Pretty, Display, NFData)
