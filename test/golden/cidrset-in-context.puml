@@ -1,0 +1,16 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title System Architecture (C4 Container View)
+
+' --- Contexts ---
+Container_Boundary(company, company) {
+  Container(network, "network")
+  Container_Boundary(k8s, k8s) {
+    Container(my_app, "my-app")
+  }
+}
+
+' --- Relationships ---
+Rel(my_app, network, "network")
+@enduml
