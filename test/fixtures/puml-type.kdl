@@ -3,9 +3,7 @@ context "k8s"
 service "main-app" {
 	in-context "k8s"
 
-	depends-on "postgres" {
-		via "postgres"
-	}
+	connect "postgres"
 
 	depends-on "rabbitmq" {
 		via "https"

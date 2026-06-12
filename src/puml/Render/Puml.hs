@@ -1,4 +1,7 @@
-module Render.Puml (renderPuml) where
+module Render.Puml
+  ( renderPuml
+  , prettyContainerNode
+  ) where
 
 import Algebra.Graph.Labelled.AdjacencyMap (AdjacencyMap)
 import Algebra.Graph.Labelled.AdjacencyMap qualified as AM
@@ -72,6 +75,7 @@ subTreeToPuml (ContextName name, tree) =
     , "}"
     ]
 
+{-# WARNING in "x-test-only" prettyContainerNode "Exported for tests only" #-}
 prettyContainerNode :: C4Container -> Doc ann
 prettyContainerNode service =
   pretty (macro service.pumlType)

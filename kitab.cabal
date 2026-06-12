@@ -306,6 +306,7 @@ test-suite kitab-test
     kitab-prelude,
     optics-core,
     pretty-simple ^>=4.1.4.0,
+    prettyprinter,
     tasty,
     tasty-golden,
     tasty-hunit,

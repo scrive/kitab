@@ -27,7 +27,7 @@ import Core.Model.EntityName
 import Core.Model.Reference
 import Core.Model.Service
 import Core.Model.ServiceName
-import Render.Puml.PumlType
+import Render.Puml.PumlType (PropError (..), PumlType, defaultPumlType, parsePumlType, validatePumlProps)
 
 newtype C4ContainerAlias = C4ContainerAlias Text
   deriving newtype (Eq, Show, Ord, Pretty)
@@ -74,37 +74,32 @@ toC4Container
   -> Either PumlError C4Container
 toC4Container serviceIndex cidrIndex = \case
   ServiceRef serviceName@(ServiceName name) ->
-    let alias = mkC4ContainerAlias name
-        mServiceInfo = Map.lookup serviceName serviceIndex
+    let mServiceInfo = Map.lookup serviceName serviceIndex
         hierarchy = maybeToList $ mServiceInfo ^? _Just % #serviceContext % _Just
         rendererProps = maybe Map.empty (.rendererProps) mServiceInfo
-    in case validatePumlProps rendererProps of
-         Left unknownKey -> Left $ UnknownPumlProp UnknownPumlPropError {name = display serviceName, propKey = unknownKey}
-         Right () ->
-           case parsePumlType rendererProps of
-             Left PropError {propKey, providedValue, supportedValues} ->
-               Left $ InvalidPumlProp InvalidPumlPropError {name = display serviceName, propKey, providedValue, supportedValues}
-             Right pumlType -> Right C4Container {alias, name, hierarchy, pumlType}
+    in buildValidatedContainer name hierarchy rendererProps
   EntityRef (EntityName name) ->
-    let alias = mkC4ContainerAlias name
-        hierarchy = []
-    in Right C4Container {alias, name, hierarchy, pumlType = defaultPumlType}
+    Right $ defaultContainer name []
   ToolRef mContext (ServiceName serviceName) name ->
-    let alias = mkC4ContainerAlias name
-        hierarchy = maybeToList mContext <> [ContextName serviceName]
-    in Right C4Container {alias, name, hierarchy, pumlType = defaultPumlType}
+    Right $ defaultContainer name (maybeToList mContext <> [ContextName serviceName])
   CIDRRef (CIDRConnection cidrSetName) ->
-    let alias = mkC4ContainerAlias cidrSetName
-        hierarchy = []
-        mCidrSet = Map.lookup cidrSetName cidrIndex
+    let mCidrSet = Map.lookup cidrSetName cidrIndex
         rendererProps = maybe Map.empty (.rendererProps) mCidrSet
-    in case validatePumlProps rendererProps of
-         Left unknownKey -> Left $ UnknownPumlProp UnknownPumlPropError {name = cidrSetName, propKey = unknownKey}
-         Right () ->
-           case parsePumlType rendererProps of
-             Left PropError {propKey, providedValue, supportedValues} ->
-               Left $ InvalidPumlProp InvalidPumlPropError {name = cidrSetName, propKey, providedValue, supportedValues}
-             Right pumlType -> Right C4Container {alias, name = cidrSetName, hierarchy, pumlType}
+    in buildValidatedContainer cidrSetName [] rendererProps
+
+defaultContainer :: Text -> List ContextName -> C4Container
+defaultContainer name hierarchy =
+  C4Container {alias = mkC4ContainerAlias name, name, hierarchy, pumlType = defaultPumlType}
+
+buildValidatedContainer :: Text -> List ContextName -> Map Text Text -> Either PumlError C4Container
+buildValidatedContainer name hierarchy rendererProps =
+  case validatePumlProps rendererProps of
+    Left unknownKey -> Left $ UnknownPumlProp UnknownPumlPropError {name, propKey = unknownKey}
+    Right () ->
+      case parsePumlType rendererProps of
+        Left PropError {propKey, providedValue, supportedValues} ->
+          Left $ InvalidPumlProp InvalidPumlPropError {name, propKey, providedValue, supportedValues}
+        Right pumlType -> Right C4Container {alias = mkC4ContainerAlias name, name, hierarchy, pumlType}
 
 data ServiceTree = ServiceTree
   { leaves :: List C4Container

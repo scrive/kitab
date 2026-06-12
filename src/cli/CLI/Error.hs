@@ -98,8 +98,7 @@ pumlValidationError :: PumlError -> CLIError
 pumlValidationError = \case
   InvalidPumlProp InvalidPumlPropError {name, propKey, providedValue, supportedValues} ->
     mkError PumlValidationError $
-      "Service "
-        <> display name
+      display name
         <> " has unknown value for "
         <> propKey
         <> ": "
@@ -108,8 +107,7 @@ pumlValidationError = \case
         <> T.intercalate ", " supportedValues
   UnknownPumlProp UnknownPumlPropError {name, propKey} ->
     mkError PumlValidationError $
-      "Service "
-        <> display name
+      display name
         <> " has unknown puml prop: "
         <> propKey
         <> ". Known props are "
