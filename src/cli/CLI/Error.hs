@@ -70,7 +70,7 @@ instance Display CLIError where
     "Error: " <> displayBuilder errorCode <> " " <> displayBuilder errorMessage
 
 -- | Throw accumulated validation errors as 'CLIError's, or return the
--- validated value. Centralises the @Failure -> throwError@ / @Success -> pure@
+-- validated value. Centralises the Failure -> throwError / Success -> pure
 -- pattern shared by the render drivers.
 throwOnFailure
   :: Error (NonEmpty CLIError) :> es

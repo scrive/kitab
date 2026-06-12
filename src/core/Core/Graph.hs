@@ -10,8 +10,10 @@ module Core.Graph
 import Algebra.Graph.Labelled (Graph)
 import Algebra.Graph.Labelled qualified as Graph
 import Data.List qualified as List
+import Data.List.NonEmpty (NonEmpty)
 import Data.Map.Strict qualified as Map
 import Data.Void
+import Validation
 
 import Core.Model.CIDRSet
 import Core.Model.Entity
@@ -20,6 +22,7 @@ import Core.Model.Reference
 import Core.Model.Service
 import Core.Model.ServiceContext
 import Core.Model.ServiceName
+import Core.Validation
 
 -- | The fully resolved, validated-elsewhere model handed to a renderer: the
 -- connection graph plus the lookup indices and declared contexts every output
@@ -38,18 +41,26 @@ buildPreparedModel
   -> List Entity
   -> List (CIDRSet Void)
   -> List ServiceContext
-  -> PreparedModel
-buildPreparedModel services entities cidrs contexts =
-  PreparedModel
-    { graph = buildGraph services entities
-    , services
-    , serviceIndex = buildServiceIndex services
-    , entityIndex = buildEntityIndex entities
-    , cidrIndex = buildCidrIndex cidrs
-    , contexts
-    }
+  -> Validation (NonEmpty ValidationError) PreparedModel
+buildPreparedModel services entities cidrs contexts = do
+  let graph = buildGraph services entities
+  case checkGraph graph of
+    Failure err -> Failure err
+    Success _ ->
+      Success $
+        PreparedModel
+          { graph
+          , services
+          , serviceIndex = buildServiceIndex services
+          , entityIndex = buildEntityIndex entities
+          , cidrIndex = buildCidrIndex cidrs
+          , contexts
+          }
 
-buildIndex :: Ord k => (a -> k) -> (a -> v) -> List a -> Map k v
+-- |  Reusable helper to make generic the assembly of an index
+--  according to two accessors, the first producing a key and the second one
+--  producing a value out of the list of elements being passed.
+buildIndex :: Ord key => (a -> key) -> (a -> value) -> List a -> Map key value
 buildIndex key val = foldr (\x -> Map.insert (key x) (val x)) Map.empty
 
 buildServiceIndex :: List (Service Void) -> Map ServiceName (ServiceInfo Void)

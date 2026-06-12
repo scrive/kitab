@@ -21,7 +21,6 @@ import Core.Graph
 import Core.Model.ContextName
 import Core.Model.Inventory.Aggregated
 import Core.Model.Inventory.Selector (Selector (..))
-import Core.Validation
 import Driver.Cilium
 import Driver.Colours
 import Driver.Environment qualified as Driver
@@ -74,7 +73,7 @@ runGenerate options = do
   let verbosity = computeVerbosity options.quiet environment.debug
   outputDirectory <- OsPath.decodeUtf options.outputDir
   FileSystem.createDirectoryIfMissing True outputDirectory
-  allDeclarations <- parseInputs options.inputs
+  allDeclarations <- partitionDeclarations <$> parseInputs options.inputs
   inventories <- concat <$> traverse getInventories options.inventory
   let aggregatedInventory =
         mergeInventories
@@ -83,14 +82,15 @@ runGenerate options = do
           (Selector options.environment)
           inventories
   when (isVerbose verbosity) $ printInventory coloursSettings aggregatedInventory
-  model <- prepareModel aggregatedInventory (partitionDeclarations allDeclarations)
+  model <- prepareModel aggregatedInventory allDeclarations
   case options.format of
     PumlFormat -> renderToPuml model options.outputDir verbosity
     CiliumFormat -> renderToCilium options.contextFilters model options.outputDir verbosity
     GexfFormat -> renderToGEXF model options.outputDir verbosity
 
--- | Resolve every inventory variable in the parsed declarations, assemble the
--- render model, and validate its connection graph.
+-- | 1. Resolve inventory variables of Services
+--   2. Resolve inventory variables of CIDR Sets
+--  assemble the render model, and validate its connection graph.
 -- Accumulated 'CLIError's are thrown on any unresolved variable or graph inconsistency,
 -- so that the format-specific renderers downstream operate on a known-good model.
 prepareModel
@@ -101,6 +101,5 @@ prepareModel
 prepareModel aggregatedInventory declarations = do
   services <- traverse (resolveServiceVars aggregatedInventory) declarations.services
   cidrs <- traverse (resolveCIDRVars aggregatedInventory) declarations.cidrs
-  let model = buildPreparedModel services declarations.entities cidrs declarations.contexts
-  throwOnFailure graphValidationError (checkGraph model.graph)
-  pure model
+  let result = buildPreparedModel services declarations.entities cidrs declarations.contexts
+  throwOnFailure graphValidationError result
