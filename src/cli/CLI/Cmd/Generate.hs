@@ -86,7 +86,7 @@ runGenerate options = do
   model <- prepareModel aggregatedInventory allDeclarations
   case options.format of
     PumlFormat -> renderToPuml model options.outputDir options.versionStamp verbosity
-    CiliumFormat -> renderToCilium options.contextFilters model options.outputDir verbosity
+    CiliumFormat -> renderToCilium options.contextFilters model options.outputDir options.versionStamp verbosity
     GexfFormat -> renderToGEXF model options.outputDir verbosity
 
 -- | 1. Resolve inventory variables of Services

@@ -200,6 +200,12 @@ library kitab-puml
 library kitab-cilium
   import: extensions
   import: ghc-options
+  autogen-modules:
+    Paths_kitab
+
+  other-modules:
+    Paths_kitab
+
   -- cabal-gild: discover src/cilium
   exposed-modules:
     Render.Cilium
@@ -226,6 +232,12 @@ library kitab-cilium
 library kitab-gexf
   import: extensions
   import: ghc-options
+  autogen-modules:
+    Paths_kitab
+
+  other-modules:
+    Paths_kitab
+
   -- cabal-gild: discover src/gexf
   exposed-modules:
     Render.GEXF

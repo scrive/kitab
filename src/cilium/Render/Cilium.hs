@@ -17,10 +17,10 @@ import Render.Cilium.Types.CIDRRule
 import Render.Cilium.Types.EgressRule
 import Render.Cilium.Types.NetworkPolicy
 
-renderCilium :: CiliumNetworkPolicy -> Text
-renderCilium policy =
+renderCilium :: Bool -> CiliumNetworkPolicy -> Text
+renderCilium enableVersionStamp policy =
   policy
-    & pretty
+    & prettyNetworkPolicy enableVersionStamp
     & layoutPretty defaultLayoutOptions
     & renderStrict
     & (\t -> t <> "\n")
