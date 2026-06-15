@@ -4,9 +4,10 @@ import Algebra.Graph.Labelled.AdjacencyMap (AdjacencyMap)
 import Algebra.Graph.Labelled.AdjacencyMap qualified as AM
 import Data.Map.Strict qualified as Map
 import Data.Text.Lazy qualified as TL
+import Data.Version (showVersion)
 import Data.Void
 import Optics.Core hiding (element)
-import Text.XML (def, renderText)
+import Text.XML (Name, def, renderText)
 import Text.XML.Stream.Render.Internal (RenderSettings (..))
 import Text.XML.Writer
 
@@ -14,20 +15,18 @@ import Core.Model.Reference
 import Core.Model.Service
 import Core.Model.ServiceContext ()
 import Core.Model.ServiceName
+import Paths_kitab (version)
 import Render.GEXF.Types
 
 renderToGEXF
-  :: AdjacencyMap (List ConnectionType) Reference
+  :: Bool
+  -> AdjacencyMap (List ConnectionType) Reference
   -> Map ServiceName (ServiceInfo Void)
   -> Text
-renderToGEXF graph serviceIndex =
+renderToGEXF enableVersionStamp graph serviceIndex =
   TL.toStrict
     . renderText def {rsPretty = True}
-    . documentA
-      "gexf"
-      [ ("xmlns", "http://www.gexf.net/1.2draft")
-      , ("version", "1.2")
-      ]
+    . documentA "gexf" ([("xmlns", "http://www.gexf.net/1.2draft"), ("version", "1.2")] <> versionStamp)
     $ do
       elementA "graph" [("mode", "static"), ("defaultedgetype", "directed")] $ do
         toXML defaultNodeAttributes
@@ -59,3 +58,8 @@ renderToGEXF graph serviceIndex =
           , edgeTarget = referenceNodeId v
           , edgeLabel = display (head e)
           }
+    versionStamp :: List (Tuple2 Name Text)
+    versionStamp =
+      if enableVersionStamp
+        then [("kitab:version", display (showVersion version))]
+        else []

@@ -19,13 +19,14 @@ renderToGEXF
   :: (Console :> es, FileSystem :> es)
   => PreparedModel
   -> OsPath
+  -> Bool
   -> VerbositySetting
   -> Eff es Unit
-renderToGEXF model outputDir verbosity = do
+renderToGEXF model outputDir enableVersionStamp verbosity = do
   let adjacencyMap =
         model.graph
           & Graph.edgeList
           & AM.edges
-  let rendered = Render.renderToGEXF adjacencyMap model.serviceIndex
+  let rendered = Render.renderToGEXF enableVersionStamp adjacencyMap model.serviceIndex
   outputPath <- OsPath.decodeUtf (outputDir </> [osp|architecture.gexf|])
   writeArtifact verbosity outputPath rendered
