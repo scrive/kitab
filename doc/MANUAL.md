@@ -6,7 +6,7 @@ kitab — Documentation and Infrastructure for service-oriented architectures
 
 ### Generate
 
-Usage: kitab generate [-q|--quiet] (-f|--format FORMAT)
+Usage: kitab generate [-q|--quiet] [--version-stamp] (-f|--format FORMAT)
                       (-o|--output-dir DIRECTORY) [--context CONTEXT]
                       [--cloud CLOUD] [--region REGION] [--env ENVIRONMENT]
                       [-i|--inventory DIRECTORY] FILES
@@ -29,6 +29,9 @@ This graph can then be used to create network access policies and architecture d
 <dl>
   <dt>-q,--quiet</dt>
   <dd style="margin-left: 3rem"> Make the program less verbose </dd>
+
+  <dt>--version-stamp</dt>
+  <dd>Insert a Kitab version stamp at the beginning of generated files</dd>
 
   <dt>-f,--format=FORMAT</dt>
   <dd style="margin-left: 3rem"> Output format </dd>
