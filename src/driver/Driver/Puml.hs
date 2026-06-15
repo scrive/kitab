@@ -33,9 +33,10 @@ renderToPuml
   :: (Console :> es, Error (NonEmpty CLIError) :> es, FileSystem :> es)
   => PreparedModel
   -> OsPath
+  -> Bool
   -> VerbositySetting
   -> Eff es Unit
-renderToPuml model outputDir verbosity = do
+renderToPuml model outputDir enableVersionStamp verbosity = do
   let edges = Graph.edgeList model.graph
   containersByRef <-
     validateContainers (contextHierarchies model.contexts) model.serviceIndex model.cidrIndex edges
@@ -43,7 +44,7 @@ renderToPuml model outputDir verbosity = do
         edges
           & fmap (\(es, a, b) -> (es, containersByRef Map.! a, containersByRef Map.! b))
   let adjacencyMap = AM.edges graphEdges
-  let rendered = Puml.renderPuml adjacencyMap
+  let rendered = Puml.renderPuml enableVersionStamp adjacencyMap
   outputPath <- OsPath.decodeUtf (outputDir </> [osp|architecture.puml|])
   writeArtifact verbosity outputPath rendered
 

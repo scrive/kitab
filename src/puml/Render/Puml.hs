@@ -7,23 +7,27 @@ import Algebra.Graph.Labelled.AdjacencyMap (AdjacencyMap)
 import Algebra.Graph.Labelled.AdjacencyMap qualified as AM
 import Data.List qualified as List
 import Data.Map.Strict qualified as Map
+import Data.Version (showVersion)
 import Prettyprinter
 import Prettyprinter.Render.Text (renderStrict)
 
 import Core.Model.ContextName
 import Core.Model.Service
+import Paths_kitab (version)
 import Render.Puml.C4Container.Types
 import Render.Puml.PumlType (pumlContainerMacro, pumlExternalContainerMacro)
 
 renderPuml
-  :: AdjacencyMap (List ConnectionType) C4Container
+  :: Bool
+  -> AdjacencyMap (List ConnectionType) C4Container
   -> Text
-renderPuml graph = renderStrict . layoutPretty defaultLayoutOptions $ pumlDoc
+renderPuml enableVersionStamp graph = renderStrict . layoutPretty defaultLayoutOptions $ pumlDoc
   where
     pumlDoc :: Doc ann
     pumlDoc =
       vsep
-        [ "@startuml"
+        [ versionStamp
+        , "@startuml"
         , "!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml"
         , ""
         , "title System Architecture (C4 Container View)"
@@ -35,6 +39,11 @@ renderPuml graph = renderStrict . layoutPretty defaultLayoutOptions $ pumlDoc
         , vsep (map prettyEdge (AM.edgeList graph))
         , "@enduml"
         ]
+    versionStamp :: Doc ann
+    versionStamp =
+      if enableVersionStamp
+        then "' -- Generated with kitab version" <+> pretty (showVersion version)
+        else mempty
 
 prettyEdge :: Tuple3 (List ConnectionType) C4Container C4Container -> Doc ann
 prettyEdge (connTypes, from, to) =
