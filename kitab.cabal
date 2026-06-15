@@ -40,7 +40,7 @@ common ghc-options
     -fhide-source-paths
     -Wno-unused-do-bind
     -funbox-strict-fields
-    -Wunused-packages
+    -- -Wunused-packages -- Commented out because base and kitab-prelude get improperly flagged
     -Wno-unticked-promoted-constructors
     -funbox-small-strict-fields
     -Winvalid-haddock
@@ -154,13 +154,8 @@ library kitab-core
     base ^>=4.21,
     containers,
     deepseq,
-    effectful,
-    extra,
-    filepath,
     kitab-prelude,
     prettyprinter,
-    text,
-    text-display,
     validation-selective,
 
   hs-source-dirs:
@@ -188,7 +183,6 @@ library kitab-puml
     kitab:kitab-core,
     kitab-prelude,
     optics-core,
-    pretty-simple,
     prettyprinter,
     text,
 
@@ -211,14 +205,11 @@ library kitab-cilium
     Render.Cilium.Utils
 
   build-depends:
-    algebraic-graphs,
     base ^>=4.21,
     containers,
     kitab:kitab-core,
     kitab-prelude,
     prettyprinter,
-    text,
-    text-display,
     validation-selective,
 
   hs-source-dirs: src/cilium
@@ -241,9 +232,7 @@ library kitab-gexf
     kitab:kitab-core,
     kitab-prelude,
     optics-core,
-    prettyprinter,
     text,
-    text-display,
     xml-conduit,
     xml-conduit-writer,
 
