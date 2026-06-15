@@ -167,7 +167,7 @@ renderFixture fixturePath = runTestEff $ do
   void . assertRight "Graph is invalid" $ validationToEither (checkGraph graph)
   let contextHierarchies = ServiceContext.contextHierarchies declarations.contexts
   adjacencyMap <- toAdjacencyMap contextHierarchies serviceIndex cidrIndex graph
-  (pure . TL.encodeUtf8) . T.fromStrict $ Puml.renderPuml adjacencyMap
+  (pure . TL.encodeUtf8) . T.fromStrict $ Puml.renderPuml True adjacencyMap
 
 renderPumlType :: IO LazyByteString
 renderPumlType = renderFixture "test/fixtures/puml-type.kdl"

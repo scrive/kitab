@@ -32,6 +32,7 @@ common extensions
 
 common ghc-options
   ghc-options:
+    -- -Wunused-packages -- Commented out because base and kitab-prelude get improperly flagged
     -Wall
     -Wcompat
     -Widentities
@@ -40,7 +41,6 @@ common ghc-options
     -fhide-source-paths
     -Wno-unused-do-bind
     -funbox-strict-fields
-    -- -Wunused-packages -- Commented out because base and kitab-prelude get improperly flagged
     -Wno-unticked-promoted-constructors
     -funbox-small-strict-fields
     -Winvalid-haddock
@@ -168,6 +168,12 @@ library kitab-core
 library kitab-puml
   import: extensions
   import: ghc-options
+  autogen-modules:
+    Paths_kitab
+
+  other-modules:
+    Paths_kitab
+
   -- cabal-gild: discover src/puml
   exposed-modules:
     Render.Puml
@@ -194,6 +200,12 @@ library kitab-puml
 library kitab-cilium
   import: extensions
   import: ghc-options
+  autogen-modules:
+    Paths_kitab
+
+  other-modules:
+    Paths_kitab
+
   -- cabal-gild: discover src/cilium
   exposed-modules:
     Render.Cilium
@@ -220,6 +232,12 @@ library kitab-cilium
 library kitab-gexf
   import: extensions
   import: ghc-options
+  autogen-modules:
+    Paths_kitab
+
+  other-modules:
+    Paths_kitab
+
   -- cabal-gild: discover src/gexf
   exposed-modules:
     Render.GEXF

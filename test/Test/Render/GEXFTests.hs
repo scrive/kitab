@@ -46,7 +46,7 @@ renderServices = runTestEff $ do
         graph
           & Graph.edgeList
           & AM.edges
-  (pure . TL.encodeUtf8) . T.fromStrict $ GEXF.renderToGEXF adjacencyMap serviceIndex
+  (pure . TL.encodeUtf8) . T.fromStrict $ GEXF.renderToGEXF False adjacencyMap serviceIndex
 
 renderConnectOnly :: IO LazyByteString
 renderConnectOnly = runTestEff $ do
@@ -61,4 +61,4 @@ renderConnectOnly = runTestEff $ do
         graph
           & Graph.edgeList
           & AM.edges
-  (pure . TL.encodeUtf8) . T.fromStrict $ GEXF.renderToGEXF adjacencyMap serviceIndex
+  (pure . TL.encodeUtf8) . T.fromStrict $ GEXF.renderToGEXF True adjacencyMap serviceIndex

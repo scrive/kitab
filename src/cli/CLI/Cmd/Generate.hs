@@ -34,6 +34,7 @@ import Parser.V1.Types
 
 data GenerateOptions = GenerateOptions
   { quiet :: Bool
+  , versionStamp :: Bool
   , format :: OutputFormat
   , outputDir :: OsPath
   , contextFilters :: List ContextName
@@ -84,9 +85,9 @@ runGenerate options = do
   when (isVerbose verbosity) $ printInventory coloursSettings aggregatedInventory
   model <- prepareModel aggregatedInventory allDeclarations
   case options.format of
-    PumlFormat -> renderToPuml model options.outputDir verbosity
-    CiliumFormat -> renderToCilium options.contextFilters model options.outputDir verbosity
-    GexfFormat -> renderToGEXF model options.outputDir verbosity
+    PumlFormat -> renderToPuml model options.outputDir options.versionStamp verbosity
+    CiliumFormat -> renderToCilium options.contextFilters model options.outputDir options.versionStamp verbosity
+    GexfFormat -> renderToGEXF model options.outputDir options.versionStamp verbosity
 
 -- | 1. Resolve inventory variables of Services
 --   2. Resolve inventory variables of CIDR Sets

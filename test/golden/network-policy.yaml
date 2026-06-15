@@ -1,4 +1,5 @@
 ---
+# Generated with kitab version 0.1.0.0
 apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
 metadata:

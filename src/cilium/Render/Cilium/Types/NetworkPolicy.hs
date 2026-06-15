@@ -2,8 +2,10 @@
 
 module Render.Cilium.Types.NetworkPolicy where
 
+import Data.Version (showVersion)
 import Prettyprinter
 
+import Paths_kitab (version)
 import Render.Cilium.Types.EgressRule
 import Render.Cilium.Utils
 
@@ -16,16 +18,21 @@ data CiliumNetworkPolicy = CiliumNetworkPolicy
   }
   deriving stock (Show, Eq, Ord)
 
-instance Pretty CiliumNetworkPolicy where
-  pretty CiliumNetworkPolicy {..} =
-    vsep
-      [ "---"
-      , keyValue "apiVersion" (dquotes $ pretty apiVersion)
-      , keyValue "kind" (pretty kind)
-      , keyBlock "metadata" (indent 2 $ pretty metadata)
-      , keyBlock "spec" (indent 2 $ pretty spec)
-      ]
-
+prettyNetworkPolicy :: Bool -> CiliumNetworkPolicy -> Doc ann
+prettyNetworkPolicy enableVersionStamp CiliumNetworkPolicy {..} =
+  vsep
+    [ "---" <> versionStamp
+    , keyValue "apiVersion" (dquotes $ pretty apiVersion)
+    , keyValue "kind" (pretty kind)
+    , keyBlock "metadata" (indent 2 $ pretty metadata)
+    , keyBlock "spec" (indent 2 $ pretty spec)
+    ]
+  where
+    versionStamp :: Doc ann
+    versionStamp =
+      if enableVersionStamp
+        then "\n# Generated with kitab version" <+> pretty (showVersion version)
+        else mempty
 instance Pretty Metadata where
   pretty Metadata {..} = keyValue "name" (dquotes $ pretty name)
 

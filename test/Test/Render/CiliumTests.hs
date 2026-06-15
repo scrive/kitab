@@ -89,7 +89,7 @@ renderService = runTestEff $ do
   resolvedService <-
     assertRight "Service does not resolve" . validationToEither $
       resolveService serviceIndex entityIndex cidrIndex mediaProxyService
-  ((pure . TL.encodeUtf8) . T.fromStrict) . Cilium.renderCilium $ Cilium.toCiliumPolicy resolvedService
+  ((pure . TL.encodeUtf8) . T.fromStrict) . Cilium.renderCilium True $ Cilium.toCiliumPolicy resolvedService
 
 renderCIDRSetPolicy :: IO LazyByteString
 renderCIDRSetPolicy = runTestEff $ do
@@ -117,7 +117,7 @@ renderCIDRSetPolicy = runTestEff $ do
   resolvedService <-
     assertRight "Service does not resolve" . validationToEither $
       resolveService serviceIndex entityIndex cidrIndex myAppService
-  ((pure . TL.encodeUtf8) . T.fromStrict) . Cilium.renderCilium $ Cilium.toCiliumPolicy resolvedService
+  ((pure . TL.encodeUtf8) . T.fromStrict) . Cilium.renderCilium False $ Cilium.toCiliumPolicy resolvedService
 
 -- | Resolve a single connection from a source service to a target opening
 -- @targetPorts@, both in the same context, and return the picked ports.

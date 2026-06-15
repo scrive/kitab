@@ -15,7 +15,7 @@ import Effectful.Console.ByteString (Console)
 import Effectful.Error.Static (Error)
 import Effectful.Error.Static qualified as Error
 import Effectful.FileSystem (FileSystem)
-import System.OsPath (osp, (</>))
+import System.OsPath (OsPath, osp, (</>))
 import System.OsPath qualified as OsPath
 
 import CLI.Error
@@ -36,10 +36,11 @@ renderToCilium
   :: (Console :> es, Error (NonEmpty CLIError) :> es, FileSystem :> es)
   => List ContextName
   -> PreparedModel
-  -> OsPath.OsPath
+  -> OsPath
+  -> Bool
   -> VerbositySetting
   -> Eff es Unit
-renderToCilium contextFilters model outputDir verbosity = do
+renderToCilium contextFilters model outputDir enableVersionStamp verbosity = do
   let knownContexts = fmap fst (contextPaths model.contexts)
   validateContextFilters knownContexts contextFilters
   resolvedDefinitions <- resolveServices model.serviceIndex model.entityIndex model.cidrIndex model.services
@@ -48,7 +49,7 @@ renderToCilium contextFilters model outputDir verbosity = do
           [] -> resolvedDefinitions
           _ -> List.filter (\service -> maybe False (`elem` contextFilters) service.serviceContext) resolvedDefinitions
   outputs <- forM filteredDefinitions $ \service -> do
-    let rendered = Cilium.renderCilium (Cilium.toCiliumPolicy service)
+    let rendered = Cilium.renderCilium enableVersionStamp (Cilium.toCiliumPolicy service)
     outputFile <- OsPath.encodeUtf . T.unpack $ display service.serviceName
     outputPath <- OsPath.decodeUtf (outputDir </> outputFile <> [osp|-network-policy.yaml|])
     pure (outputPath, rendered)

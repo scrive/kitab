@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<gexf version="1.2" xmlns="http://www.gexf.net/1.2draft">
+<gexf
+  kitab:version="0.1.0.0"
+  version="1.2"
+  xmlns="http://www.gexf.net/1.2draft">
     <graph defaultedgetype="directed" mode="static">
         <attributes class="node">
             <attribute
