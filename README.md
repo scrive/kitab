@@ -44,8 +44,7 @@ service "media-proxy" {
 
 	call "pngquant"
 
-  
-  // This creates a relation between `media-proxy` and `opensearch`.
+    // This creates a relation between `media-proxy` and `opensearch`.
 	depends-on "opensearch" {
     // And we label this edge with the connection method.
 		via "https"
@@ -96,8 +95,8 @@ service "main-app" {
 	in-context "k8s"
 
 	depends-on "user-registry" {
-  // This is a sub-system of the `main-app` service,
-  // which is accessed by function calls.
+    // This is a sub-system of the `main-app` service,
+    // which is accessed by function calls.
 		via "function-call"
 	}
 
