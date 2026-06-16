@@ -107,7 +107,9 @@ jobs:
         run: cabal test --project-file=cabal.release.project all
 
       - name: Install
-        run: cabal install --project-file=cabal.release.project --installdir=distribution --install-method=copy
+        run: |
+          mkdir -p distribution/
+          cp -f $(cabal list-bin kitab) distribution/
 
       - name: File type
         run: file distribution/kitab
