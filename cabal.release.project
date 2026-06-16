@@ -9,3 +9,5 @@ documentation: False
 executable-stripping: True
 
 library-stripping: True
+
+split-sections: True
