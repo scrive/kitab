@@ -6,7 +6,7 @@ kitab — Documentation and Infrastructure for service-oriented architectures
 
 ### Generate
 
-Usage: kitab generate [-q|--quiet] (-f|--format FORMAT)
+Usage: kitab generate [-q|--quiet] [--version-stamp] (-f|--format FORMAT)
                       (-o|--output-dir DIRECTORY) [--context CONTEXT]
                       [--cloud CLOUD] [--region REGION] [--env ENVIRONMENT]
                       [-i|--inventory DIRECTORY] FILES
@@ -29,6 +29,9 @@ This graph can then be used to create network access policies and architecture d
 <dl>
   <dt>-q,--quiet</dt>
   <dd style="margin-left: 3rem"> Make the program less verbose </dd>
+
+  <dt>--version-stamp</dt>
+  <dd>Insert a Kitab version stamp at the beginning of generated files</dd>
 
   <dt>-f,--format=FORMAT</dt>
   <dd style="margin-left: 3rem"> Output format </dd>
@@ -57,6 +60,33 @@ This graph can then be used to create network access policies and architecture d
   <dt>-h,--help</dt>
   <dd style="margin-left: 3rem"> Show this help text </dd>
 </dl>
+
+## CONCEPTS
+
+### Service
+
+A service is a logical application. It can live inside or outside of a context
+(like a Kubernetes cluster), and declares its dependencies to resources
+like other services, access to entities, and usage of external tools.
+
+### Context
+
+A context represents a boundary between resources inside and outside.
+Contexts are used to distinguish between internal deployments and external
+services, as well as more granularly distinguish between services
+within clusters are without.
+They can nest, in order to let renderers know how to represent them.
+
+### CIDR Set
+
+A named IP range with exceptions and port numbers. Useful when you need
+to reach out to a whole IP range.
+
+### Entity
+
+An entity is an abstract resource that is mostly used for things that do not
+map cleanly to services or CIDR sets. The host of a Kubernetes pod
+may be represented as such, for instance.
 
 ## CONFIGURATION
 
@@ -226,7 +256,6 @@ connectionTypes :: [ConnectionType]
 connectionTypes = [minBound .. maxBound]
 
 forM_ connectionTypes $ \ct -> T.putStrLn $ "* " <> display ct
-
 ```
 
 #### Example
@@ -273,7 +302,6 @@ depends-on "some-service" {
   via "https"
   port 4317
 }
-
 ```
 
 ### <a name="cidr-set"></a> `cidr-set`
@@ -463,7 +491,6 @@ inventory cloud=aws region=eu-west-1 env=prod {
 service "opensearch" {
 	fqdn (var)opensearch-fqdn
 }
-
 ```
 
 To pick the values from such an inventory, call `kitab` like this:
