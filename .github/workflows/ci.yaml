@@ -219,20 +219,13 @@ jobs:
         merge-multiple: true
 
     - name: Create GitHub prerelease
-      uses: marvinpinto/action-automatic-releases@v1.2.1
+      uses: softprops/action-gh-release@v3
       with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        automatic_release_tag: kitab-head
+        token: ${{ secrets.GITHUB_TOKEN }}
+        tag_name: kitab-head
         prerelease: true
-        title: kitab-head
+        draft: true
+        name: kitab-head
         files: |
           kitab-head-Linux-static-x86_64.tar.gz
           kitab-head-macOS-arm64.tar.gz
-
-    - name: Pre-release
-      uses: softprops/action-gh-release@v2
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        prerelease: true
-        files: ./out/*
-        tag_name: print-api-head
