@@ -11,8 +11,7 @@ import Core.Model.Reference
 import Core.Model.Service
 
 data ValidationError
-  = Asymmetric Reference Reference
-  | -- | Two services declare different ways of reaching each-other.
+  = -- | Two services declare different ways of reaching each-other.
     Mismatched
       ( Tuple2
           (Tuple3 Reference Reference ConnectionType)
