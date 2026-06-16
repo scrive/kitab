@@ -57,11 +57,11 @@ buildPreparedModel services entities cidrs contexts = do
           , contexts
           }
 
--- |  Reusable helper to make generic the assembly of an index
---  according to two accessors, the first producing a key and the second one
---  producing a value out of the list of elements being passed.
+-- | Reusable helper to make generic the assembly of an index
+-- according to two accessors, the first producing a key and the second one
+-- producing a value out of the list of elements being passed.
 buildIndex :: Ord key => (a -> key) -> (a -> value) -> List a -> Map key value
-buildIndex key val = foldr (\x -> Map.insert (key x) (val x)) Map.empty
+buildIndex key val = List.foldr (\x -> Map.insert (key x) (val x)) Map.empty
 
 buildServiceIndex :: List (Service Void) -> Map ServiceName (ServiceInfo Void)
 buildServiceIndex = buildIndex (.serviceName) (.serviceInfo)
