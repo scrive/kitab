@@ -1,18 +1,33 @@
 # Architecture
 
-Kitab is split between several sub-libraries to enforce proper separation between the various layers of the application.
+## Domain layer
+
+### Core Model
+
+**modules: Core.Model.\***
 
 
-## `lib:kitab`
+All core model definitions live in the `kitab-core` library, in `./src/core/`.
 
-This is the main library, which contains the CLI implementation,
-the parsing logic, and the driver – code that handles the orchestration of
-rendering and file system operations.
+### Graph Building
 
-## `lib:kitab-core`
+**module: Core.Graph**
 
-This library holds the code model definitions.
+The graph connects references (services, tools, CIDR sets) between each-other,
+tagged with their connection type.
 
-## `lib:kitab-puml`, `lib:kitab-cilium`, `lib:kitab-gexf`
+### Graph Validation
 
-Format-specific renderers.
+**module: Core.Validation**
+
+We perform checks on the graph to detect some known issues:
+  * Mismatched: We want to avoid services that declare different ways of reaching
+    each-other
+  * Parallel connections: A service declares two different ways to reach another service.
+  * Self-referential: A service declares a connection to itself.
+
+## Parser
+
+## Driver
+
+## Renderers
