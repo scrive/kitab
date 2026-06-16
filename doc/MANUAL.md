@@ -1,3 +1,5 @@
+<!-- scripths: 0.5.1.0 -->
+
 ## NAME
 
 kitab — Documentation and Infrastructure for service-oriented architectures
@@ -240,9 +242,18 @@ Declare the connection method to the service being depended on.
 
 It has no child nodes.
 
-| Argument | Type |
-|----------|------|
-| method     | closed enum: "https" \| "function-call" |
+#### Values
+
+<!-- scripths:mime text/plain -->
+* https
+* smtps
+* function-call
+* redis
+* postgres
+* domain
+* external-tool
+* browser
+* network
 
 #### Example
 
@@ -288,7 +299,6 @@ depends-on "some-service" {
   via "https"
   port 4317
 }
-
 ```
 
 ### <a name="cidr-set"></a> `cidr-set`
@@ -478,7 +488,6 @@ inventory cloud=aws region=eu-west-1 env=prod {
 service "opensearch" {
 	fqdn (var)opensearch-fqdn
 }
-
 ```
 
 To pick the values from such an inventory, call `kitab` like this:
