@@ -61,6 +61,33 @@ This graph can then be used to create network access policies and architecture d
   <dd style="margin-left: 3rem"> Show this help text </dd>
 </dl>
 
+## CONCEPTS
+
+### Service
+
+A service is a logical application. It can live inside or outside of a context
+(like a Kubernetes cluster), and declares its dependencies to resources
+like other services, access to entities, and usage of external tools.
+
+### Context
+
+A context represents a boundary between resources inside and outside.
+Contexts are used to distinguish between internal deployments and external
+services, as well as more granularly distinguish between services
+within clusters are without.
+They can nest, in order to let renderers know how to represent them.
+
+### CIDR Set
+
+A named IP range with exceptions and port numbers. Useful when you need
+to reach out to a whole IP range.
+
+### Entity
+
+An entity is an abstract resource that is mostly used for things that do not
+map cleanly to services or CIDR sets. The host of a Kubernetes pod
+may be represented as such, for instance.
+
 ## CONFIGURATION
 
 Service definitions are written in [KDL](https://kdl.dev) files.
