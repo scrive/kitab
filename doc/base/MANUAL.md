@@ -1,5 +1,3 @@
-<!-- scripths: 0.5.2.0 -->
-
 ## NAME
 
 kitab — Documentation and Infrastructure for service-oriented architectures
@@ -244,17 +242,21 @@ It has no child nodes.
 
 #### Values
 
-<!-- scripths:mime text/plain -->
-* https
-* smtps
-* function-call
-* redis
-* postgres
-* domain
-* external-tool
-* browser
-* network
-<!-- /scripths:mime -->
+```haskell
+-- cabal: build-depends: kitab, kitab:kitab-core, text-display, kitab-prelude, text
+-- cabal: packages: ../../, ../../kitab-prelude
+-- cabal: default-extensions: PackageImports, NoImplicitPrelude
+-- cabal: ghc-options: -Wno-unused-packages -j -Wno-x-partial
+import Core.Model.Service
+import Data.Text.Display
+import "kitab-prelude" Prelude
+import qualified Data.Text.IO as T
+
+connectionTypes :: [ConnectionType]
+connectionTypes = [minBound .. maxBound]
+
+forM_ connectionTypes $ \ct -> T.putStrLn $ "* " <> display ct
+```
 
 #### Example
 
