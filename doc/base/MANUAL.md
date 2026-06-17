@@ -88,6 +88,11 @@ An entity is an abstract resource that is mostly used for things that do not
 map cleanly to services or CIDR sets. The host of a Kubernetes pod
 may be represented as such, for instance.
 
+### External Tool
+
+Services can depend on external executables that are present in their
+runtime environment, like `curl`, `pngquant`, or `tar`.
+
 ## CONFIGURATION
 
 Service definitions are written in [KDL](https://kdl.dev) files.
