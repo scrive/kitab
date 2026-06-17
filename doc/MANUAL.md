@@ -1,4 +1,4 @@
-<!-- scripths: 0.5.1.0 -->
+<!-- scripths: 0.5.2.0 -->
 
 ## NAME
 
@@ -254,6 +254,7 @@ It has no child nodes.
 * external-tool
 * browser
 * network
+<!-- /scripths:mime -->
 
 #### Example
 
