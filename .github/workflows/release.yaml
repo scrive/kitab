@@ -201,7 +201,7 @@ jobs:
   release:
     name: Create a GitHub release with the binary artifacts
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    if: github.ref_type == 'tag'
     needs: ['tests', 'package-linux-static', 'package-macos']
 
     steps:
