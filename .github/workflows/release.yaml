@@ -1,17 +1,9 @@
-name: CI
+name: Release
 
 on:
-  pull_request:
-    paths:
-      - "**.hs"
-      - "**.cabal"
-      - "doc/base/*"
-      - ".github/workflows/*"
-      - "cabal.project"
   push:
-    branches:
-      - master
-  workflow_dispatch:
+    tags:
+      - "v*"
 
 env:
     LANG: "en_GB.UTF-8"
@@ -115,19 +107,19 @@ jobs:
       - name: File type
         run: file distribution/kitab
 
-      - name: Package the kitab-head executable
+      - name: Package the kitab executable
         run: |
           KITAB_EXEC=distribution/kitab
           DIR=$(dirname $KITAB_EXEC)
           FILE=$(basename $KITAB_EXEC)
-          KITAB_EXEC_TAR=kitab-head-${{ runner.os }}-${{ env.ARCH }}.tar.gz
-          tar -czvf $KITAB_EXEC_TAR -C $DIR $FILE
+          KITAB_EXEC_TAR=kitab-${{github.ref_name}}-${{ runner.os }}-${{ env.ARCH }}.tar.gz
+          tar -czvf -9 $KITAB_EXEC_TAR -C $DIR $FILE
           echo KITAB_EXEC_TAR=$KITAB_EXEC_TAR >> $GITHUB_ENV
 
-      - name: Upload the kitab-head executable
+      - name: Upload the kitab executable
         uses: actions/upload-artifact@v6
         with:
-          name: kitab-${{ runner.os }}-${{ env.ARCH }}
+          name: kitab-${{github.ref_name}}-${{ runner.os }}-${{ env.ARCH }}
           path: ${{ env.KITAB_EXEC_TAR }}
 
   package-linux-static:
@@ -196,37 +188,33 @@ jobs:
           upx -9 $KITAB_EXEC
           DIR=$(dirname $KITAB_EXEC)
           FILE=$(basename $KITAB_EXEC)
-          KITAB_EXEC_TAR=kitab-head-${{ runner.os }}-static-${{ env.ARCH }}.tar.gz
-          tar -czvf $KITAB_EXEC_TAR -C $DIR $FILE
+          KITAB_EXEC_TAR=kitab-${{github.ref_name}}-${{ runner.os }}-static-${{ env.ARCH }}.tar.gz
+          tar -czvf -9 $KITAB_EXEC_TAR -C $DIR $FILE
           echo KITAB_EXEC_TAR=$KITAB_EXEC_TAR >> $GITHUB_ENV
 
       - name: Upload kitab executable to workflow artifacts
         uses: actions/upload-artifact@v6
         with:
-          name: kitab-${{ runner.os }}-static-x86_64
+          name: kitab-${{github.ref_name}}-${{ runner.os }}-static-x86_64
           path: ${{ env.KITAB_EXEC_TAR }}
-
-       
-  prerelease-head:
-    name: Create a GitHub prerelease with the binary artifacts
+  release:
+    name: Create a GitHub release with the binary artifacts
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
     needs: ['tests', 'package-linux-static', 'package-macos']
 
     steps:
-    - uses: actions/download-artifact@v7
+    - name: "Download build artifacts"
+      uses: actions/download-artifact@v7
       with:
-        pattern: kitab-*
+        pattern: kitab-${{github.ref_name}}-*
         merge-multiple: true
 
     - name: Create GitHub prerelease
       uses: softprops/action-gh-release@v3
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        tag_name: kitab-head
-        prerelease: true
+        name: ${{github.ref_name}}
         draft: true
-        name: kitab-head
         files: |
-          kitab-head-Linux-static-x86_64.tar.gz
-          kitab-head-macOS-arm64.tar.gz
+          kitab-${{github.ref_name}}-*
