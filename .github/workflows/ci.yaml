@@ -229,3 +229,24 @@ jobs:
         files: |
           kitab-head-Linux-static-x86_64.tar.gz
           kitab-head-macOS-arm64.tar.gz
+
+  release:
+    name: Create a GitHub release with the binary artifacts
+    runs-on: ubuntu-latest
+    if: github.ref_type == 'tag'
+    needs: ['tests', 'package-linux-static', 'package-macos']
+
+    steps:
+    - uses: actions/download-artifact@v7
+      with:
+        pattern: kitab-*
+        merge-multiple: true
+
+    - name: Create GitHub prerelease
+      uses: softprops/action-gh-release@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        draft: true
+        files: |
+          kitab-head-Linux-static-x86_64.tar.gz
+          kitab-head-macOS-arm64.tar.gz
