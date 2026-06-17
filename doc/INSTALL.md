@@ -1,17 +1,16 @@
 # 📦 Install
-### Nightly pre-releases
 
-Pre-release binaries are available for the following platforms:
+## 🏗️ Supported platforms
+
+Pre-built binaries are available for the following platforms:
 
 * Linux-x86_64-musl (statically linked)
 * macOS-arm64
 
-They are available at https://github.com/scrive/kitab/releases/tag/kitab-head
+## 🌙 Nightly pre-releases
 
-## 🔧 Build from source
+See the latest pre-release and its binaries at at https://github.com/scrive/kitab/releases/tag/kitab-head
 
-*kitab* is made in Haskell. To build it from source, use [ghcup](https://www.haskell.org/ghcup/) to install the following toolchains:
-* `cabal` 3.16.1.0
-* `ghc` 9.12.2
+## ☀️ Tagged releases
 
-Run `$ cabal install exe:kitab` in order to install the executable.
+See the latest tagged release and its binaries at https://github.com/scrive/kitab/releases/latest
