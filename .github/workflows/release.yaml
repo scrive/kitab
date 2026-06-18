@@ -13,7 +13,7 @@ jobs:
   tests:
     name: "Test on ubuntu-24"
     runs-on:
-      - aws-standard-ubuntu24
+      - ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
