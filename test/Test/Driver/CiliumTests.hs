@@ -1,12 +1,9 @@
 {-# LANGUAGE OverloadedLists #-}
-{-# LANGUAGE TypeApplications #-}
 
 module Test.Driver.CiliumTests (test) where
 
 import Data.List.NonEmpty (NonEmpty)
 import Data.List.NonEmpty qualified as NE
-import Effectful
-import Effectful.Error.Static (runErrorNoCallStack)
 import Test.Tasty
 
 import CLI.Error
@@ -30,8 +27,7 @@ test =
 
 runValidate :: List ContextName -> List ContextName -> TestEff (Either (NonEmpty CLIError) Unit)
 runValidate known filters =
-  liftIO . runEff . runErrorNoCallStack @(NonEmpty CLIError) $
-    validateContextFilters known filters
+  runCapturingErrors (validateContextFilters known filters)
 
 testKnownFiltersPass :: TestEff Unit
 testKnownFiltersPass = do

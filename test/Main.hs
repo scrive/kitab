@@ -4,6 +4,7 @@ import Test.Tasty
 
 import Test.CLI.DumpTests qualified as DumpTests
 import Test.Driver.CiliumTests qualified as Driver.CiliumTests
+import Test.Driver.VariableTests qualified as Driver.VariableTests
 import Test.InventoryTests qualified as InventoryTests
 import Test.ModelTests qualified as ModelTests
 import Test.ParserTests qualified as ParserTests
@@ -39,4 +40,5 @@ renderTests =
 driverTests :: List TestTree
 driverTests =
   [ Driver.CiliumTests.test
+  , Driver.VariableTests.test
   ]

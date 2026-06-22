@@ -16,13 +16,14 @@ module Test.Utils
   , assertParseDocument
   , assertParseError
   , assertDecodeError
+  , runCapturingErrors
   ) where
 
 import Data.List.NonEmpty (NonEmpty)
 import Data.Text qualified as T
 import Data.Text.Encoding qualified as T
 import Effectful
-import Effectful.Error.Static (Error, runErrorWith)
+import Effectful.Error.Static (Error, runErrorNoCallStack, runErrorWith)
 import Effectful.FileSystem
 import Effectful.FileSystem.IO.ByteString qualified as Filesystem
 import GHC.Stack
@@ -126,6 +127,14 @@ assertDecodeError decoder filePath =
   liftIO (KDL.decodeFileWith decoder filePath) >>= \case
     Left decodeError -> pure (renderDecodeError decodeError)
     Right _ -> assertFailure ("Expected parse failure for " <> filePath <> " but parsing succeeded")
+
+-- | Run an error-accumulating effectful action, capturing the thrown errors
+-- instead of letting the 'TestEff' harness fail the test. For testing
+-- validators and resolvers that throw 'NonEmpty CLIError' on the failure path.
+runCapturingErrors
+  :: Eff [Error (NonEmpty CLIError), IOE] a
+  -> TestEff (Either (NonEmpty CLIError) a)
+runCapturingErrors action = liftIO (runEff (runErrorNoCallStack action))
 
 assertLeft :: HasCallStack => String -> Either a b -> TestEff a
 assertLeft description (Right _b) = liftIO $ Test.assertFailure description

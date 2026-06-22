@@ -29,6 +29,12 @@ test =
         "Inventory merge"
         testInventoryMerge
     , testThat
+        "Empty selector matches only attribute-less inventories"
+        testEmptySelectorMatchesOnlyEmptyAttributes
+    , testThat
+        "Inventories not matching the selector are excluded"
+        testNonMatchingInventoryExcluded
+    , testThat
         "Collecting inventories from filesystem"
         testCollectingInventoriesFromFileSystem
     , testThat "Variables are resolved via inventory" testResolvingVariableFromInventory
@@ -80,6 +86,28 @@ testInventoryMerge = do
     "Inventories are merged correctly"
     expectedAggregatedInventory
     (mergeInventories (Selector (Just "aws")) (Selector Nothing) (Selector (Just "dev")) [i1, i2])
+
+testEmptySelectorMatchesOnlyEmptyAttributes :: TestEff Unit
+testEmptySelectorMatchesOnlyEmptyAttributes = do
+  let scopedVar = InventoryVariable {name = "scoped", value = "aws-only", description = Nothing}
+  let baseVar = InventoryVariable {name = "base", value = "everywhere", description = Nothing}
+  let scoped = Inventory {attributes = Map.fromList [("cloud", "aws")], vars = Map.fromList [("scoped", scopedVar)]}
+  let base = Inventory {attributes = Map.empty, vars = Map.fromList [("base", baseVar)]}
+  assertEqual
+    "Only the attribute-less inventory survives an empty selector"
+    AggregatedInventory {aggregatedAttributes = Map.empty, aggregatedVars = Map.fromList [("base", baseVar)]}
+    (mergeInventories (Selector Nothing) (Selector Nothing) (Selector Nothing) [scoped, base])
+
+testNonMatchingInventoryExcluded :: TestEff Unit
+testNonMatchingInventoryExcluded = do
+  let awsVar = InventoryVariable {name = "v", value = "aws-value", description = Nothing}
+  let gcpVar = InventoryVariable {name = "v", value = "gcp-value", description = Nothing}
+  let aws = Inventory {attributes = Map.fromList [("cloud", "aws")], vars = Map.fromList [("v", awsVar)]}
+  let gcp = Inventory {attributes = Map.fromList [("cloud", "gcp")], vars = Map.fromList [("v", gcpVar)]}
+  assertEqual
+    "A gcp inventory is excluded when selecting aws"
+    AggregatedInventory {aggregatedAttributes = Map.fromList [("cloud", "aws")], aggregatedVars = Map.fromList [("v", awsVar)]}
+    (mergeInventories (Selector (Just "aws")) (Selector Nothing) (Selector Nothing) [aws, gcp])
 
 testCollectingInventoriesFromFileSystem :: TestEff Unit
 testCollectingInventoriesFromFileSystem = do

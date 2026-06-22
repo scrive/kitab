@@ -291,6 +291,7 @@ test-suite kitab-test
   other-modules:
     Test.CLI.DumpTests
     Test.Driver.CiliumTests
+    Test.Driver.VariableTests
     Test.InventoryTests
     Test.ModelTests
     Test.ParserTests
