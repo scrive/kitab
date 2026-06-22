@@ -1,0 +1,6 @@
+service "a" {
+	depends-on "b" {
+		port 443
+		via "GRPC"
+	}
+}

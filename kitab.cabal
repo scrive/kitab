@@ -290,6 +290,7 @@ test-suite kitab-test
   -- cabal-gild: discover test --exclude "test/Main.hs"
   other-modules:
     Test.CLI.DumpTests
+    Test.Driver.CiliumTests
     Test.InventoryTests
     Test.ModelTests
     Test.ParserTests

@@ -15,6 +15,7 @@ module Test.Utils
   , assertParse
   , assertParseDocument
   , assertParseError
+  , assertDecodeError
   ) where
 
 import Data.List.NonEmpty (NonEmpty)
@@ -117,6 +118,14 @@ assertParse decoder filePath =
   liftIO (KDL.decodeFileWith decoder filePath) >>= \case
     Left decodeError -> assertFailure (T.unpack $ renderDecodeError decodeError)
     Right result -> pure result
+
+-- | Assert that decoding fails, returning the rendered error for inspection.
+-- The dual of 'assertParse', for negative parser tests.
+assertDecodeError :: HasCallStack => DocumentDecoder a -> FilePath -> TestEff Text
+assertDecodeError decoder filePath =
+  liftIO (KDL.decodeFileWith decoder filePath) >>= \case
+    Left decodeError -> pure (renderDecodeError decodeError)
+    Right _ -> assertFailure ("Expected parse failure for " <> filePath <> " but parsing succeeded")
 
 assertLeft :: HasCallStack => String -> Either a b -> TestEff a
 assertLeft description (Right _b) = liftIO $ Test.assertFailure description

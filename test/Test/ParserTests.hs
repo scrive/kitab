@@ -4,7 +4,10 @@ module Test.ParserTests (test) where
 
 import Algebra.Graph.Export.Dot
 import Data.ByteString.Lazy (LazyByteString)
+import Data.List.NonEmpty qualified as NE
 import Data.Map.Strict qualified as Map
+import Data.Set qualified as Set
+import Data.Text qualified as T
 import Data.Text.Lazy qualified as TL
 import Data.Text.Lazy.Encoding qualified as TL
 import KDL
@@ -13,10 +16,13 @@ import Test.Tasty.Golden
 import Text.Pretty.Simple
 
 import Core.Graph
+import Core.Model.CIDRSet
+import Core.Model.Entity
 import Core.Model.Inventory
 import Core.Model.InventoryVariable
 import Core.Model.PortNode
 import Core.Model.Service
+import Core.Model.ServiceContext
 import Core.Model.ServiceName
 import Core.Variable
 import Parser.V1.Inventory (inventoryDecoder)
@@ -38,6 +44,17 @@ test =
         "Version"
         [ testThat "Unknown version number is handled" testUnkonwnVersionHandling
         , testThat "Invalid version value is handled" testInvalidVersionHandling
+        ]
+    , testGroup
+        "Connections"
+        [ testThat "Unknown connection type is rejected" testUnknownConnectionType
+        , testThat "Connection without via node is rejected" testMissingViaNode
+        ]
+    , testGroup
+        "Declarations"
+        [ testThat "partitionDeclarations sorts into buckets" testPartitionDeclarations
+        , testThat "partitionDeclarations discards version and tool" testPartitionDiscards
+        , testThat "partitionDeclarations preserves order" testPartitionOrder
         ]
     , testGroup
         "Golden"
@@ -152,3 +169,60 @@ testParsingServiceWithVar = do
     "Expected service definition"
     expectedResult
     result
+
+testUnknownConnectionType :: TestEff Unit
+testUnknownConnectionType = do
+  rendered <- assertDecodeError (KDL.document serviceDecoder) "test/fixtures/unknown-connection-type.kdl"
+  assertBool
+    "Error mentions the unknown connection type"
+    (T.isInfixOf "unknown connection type" rendered)
+
+testMissingViaNode :: TestEff Unit
+testMissingViaNode = do
+  void $ assertDecodeError (KDL.document serviceDecoder) "test/fixtures/missing-via.kdl"
+
+testPartitionDeclarations :: TestEff Unit
+testPartitionDeclarations = do
+  let serviceA = emptyService {serviceName = "A"}
+      serviceB = emptyService {serviceName = "B"}
+      sampleEntity = Entity {entityName = "ext", entityInfo = EntityInfo {entityPorts = Set.empty, entityContext = Nothing}}
+      sampleContext = ServiceContext {contextName = "ctx", subContexts = []}
+      sampleCidrSet =
+        CIDRSet
+          { setName = "cs"
+          , cidrRules = NE.singleton (CidrRuleNode {cidr = Right ("10.0.0.0/8", Nothing), excepts = []})
+          , ports = []
+          , context = Nothing
+          , rendererProps = Map.empty
+          }
+      sampleDeclarations =
+        [ ServiceDeclaration serviceA
+        , EntityDeclaration sampleEntity
+        , ContextDeclaration sampleContext
+        , CIDRSetDeclaration sampleCidrSet
+        , VersionDeclaration 1
+        , ToolDeclaration "kitab"
+        , ServiceDeclaration serviceB
+        ]
+  let result = partitionDeclarations sampleDeclarations
+  assertEqual "Services bucket" [serviceA, serviceB] result.services
+  assertEqual "Entities bucket" [sampleEntity] result.entities
+  assertEqual "Contexts bucket" [sampleContext] result.contexts
+  assertEqual "CIDR sets bucket" [sampleCidrSet] result.cidrs
+
+-- VersionDeclaration and ToolDeclaration have no bucket; partitioning a list
+-- that contains only those must yield an empty Declarations.
+testPartitionDiscards :: TestEff Unit
+testPartitionDiscards = do
+  let result = partitionDeclarations [VersionDeclaration 1, ToolDeclaration "kitab"]
+  assertEqual "No services" [] result.services
+  assertEqual "No entities" [] result.entities
+  assertEqual "No contexts" [] result.contexts
+  assertEqual "No CIDR sets" [] result.cidrs
+
+testPartitionOrder :: TestEff Unit
+testPartitionOrder = do
+  let serviceA = emptyService {serviceName = "A"}
+      serviceB = emptyService {serviceName = "B"}
+  let result = partitionDeclarations [ServiceDeclaration serviceA, ServiceDeclaration serviceB]
+  assertEqual "Declaration order is preserved" [serviceA, serviceB] result.services
