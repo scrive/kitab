@@ -2,6 +2,7 @@ module Test.Render.CiliumTests where
 
 import Data.ByteString.Lazy (LazyByteString)
 import Data.List qualified as List
+import Data.List.NonEmpty qualified as NE
 import Data.Map.Strict qualified as Map
 import Data.Set (Set)
 import Data.Set qualified as Set
@@ -12,6 +13,7 @@ import Test.Tasty.Golden
 import Validation
 
 import Core.Graph
+import Core.Model.CIDRSet
 import Core.Model.Entity
 import Core.Model.Inventory.Aggregated
 import Core.Model.InventoryVariable
@@ -22,6 +24,8 @@ import Driver.Variable
 import Parser.V1.Types
 import Render.Cilium qualified as Cilium
 import Render.Cilium.Resolved
+import Render.Cilium.Types (PortProtocol (..))
+import Render.Cilium.Types.EgressRule (EgressRule (..), EndpointSelector (..))
 import Test.Utils
 
 test :: TestTree
@@ -70,6 +74,24 @@ test =
         , testThat
             "Entity access ports outside the entity's ports fall back to no ports"
             entityAccessPortsOutsideEntityFallBack
+        , testThat
+            "Same-context egress emits no toPorts, opening all ports regardless of declared ports"
+            sameContextEgressOpensAllPorts
+        , testThat
+            "Fqdn egress restricts to the picked ports"
+            viaFqdnEgressRestrictsPorts
+        , testThat
+            "An empty port list yields no toPorts (all ports allowed)"
+            emptyPortsRuleIsAllPorts
+        , testThat
+            "A non-empty port list yields a toPorts entry"
+            nonEmptyPortsRuleIsRestricted
+        , testThat
+            "Entity egress with no ports emits no toPorts (all ports allowed)"
+            entityEgressEmptyPortsIsAllPorts
+        , testThat
+            "CIDR egress with no ports emits no toPorts (all ports allowed)"
+            cidrEgressEmptyPortsIsAllPorts
         ]
     ]
 
@@ -119,8 +141,6 @@ renderCIDRSetPolicy = runTestEff $ do
       resolveService serviceIndex entityIndex cidrIndex myAppService
   ((pure . TL.encodeUtf8) . T.fromStrict) . Cilium.renderCilium False $ Cilium.toCiliumPolicy resolvedService
 
--- | Resolve a single connection from a source service to a target opening
--- @targetPorts@, both in the same context, and return the picked ports.
 resolveConnectionPorts :: Set PortNode -> Set PortNode -> TestEff (Set PortNode)
 resolveConnectionPorts targetPorts callerPorts = do
   let targetInfo =
@@ -234,3 +254,73 @@ rejectUndeclaredEntityTarget = do
       assertEqual "Unexpected resolution errors" [MissingEntity "web" "kafka"] (toList violations)
     Success resolved ->
       assertFailure $ "Resolution accepted an undeclared entity target: " <> show resolved
+
+sameContextEgressOpensAllPorts :: TestEff Unit
+sameContextEgressOpensAllPorts = do
+  let connection =
+        ResolvedConnection
+          { connectionTarget = "target"
+          , connectionRoute = SameContext
+          , connectionPorts = Set.singleton (PortNode 5432 "TCP")
+          }
+  let rule = Cilium.serviceEgressRule connection
+  assertEqual
+    "Same-context egress targets the app endpoint"
+    (Just [EndpointSelector (Map.singleton "app" "target")])
+    rule.toEndpoints
+  assertEqual
+    "Same-context egress sets no port restriction (all ports allowed)"
+    Nothing
+    rule.toPorts
+
+viaFqdnEgressRestrictsPorts :: TestEff Unit
+viaFqdnEgressRestrictsPorts = do
+  let connection =
+        ResolvedConnection
+          { connectionTarget = "target"
+          , connectionRoute = ViaFqdn "target.example.com"
+          , connectionPorts = Set.singleton (PortNode 5432 "TCP")
+          }
+  let rule = Cilium.serviceEgressRule connection
+  assertBool
+    "Fqdn egress restricts to the declared ports"
+    (isJust rule.toPorts)
+
+emptyPortsRuleIsAllPorts :: TestEff Unit
+emptyPortsRuleIsAllPorts =
+  assertEqual
+    "An empty port list is the permissive all-ports default"
+    Nothing
+    (Cilium.portsRule [])
+
+nonEmptyPortsRuleIsRestricted :: TestEff Unit
+nonEmptyPortsRuleIsRestricted =
+  assertBool
+    "A non-empty port list produces a toPorts entry"
+    (isJust (Cilium.portsRule [PortProtocol "443" "TCP"]))
+
+entityEgressEmptyPortsIsAllPorts :: TestEff Unit
+entityEgressEmptyPortsIsAllPorts = do
+  let access = ResolvedEntityAccess {accessTarget = "kafka", accessPorts = Set.empty}
+  let rule = Cilium.entityEgressRule access
+  assertEqual "Entity egress targets the entity" (Just ["kafka"]) rule.toEntities
+  assertEqual
+    "Entity egress with no ports sets no port restriction (all ports allowed)"
+    Nothing
+    rule.toPorts
+
+cidrEgressEmptyPortsIsAllPorts :: TestEff Unit
+cidrEgressEmptyPortsIsAllPorts = do
+  let cidrSet =
+        CIDRSet
+          { setName = "cs"
+          , cidrRules = NE.singleton CidrRuleNode {cidr = Right ("10.0.0.0/8", Nothing), excepts = []}
+          , ports = []
+          , context = Nothing
+          , rendererProps = Map.empty
+          }
+  let rule = Cilium.cidrEgressRule cidrSet
+  assertEqual
+    "CIDR egress with no ports sets no port restriction (all ports allowed)"
+    Nothing
+    rule.toPorts
