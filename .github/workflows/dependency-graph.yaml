@@ -32,7 +32,7 @@ jobs:
       - name: Setup Haskell
         uses: haskell-actions/setup@v2
         with:
-          ghc-version: "9.12.2"
+          ghc-version: "9.12.4"
           cabal-version: "3.16.1.0"
 
       - name: Cache Cabal store
@@ -43,9 +43,9 @@ jobs:
             ~/.cabal/packages
             cabal-plan-submit/dist-newstyle
             project/dist-newstyle
-          key: ${{ runner.os }}-ghc-9.12.2-${{ hashFiles('project/**/*.cabal', 'project/cabal.project*', 'cabal-plan-submit/**/*.cabal', 'cabal-plan-submit/cabal.project*') }}
+          key: ${{ runner.os }}-ghc-9.12.4-${{ hashFiles('project/**/*.cabal', 'project/cabal.project*', 'cabal-plan-submit/**/*.cabal', 'cabal-plan-submit/cabal.project*') }}
           restore-keys: |
-            ${{ runner.os }}-ghc-9.12.2-
+            ${{ runner.os }}-ghc-9.12.4-
 
       - name: Build target project
         working-directory: project
