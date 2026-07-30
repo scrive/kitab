@@ -8,7 +8,7 @@ import Data.Map.Strict qualified as Map
 import Data.Text qualified as T
 import Data.Version
 import Development.GitRev
-import Layoutz
+import Layoutz qualified as L
 import Options.Applicative
 import Options.Applicative.Help.Pretty
 import System.OsPath
@@ -53,8 +53,8 @@ contextFilterParser = str
 pathParser :: ReadM OsPath
 pathParser = maybeReader OsPath.encodeUtf
 
-banner :: Doc
-banner =
+logoBanner :: Doc
+logoBanner =
   vsep
     [ ""
     , "  █████   ████  ███   █████              █████   "
@@ -70,7 +70,7 @@ banner =
 parserOptions :: ParserInfo Command
 parserOptions =
   info (parseCommand <**> simpleVersioner programVersion <**> helper <**> errorCodesOption) $
-    headerDoc (Just banner)
+    headerDoc (Just logoBanner)
       <> progDescDoc (Just programDescription)
       <> footerDoc (Just programFooter)
 
@@ -101,12 +101,12 @@ errorCodesOption = do
   let descriptions = List.map display errorTypes
   let tableElements =
         zipWith (\code desc -> [textElement (display code), textElement desc]) codes descriptions
-  let descriptionTable = withBorder BorderRound $ table ["Code", "Description"] tableElements
-  infoOption (render descriptionTable) $
+  let descriptionTable = L.withBorder L.BorderRound $ L.table ["Code", "Description"] tableElements
+  infoOption (L.render descriptionTable) $
     mconcat [long "error-codes", help "Print error codes", hidden]
 
-textElement :: Text -> L
-textElement = text . T.unpack
+textElement :: Text -> L.L
+textElement = L.text . T.unpack
 
 withInfo :: Parser a -> String -> ParserInfo a
 withInfo opts desc =

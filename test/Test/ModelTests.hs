@@ -8,7 +8,6 @@ import Test.Tasty
 import Validation (validationToEither)
 
 import Core.Graph
-import Core.Model.ContextName
 import Core.Model.Reference
 import Core.Model.Service
 import Core.Model.ServiceContext
