@@ -12,7 +12,7 @@ extra-doc-files:
   README.md
 
 tested-with:
-  ghc ==9.6.7 || ==9.10.3 || ==9.12.4
+  ghc ==9.12.4
 
 source-repository head
   type: git
@@ -21,6 +21,7 @@ source-repository head
 common extensions
   default-extensions:
     DerivingVia
+    MultilineStrings
     NoFieldSelectors
     NoListTuplePuns
     OverloadedLabels
@@ -106,11 +107,11 @@ library
     filepath,
     gitrev,
     kdl-hs >=1.1,
+    kitab-prelude,
     kitab:kitab-cilium,
     kitab:kitab-core,
     kitab:kitab-gexf,
     kitab:kitab-puml,
-    kitab-prelude,
     layoutz,
     optics-core,
     optparse-applicative,
@@ -187,8 +188,8 @@ library kitab-puml
     containers,
     effectful-core,
     extra,
-    kitab:kitab-core,
     kitab-prelude,
+    kitab:kitab-core,
     optics-core,
     prettyprinter,
     text,
@@ -220,8 +221,8 @@ library kitab-cilium
   build-depends:
     base ^>=4.21,
     containers,
-    kitab:kitab-core,
     kitab-prelude,
+    kitab:kitab-core,
     prettyprinter,
     validation-selective,
 
@@ -248,8 +249,8 @@ library kitab-gexf
     algebraic-graphs,
     base ^>=4.21,
     containers,
-    kitab:kitab-core,
     kitab-prelude,
+    kitab:kitab-core,
     optics-core,
     text,
     xml-conduit,
@@ -310,11 +311,11 @@ test-suite kitab-test
     filepath,
     kdl-hs >=1.1,
     kitab,
+    kitab-prelude,
     kitab:kitab-cilium,
     kitab:kitab-core,
     kitab:kitab-gexf,
     kitab:kitab-puml,
-    kitab-prelude,
     optics-core,
     pretty-simple ^>=4.1.4.0,
     prettyprinter,

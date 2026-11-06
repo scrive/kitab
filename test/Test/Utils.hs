@@ -104,10 +104,9 @@ assertParseDocument filePath = do
     Left decodeError -> assertFailure (T.unpack $ renderDecodeError decodeError)
     Right result -> pure result
 
-assertParseError :: HasCallStack => FilePath -> List Text -> TestEff Unit
-assertParseError filePath expectedError = do
+assertParseError :: HasCallStack => FilePath -> Text -> TestEff Unit
+assertParseError filePath prettyError = do
   content <- Filesystem.readFile filePath
-  let prettyError = T.intercalate "\n" expectedError
   case parseKitabDocument filePath (T.decodeUtf8 content) of
     Left decodeError
       | KDL.renderDecodeError decodeError == prettyError -> pure ()

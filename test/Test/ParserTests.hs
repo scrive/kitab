@@ -116,15 +116,19 @@ testUnkonwnVersionHandling :: TestEff Unit
 testUnkonwnVersionHandling = do
   assertParseError
     "./test/fixtures/unknown-version.kdl"
-    [ "At: (root)"
-    , "\9492\9472 This kitab can only parse configuration format version 1. Found 3.0"
-    ]
+    """
+    At: (root)
+    \9492\9472 This kitab can only parse configuration format version 1. Found 3.0
+    """
 
 testInvalidVersionHandling :: TestEff Unit
 testInvalidVersionHandling = do
   assertParseError
     "./test/fixtures/invalid-version.kdl"
-    ["At: (root)", "\9492\9472 Expected number, got: lol"]
+    """
+    At: (root)
+    \9492\9472 Expected number, got: lol
+    """
 
 testServiceDefinitionsParsing :: IO LazyByteString
 testServiceDefinitionsParsing = runTestEff $ do
