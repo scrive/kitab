@@ -6,13 +6,7 @@ constraints: any.Cabal ==3.14.2.0,
              any.QuickCheck ==2.19.0.0,
              QuickCheck -old-random +templatehaskell,
              any.StateVar ==1.2.2,
-<<<<<<< HEAD
-             any.aeson ==2.3.1.0,
-||||||| parent of a4d22cf (Add a github workflow to upload the SBOM (#81))
-             any.aeson ==2.3.0.0,
-=======
              any.aeson ==2.3.2.0,
->>>>>>> a4d22cf (Add a github workflow to upload the SBOM (#81))
              aeson +ordered-keymap,
              any.algebraic-graphs ==0.8,
              any.ansi-terminal ==1.1.5,
@@ -54,23 +48,9 @@ constraints: any.Cabal ==3.14.2.0,
              any.data-default ==0.8.0.2,
              any.data-fix ==0.3.4,
              any.deepseq ==1.5.1.0,
-<<<<<<< HEAD
              any.directory ==1.3.10.1,
-<<<<<<< HEAD
              any.distributive ==0.6.3,
              distributive +tagged,
-||||||| parent of a4d22cf (Add a github workflow to upload the SBOM (#81))
-             any.directory ==1.3.9.0,
-             any.distributive ==0.6.3,
-             distributive +tagged,
-=======
-             any.directory ==1.3.10.1,
->>>>>>> a4d22cf (Add a github workflow to upload the SBOM (#81))
-||||||| parent of 1e9de49 (Fix compilation)
-=======
-             any.distributive ==0.6.3,
-             distributive +tagged,
->>>>>>> 1e9de49 (Fix compilation)
              any.dlist ==1.0,
              dlist -werror,
              any.effectful ==2.7.1.0,
@@ -97,32 +77,14 @@ constraints: any.Cabal ==3.14.2.0,
              any.integer-conversion ==0.1.1,
              any.integer-logarithms ==1.0.5,
              integer-logarithms -check-bounds +integer-gmp,
-<<<<<<< HEAD
-             any.kdl-hs ==1.1.1,
-             any.layoutz ==0.4.0.0,
-             any.megaparsec ==9.8.1,
-||||||| parent of a4d22cf (Add a github workflow to upload the SBOM (#81))
-             any.kdl-hs ==1.1.1,
-             any.layoutz ==0.3.4.0,
-             any.megaparsec ==9.7.1,
-=======
              any.kdl-hs ==1.2.1,
              any.layoutz ==0.4.0.0,
              any.megaparsec ==9.8.3,
->>>>>>> a4d22cf (Add a github workflow to upload the SBOM (#81))
              megaparsec -dev,
              any.monad-control ==1.0.3.1,
              any.mono-traversable ==1.0.21.0,
-<<<<<<< HEAD
-             any.mtl ==2.3.2,
-             any.network ==3.2.8.0,
-||||||| parent of a4d22cf (Add a github workflow to upload the SBOM (#81))
-             any.mtl ==2.3.1,
-             any.network ==3.2.8.0,
-=======
              any.mtl ==2.3.2,
              any.network ==3.2.12.0,
->>>>>>> a4d22cf (Add a github workflow to upload the SBOM (#81))
              network -devel,
              any.network-uri ==2.6.4.2,
              any.optics-core ==0.4.2,
@@ -141,16 +103,8 @@ constraints: any.Cabal ==3.14.2.0,
              any.prettyprinter-ansi-terminal ==1.1.4,
              prettyprinter-ansi-terminal +text,
              any.primitive ==0.9.1.0,
-<<<<<<< HEAD
-             any.process ==1.6.26.1,
-             any.quote-quot ==0.2.1.0,
-||||||| parent of a4d22cf (Add a github workflow to upload the SBOM (#81))
-             any.process ==1.6.25.0,
-             any.quote-quot ==0.2.1.0,
-=======
              any.process ==1.6.26.1,
              any.quote-quot ==0.2.2.0,
->>>>>>> a4d22cf (Add a github workflow to upload the SBOM (#81))
              any.random ==1.3.1,
              any.resourcet ==1.3.0,
              any.rts ==1.0.3,
@@ -180,17 +134,9 @@ constraints: any.Cabal ==3.14.2.0,
              any.template-haskell ==2.23.0.0,
              any.template-haskell-lift ==0.1.0.0,
              any.temporary ==1.3,
-<<<<<<< HEAD
-             any.text ==2.1.4,
-             any.text-builder-linear ==0.1.3,
-||||||| parent of a4d22cf (Add a github workflow to upload the SBOM (#81))
-             any.text ==2.1.2,
-             any.text-builder-linear ==0.1.3,
-=======
              any.terminal-size ==0.3.4,
              any.text ==2.1.4,
              any.text-builder-linear ==0.1.4,
->>>>>>> a4d22cf (Add a github workflow to upload the SBOM (#81))
              any.text-display ==1.0.0.0,
              text-display -book,
              any.text-iso8601 ==0.2.0.0,
@@ -200,20 +146,8 @@ constraints: any.Cabal ==3.14.2.0,
              any.th-compat ==0.1.7,
              any.these ==1.2.1,
              any.time ==1.14,
-<<<<<<< HEAD
-<<<<<<< HEAD
              any.time-compat ==1.9.9,
-||||||| parent of 1e9de49 (Fix compilation)
-=======
-             any.time-compat ==1.9.9,
->>>>>>> 1e9de49 (Fix compilation)
              any.transformers ==0.6.3.0,
-||||||| parent of a4d22cf (Add a github workflow to upload the SBOM (#81))
-             any.time-compat ==1.9.9,
-             any.transformers ==0.6.1.2,
-=======
-             any.transformers ==0.6.3.0,
->>>>>>> a4d22cf (Add a github workflow to upload the SBOM (#81))
              any.transformers-base ==0.4.6.1,
              transformers-base +orphaninstances,
              any.transformers-compat ==0.7.2,
@@ -237,10 +171,4 @@ constraints: any.Cabal ==3.14.2.0,
              any.xml-types ==0.3.8,
              any.zlib ==0.7.1.1,
              zlib -bundled-c-zlib +non-blocking-ffi +pkg-config
-<<<<<<< HEAD
-index-state: hackage.haskell.org 2026-07-30T07:30:12Z
-||||||| parent of a4d22cf (Add a github workflow to upload the SBOM (#81))
-index-state: hackage.haskell.org 2026-06-11T08:47:15Z
-=======
 index-state: hackage.haskell.org 2026-11-06T12:10:10Z
->>>>>>> a4d22cf (Add a github workflow to upload the SBOM (#81))
