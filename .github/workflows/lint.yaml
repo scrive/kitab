@@ -17,8 +17,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: tfausak/cabal-gild-setup-action@1639b48019c070533ec2fb52cb802100b7e357a5 # v2
         with:
-          version: 1.6.0.2
-      - run: cabal-gild --input kitab.cabal --mode check
+          version: 1.8.4.2
+      - run: cabal-gild kitab.cabal --mode check
   hlint:
     runs-on: ubuntu-22.04
     steps:
